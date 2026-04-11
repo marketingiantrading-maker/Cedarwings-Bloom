@@ -121,6 +121,7 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
 .tl{padding:9px 12px;border-radius:9px;background:var(--bg);border:1px solid var(--bdr);margin-bottom:6px;border-left:3px solid var(--bdr)}
 .tl.productive{border-left-color:#16a34a;background:linear-gradient(to right,#f0fdf4,var(--bg))}
 .tl.waste{border-left-color:#d97706;background:linear-gradient(to right,#fffbeb,var(--bg))}
+.tl.w9{border-left-color:#94a3b8;background:linear-gradient(to right,#f8fafc,var(--bg));opacity:.8}
 .tl.paused{border-left-color:#d97706;opacity:.7}
 .tl.machine_running{border-left-color:#3b5fe2;background:linear-gradient(to right,#eef2ff,var(--bg))}
 .tlm{font-size:12px;font-weight:600}.tls{font-size:10px;color:var(--mu);font-family:var(--mono);margin-top:2px}
@@ -316,6 +317,38 @@ const gB=()=>"B-"+new Date().toISOString().replace(/[-:TZ.]/g,"").slice(2,14)
 
 let emp="",activeSession=null,timerInt=null,todaySessions=[]
 
+/* ===================== W9 AUTO GAP FILL ===================== */
+async function fillW9Gap(empName,newSessionStart){
+  // Find the last ended session for this employee today
+  const todayStart=new Date();todayStart.setHours(0,0,0,0)
+  const{data}=await sb.from("time_sessions")
+    .select("ended_at,started_at,waste_category")
+    .eq("employee_name",empName)
+    .gte("started_at",todayStart.toISOString())
+    .not("ended_at","is",null) // only ended sessions
+    .order("ended_at",{ascending:false})
+    .limit(1)
+  if(!data||!data.length)return // no previous session today = no gap
+  const lastEnd=new Date(data[0].ended_at)
+  const gapMs=newSessionStart.getTime()-lastEnd.getTime()
+  if(gapMs<=0)return // no gap
+  // Skip if last session was already a W9 (avoid chaining)
+  if(data[0].waste_category==="W9 - Transition Time")return
+  // Insert W9 gap session
+  await sb.from("time_sessions").insert([{
+    employee_name:empName,
+    session_type:"waste",
+    work_type:"Waste Time",
+    waste_category:"W9 - Transition Time",
+    order_no:null,
+    batch_id:"W9-"+Date.now(),
+    started_at:lastEnd.toISOString(),
+    ended_at:newSessionStart.toISOString(),
+    pause_reason:null
+  }])
+  console.log(`W9 auto-created: ${Math.round(gapMs/60000)}min gap filled`)
+}
+
 /* ===================== EMPLOYEE ===================== */
 function initEmp(){
   // Identity comes from index.html login — no picker needed
@@ -434,6 +467,8 @@ window._clockStep=async(step)=>{
     await sb.from("time_sessions").update({ended_at:now.toISOString()}).eq("id",activeSession.id)
   }
   clearInterval(timerInt)
+  // AUTO W9: fill any gap since last ended session
+  await fillW9Gap(emp,now)
   const batchId=gB()
   const{data:row,error}=await sb.from("time_sessions").insert([{employee_name:emp,session_type:"productive",work_type:step,machine:document.querySelector(`[data-step="${step}"]`)?.dataset.mach||null,order_no:ord,batch_id:batchId,started_at:now.toISOString(),ended_at:null,pause_reason:null}]).select().single()
   if(error){setSt("Error",error.message,"err");return}
@@ -447,8 +482,10 @@ window._clockStep=async(step)=>{
   activeSession={id:row?.id,step,order:ord,type:"productive",startTime:now}
   showJobBox(step,ord,"productive",now)
   startTimer()
-  setSt("Clocked in: "+step,`${emp} · ${ord} · ${fT(now.toISOString())}`,  "ok")
-  renderPipeline(ord)
+  setSt("Clocked in: "+step,`${emp} · ${ord} · ${fT(now.toISOString())}`, "ok")
+  // Clear order field — page ready for next task entry
+  document.getElementById("ord").value=""
+  renderPipeline("")
   loadToday()
 }
 
@@ -459,13 +496,17 @@ document.querySelectorAll(".wb").forEach(b=>b.addEventListener("click",async()=>
   const now=new Date()
   if(activeSession?.id){await sb.from("time_sessions").update({ended_at:now.toISOString()}).eq("id",activeSession.id)}
   clearInterval(timerInt)
+  // AUTO W9: fill gap between last ended session and now
+  await fillW9Gap(emp,now)
   const{data:row,error}=await sb.from("time_sessions").insert([{employee_name:emp,session_type:"waste",work_type:"Waste Time",waste_category:b.dataset.w,order_no:ord,batch_id:gB(),started_at:now.toISOString(),ended_at:null}]).select().single()
   if(error){setSt("Error",error.message,"err");return}
   activeSession={id:row?.id,step:b.dataset.w,order:ord,type:"waste",startTime:now}
   showJobBox(b.dataset.w,ord,"waste",now)
   startTimer()
   setSt("Non-productive: "+b.dataset.w,`${emp} · ${ord} · ${fT(now.toISOString())}`,"ok")
-  renderPipeline(ord)
+  // Clear order field — page ready for next task
+  document.getElementById("ord").value=""
+  renderPipeline("")
   loadToday()
 }))
 
@@ -611,11 +652,13 @@ async function loadToday(){
   // Timeline
   document.getElementById("tldiv").innerHTML=allWithActive.length?allWithActive.slice().reverse().map(r=>{
     const live=!r.ended_at,m=r.ended_at?mins(new Date(r.started_at),new Date(r.ended_at)):0
-    const cls=r.pause_reason?"paused":r.session_type||""
+    const isW9=r.waste_category==="W9 - Transition Time"
+    const cls=isW9?"w9":r.pause_reason?"paused":r.session_type||""
+    const label=isW9?"&#8596; W9 - Transition Time":r.session_type==="waste"?"&#9888; "+(r.waste_category||"Waste"):(ICO[r.work_type]||"&#9881;")+" "+(r.work_type||"—")
     return`<div class="tl ${cls}">
-      <div class="tlm">${r.session_type==="waste"?"&#9888; "+(r.waste_category||"Waste"):ICO[r.work_type]||"&#9881;"+" "+(r.work_type||"—")} &middot; ${r.order_no||"—"}${live?" <span style='background:#16a34a;color:#fff;padding:1px 7px;border-radius:999px;font-size:9px;font-weight:800;margin-left:4px'>LIVE</span>":r.pause_reason?" <span style='background:#d97706;color:#fff;padding:1px 7px;border-radius:999px;font-size:9px;font-weight:800;margin-left:4px'>PAUSED</span>":""}
+      <div class="tlm">${label}${r.order_no?" &middot; "+r.order_no:""}${live?" <span style='background:#16a34a;color:#fff;padding:1px 7px;border-radius:999px;font-size:9px;font-weight:800;margin-left:4px'>LIVE</span>":r.pause_reason?" <span style='background:#d97706;color:#fff;padding:1px 7px;border-radius:999px;font-size:9px;font-weight:800;margin-left:4px'>PAUSED</span>":""}
       </div>
-      <div class="tls">${fT(r.started_at)} &rarr; ${fT(r.ended_at)} &middot; ${live?"ongoing":r.pause_reason?"paused at "+fT(r.ended_at):m+"min"}</div>
+      <div class="tls">${fT(r.started_at)} &rarr; ${fT(r.ended_at)} &middot; ${live?"ongoing":r.pause_reason?"paused at "+fT(r.ended_at):m+"min"}${isW9?" <span style='color:var(--dim);font-size:9px'>(auto)</span>":""}</div>
     </div>`
   }).join(""):`<div style="color:var(--dim);font-size:13px;text-align:center;padding:20px">No sessions yet.</div>`
 }
