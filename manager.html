@@ -117,7 +117,7 @@ tbody tr:hover{background:#f8fafc}
 .req-name{font-size:13px;font-weight:700}
 .req-meta{font-size:11px;color:var(--mu);margin-top:3px}
 @media(max-width:1300px){.kpi-grid{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.g2,.g3{grid-template-columns:1fr}.sidebar{display:none}.content{margin-left:0}}
+@media(max-width:768px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.g2,.g3{grid-template-columns:1fr}.sidebar{display:none}.content{margin-left:0}}
 @media(max-width:640px){.kpi-grid{grid-template-columns:1fr 1fr}.g2e{grid-template-columns:1fr}}
 </style>
 </head>
@@ -224,7 +224,7 @@ tbody tr:hover{background:#f8fafc}
             <div class="section-sub">Daily productive vs non-productive hours</div>
           </div>
         </div>
-        <canvas id="chartTrend" height="220"></canvas>
+        <div style="position:relative;height:220px"><canvas id="chartTrend"></canvas></div>
       </div>
       <div class="card">
         <div class="section-hdr">
@@ -233,7 +233,7 @@ tbody tr:hover{background:#f8fafc}
             <div class="section-sub">Distribution breakdown</div>
           </div>
         </div>
-        <canvas id="chartType" height="220"></canvas>
+        <div style="position:relative;height:220px"><canvas id="chartType"></canvas></div>
       </div>
     </div>
 
@@ -246,7 +246,7 @@ tbody tr:hover{background:#f8fafc}
             <div class="section-sub">Productive vs non-productive per person</div>
           </div>
         </div>
-        <canvas id="chartEmp" height="220"></canvas>
+        <div style="position:relative;height:220px"><canvas id="chartEmp"></canvas></div>
       </div>
       <div class="card">
         <div class="section-hdr">
@@ -255,7 +255,7 @@ tbody tr:hover{background:#f8fafc}
             <div class="section-sub">Aligners produced &amp; cases completed</div>
           </div>
         </div>
-        <canvas id="chartProd" height="220"></canvas>
+        <div style="position:relative;height:220px"><canvas id="chartProd"></canvas></div>
       </div>
     </div>
 
@@ -431,7 +431,7 @@ async function load(){
   ]},options:lineOpts()})
 
   // Chart: Doughnut
-  mkC('type','chartType',{type:'doughnut',data:{labels:['Productive','Non-Productive','Overtime'],datasets:[{data:[pMin||0.1,wMin||0,oMin||0],backgroundColor:['rgba(22,163,74,.85)','rgba(217,119,6,.85)','rgba(124,58,237,.85)'],borderColor:['#16a34a','#d97706','#7c3aed'],borderWidth:2,hoverOffset:8}]},options:dnutOpts()})
+  mkC('type','chartType',{type:'doughnut',data:{labels:['Productive','Non-Productive','Overtime'],datasets:[{data:[pMin||0,wMin||0,oMin||0],backgroundColor:['rgba(22,163,74,.85)','rgba(217,119,6,.85)','rgba(124,58,237,.85)'],borderColor:['#16a34a','#d97706','#7c3aed'],borderWidth:2,hoverOffset:8}]},options:dnutOpts()})
 
   // Chart: Emp efficiency
   const empArr=[...byEmp.values()].sort((a,b)=>b.p-a.p).slice(0,8)
