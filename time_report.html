@@ -55,7 +55,7 @@
     .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
     input.search{padding:8px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:var(--f);font-size:13px;outline:none;width:200px}
     input.search:focus{border-color:var(--blue)}
-    @media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(3,1fr)}.chart-row{grid-template-columns:1fr}.sidebar{display:none}.content{margin-left:0}}
+    @media(max-width:768px){.kpi-grid{grid-template-columns:repeat(3,1fr)}.chart-row{grid-template-columns:1fr}.sidebar{display:none}.content{margin-left:0}}
   </style>
 </head>
 <body>
@@ -104,12 +104,12 @@
       <div class="card">
         <div class="sec-title">Employee Productivity</div>
         <div class="sec-sub">Productive vs Non-productive time in minutes</div>
-        <canvas id="empChart" height="240"></canvas>
+        <div style="position:relative;height:240px"><canvas id="empChart"></canvas></div></canvas>
       </div>
       <div class="card">
         <div class="sec-title">Session Type Breakdown</div>
         <div class="sec-sub">Distribution of all sessions</div>
-        <canvas id="typeChart" height="240"></canvas>
+        <div style="position:relative;height:240px"><canvas id="typeChart"></canvas></div></canvas>
       </div>
     </div>
 
