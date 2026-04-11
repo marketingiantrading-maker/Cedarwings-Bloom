@@ -447,7 +447,10 @@ async function load(){
   ]},options:barOpts()})
 
   // Active sessions
-  document.getElementById('activeCount').textContent=`${active.length} active`
+  // Check for sessions over 1 hour
+  const overHour=active.filter(r=>mins(new Date(r.started_at),new Date())>=60)
+  document.getElementById('activeCount').textContent=`${active.length} active${overHour.length>0?' · ⚠ '+overHour.length+' over 1h':''}`
+  if(overHour.length>0)document.getElementById('activeCount').style.background='#fee2e2';else document.getElementById('activeCount').style.background=''
   document.getElementById('activeList').innerHTML=active.length
     ?active.map(r=>`<div class="ac">
         <div class="ac-av" style="background:${avCol(r.employee_name||'?')}">${init(r.employee_name||'?')}</div>
