@@ -128,7 +128,7 @@ window.doLogin=async()=>{
   btn.disabled=true;btn.textContent="Signing in..."
   try{
     const{data,error}=await sb.from("employees")
-      .select("id,name,role,is_active,workflow_step")
+      .select("id,name,role,is_active")
       .eq("username",username)
       .eq("password",password)
       .limit(1)
