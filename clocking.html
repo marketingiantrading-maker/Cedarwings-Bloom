@@ -227,9 +227,9 @@ const fT=v=>v?new Date(v).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"
 const gB=()=>"B-"+new Date().toISOString().replace(/[-:TZ.]/g,"").slice(2,14)
 let cfg=null,emp=""
 async function initEmp(){
-  const stored=localStorage.getItem(EK)
-  if(stored){emp=stored;document.getElementById("empNm").textContent=stored;return}
-  // Show employee picker overlay
+  // Always show picker on page load for security
+  // Clear old prompt-based name so picker always appears
+  localStorage.removeItem(EK)
   await showEmpPicker()
 }
 window.changeEmp=async()=>{localStorage.removeItem(EK);emp="";await showEmpPicker()}
@@ -266,7 +266,7 @@ async function showEmpPicker(){
 }
 
 window.pickEmp=name=>{
-  localStorage.setItem(EK,name);emp=name
+  localStorage.setItem(EK,name);localStorage.setItem(EK+'_last',name);emp=name
   document.getElementById("empNm").textContent=name
   document.getElementById("empOverlay").style.display="none"
   loadToday()
@@ -374,6 +374,22 @@ async function clockIn(){
     const r=await renderPipe(ord);if(r)lockSteps(r.next,r.done)
   }catch(err){setSt("Error",err.message,"err")}
 }
+window.endFromBanner=async()=>{
+  await endSession()
+  document.getElementById("alertBanner").style.display="none"
+  // Scroll to step buttons after ending
+  document.querySelector(".sg")?.scrollIntoView({behavior:"smooth",block:"center"})
+}
+
+window.clockNewTaskFromBanner=()=>{
+  // End session then scroll to steps
+  endFromBanner().then(()=>{
+    setTimeout(()=>{
+      document.querySelector(".sg")?.scrollIntoView({behavior:"smooth",block:"center"})
+    },300)
+  })
+}
+
 async function endSession(){
   const s=gS();if(!s){setSt("No active session","","err");return}
   try{
@@ -408,8 +424,11 @@ function tick(){
     const mins=Math.floor(elapsed/60000)
     if(mins>=60){
       banner.style.display="flex"
-      document.getElementById("alertMsg").textContent=`&#9888; Session running for ${Math.floor(mins/60)}h ${mins%60}m!`
-      document.getElementById("alertDetail").textContent=`${s.order_no||"—"} · ${s.work_type||s.waste_category||"—"} · Consider ending and restarting to keep records accurate.`
+      document.getElementById("alertMsg").textContent=`⚠ Session running ${Math.floor(mins/60)}h ${mins%60}m — Order: ${s.order_no||"—"} · ${s.work_type||s.waste_category||"—"}`
+      document.getElementById("alertDetail").textContent=`Clocked in at ${new Date(s.started_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}. End it and start a new task, or correct the timing.`
+      // Update the correct timing link with employee name
+      const ctl=document.getElementById("correctTimingLink")
+      if(ctl)ctl.href="employee_profile.html?emp="+encodeURIComponent(emp)+"&tab=admin"
     }else{
       banner.style.display="none"
     }
@@ -457,25 +476,31 @@ loadEmployeeStep()
   <div style="background:#fff;border-radius:20px;padding:32px;max-width:600px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,.3)">
     <div style="text-align:center;margin-bottom:24px">
       <div style="font-size:30px;margin-bottom:8px">&#128119;</div>
-      <div style="font-size:20px;font-weight:800;color:#0f172a">Who are you?</div>
-      <div style="font-size:13px;color:#64748b;margin-top:4px">Tap your name to start clocking</div>
+      <div style="font-size:20px;font-weight:800;color:#0f172a">Who is clocking in?</div>
+      <div style="font-size:13px;color:#64748b;margin-top:4px">Tap your name to start — only registered employees can clock in</div>
     </div>
     <div id="empPickerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px"></div>
   </div>
 </div>
 <!-- 1-HOUR ALERT BANNER -->
-<div id="alertBanner" style="display:none;position:fixed;top:58px;left:0;right:0;z-index:200;background:linear-gradient(90deg,#dc2626,#b91c1c);color:#fff;padding:10px 24px;display:none;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(220,38,38,.4)">
-  <div style="display:flex;align-items:center;gap:10px">
-    <span style="font-size:20px;animation:pu 1s infinite">&#9888;</span>
+<div id="alertBanner" style="display:none;position:fixed;top:58px;left:0;right:0;z-index:200;background:linear-gradient(90deg,#dc2626,#b91c1c);color:#fff;padding:12px 24px;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(220,38,38,.4);gap:12px;flex-wrap:wrap">
+  <div style="display:flex;align-items:center;gap:10px;flex:1">
+    <span style="font-size:22px">&#9888;</span>
     <div>
       <div style="font-size:13px;font-weight:800" id="alertMsg">Session running over 1 hour!</div>
-      <div style="font-size:11px;opacity:.85" id="alertDetail">Consider closing this session and opening a new one to keep records accurate.</div>
+      <div style="font-size:11px;opacity:.85" id="alertDetail">Consider ending and starting a new task.</div>
     </div>
   </div>
-  <button onclick="document.getElementById('alertBanner').style.display='none'" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:6px 12px;border-radius:7px;cursor:pointer;font-weight:700;font-size:12px">Dismiss</button>
+  <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap">
+    <button onclick="endFromBanner()" style="background:#fff;border:none;color:#dc2626;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:800;font-size:12px">&#9632; End Session Now</button>
+    <button onclick="clockNewTaskFromBanner()" style="background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.5);color:#fff;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:800;font-size:12px">&#8595; Clock Different Task</button>
+    <a id="correctTimingLink" href="employee_profile.html" style="background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.5);color:#fff;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:800;font-size:12px;text-decoration:none;display:flex;align-items:center">&#128295; Correct Timing</a>
+    <button onclick="document.getElementById('alertBanner').style.display='none'" style="background:rgba(0,0,0,.2);border:none;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12px">&#10005;</button>
+  </div>
 </div>
 <style>
 .ep-card{background:#f8fafc;border:2px solid #e2e8f0;border-radius:14px;padding:18px;text-align:center;cursor:pointer;transition:all .15s}
+.ep-card.ep-last{border-color:#16a34a;background:#f0fdf4}
 .ep-card:hover{border-color:#3b5fe2;background:#eef2ff;transform:translateY(-2px);box-shadow:0 6px 20px rgba(59,95,226,.2)}
 .ep-av{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;margin:0 auto 10px}
 .ep-name{font-size:14px;font-weight:800;color:#0f172a}
