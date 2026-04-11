@@ -141,6 +141,7 @@
               <label>Cases Completed *</label>
               <input id="prdCases" type="number" min="0" step="1" placeholder="0" oninput="previewConsumption()"/>
             </div>
+            <div><label>Machine Used</label><select id="prdMachine"><option value="">— Select machine (optional) —</option></select></div>
             <div><label>Employee</label><input id="prdEmployee" placeholder="Who completed this?"/></div>
             <div class="full"><label>Notes</label><textarea id="prdNotes" placeholder="Optional notes…"></textarea></div>
           </div>
@@ -306,7 +307,10 @@ async function submitProduction(deductInventory){
   if(!batchId)batchId=`B-${new Date().toISOString().replace(/[-:TZ.]/g,'').slice(2,14)}`
   try{
     // 1. Insert production record
-    const{data:rec,error:rErr}=await sb.from('production_records').insert([{order_no:orderNo,batch_id:batchId,aligners_count:aligners,cases_count:cases,employee_name:emp||null,notes:notes||null,inventory_deducted:deductInventory}]).select().single()
+    const machSel=document.getElementById('prdMachine')
+    const machId=machSel.value||null
+    const machName=machSel.value?machSel.options[machSel.selectedIndex].dataset.name:null
+    const{data:rec,error:rErr}=await sb.from('production_records').insert([{order_no:orderNo,batch_id:batchId,aligners_count:aligners,cases_count:cases,employee_name:emp||null,notes:notes||null,inventory_deducted:deductInventory,machine_id:machId||null,machine_name:machName||null}]).select().single()
     if(rErr)throw rErr
     let inventoryLog=[]
     let reqTriggered=false
@@ -335,7 +339,19 @@ async function submitProduction(deductInventory){
         inventoryLog.push(`✅ Deducted ${deduct.toFixed(4)} ${p.unit||''} of ${p.inventory_item_name} from lot ${lot.lot_no||'—'}`)
       }
       // 3. Check minimums and generate requisitions
-      const{data:reqCount}=await sb.rpc('generate_auto_requisitions').select()
+      // Update machine consumable load counters
+    if(machId&&aligners>0){
+      await sb.from('machine_consumable_loads')
+        .update({
+          aligners_produced_since_install:sb.rpc?undefined:undefined
+        })
+        .eq('machine_id',machId).eq('is_active',true)
+      // Use a manual increment
+      const{data:loads}=await sb.from('machine_consumable_loads').select('id,aligners_produced_since_install,cases_completed_since_install').eq('machine_id',machId).eq('is_active',true)
+      if(loads&&loads.length){for(const l of loads){await sb.from('machine_consumable_loads').update({aligners_produced_since_install:(l.aligners_produced_since_install||0)+aligners,cases_completed_since_install:(l.cases_completed_since_install||0)+cases}).eq('id',l.id)}}
+      inventoryLog.push(`📊 Machine counters updated for ${machName||machId}`)
+    }
+    const{data:reqCount}=await sb.rpc('generate_auto_requisitions').select()
       const count=typeof reqCount==='number'?reqCount:0
       if(count>0){reqTriggered=true;inventoryLog.push(`📋 ${count} automatic requisition(s) generated`)}
       // Update record to mark deducted
@@ -384,11 +400,21 @@ async function loadHistory(){
 document.getElementById('submitBtn').addEventListener('click',()=>submitProduction(true))
 document.getElementById('submitNoDeductBtn').addEventListener('click',()=>submitProduction(false))
 document.getElementById('saveParamsBtn').addEventListener('click',saveParams)
-document.getElementById('refreshBtn').addEventListener('click',()=>{loadParams();loadHistory()})
+document.getElementById('refreshBtn').addEventListener('click',()=>{loadParams();loadHistory()
+// Load machines for dropdown
+sb.from('machines').select('id,machine_name').order('machine_name').then(({data})=>{
+  if(!data)return;const sel=document.getElementById('prdMachine');
+  data.forEach(m=>{const o=document.createElement('option');o.value=m.id;o.dataset.name=m.machine_name;o.textContent=m.machine_name;sel.appendChild(o)})
+})})
 
 window.previewConsumption=previewConsumption
 
 loadParams();loadHistory()
+// Load machines for dropdown
+sb.from('machines').select('id,machine_name').order('machine_name').then(({data})=>{
+  if(!data)return;const sel=document.getElementById('prdMachine');
+  data.forEach(m=>{const o=document.createElement('option');o.value=m.id;o.dataset.name=m.machine_name;o.textContent=m.machine_name;sel.appendChild(o)})
+})
 </script>
 </body>
 </html>
