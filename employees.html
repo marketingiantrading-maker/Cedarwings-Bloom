@@ -1,375 +1,652 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cedarwings SAS — Employees</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-  <style>
-    :root{--bg:#f0f4f8;--card:#fff;--border:#e2e8f0;--text:#0f172a;--muted:#64748b;--dim:#94a3b8;--blue:#3b5fe2;--blue-50:#eef2ff;--blue-100:#e0e7ff;--green:#16a34a;--green-50:#f0fdf4;--green-100:#dcfce7;--amber:#d97706;--amber-50:#fffbeb;--amber-100:#fef3c7;--red:#dc2626;--red-50:#fef2f2;--red-100:#fee2e2;--purple:#7c3aed;--purple-50:#f5f3ff;--f:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;--shadow:0 1px 3px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.04);--shadow-md:0 4px 16px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.04)}
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:var(--f);background:var(--bg);color:var(--text);min-height:100vh}
-    .sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;overflow-y:auto}
-    .sb-brand{display:flex;align-items:center;gap:12px;padding:20px 18px 16px;border-bottom:1px solid var(--border)}
-    .sb-logo{width:38px;height:38px;background:linear-gradient(135deg,var(--blue),#6366f1);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-    .sb-name{font-weight:700;font-size:14px}
-    .role-badge{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;margin-top:3px;background:var(--blue-50);color:var(--blue)}
-    .sb-nav{flex:1;padding:10px}.sb-sec{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;padding:14px 8px 6px}
-    .sb-link{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;transition:all .15s}
-    .sb-link:hover{background:var(--bg);color:var(--text)}.sb-link.active{background:var(--blue-50);color:var(--blue);font-weight:600}
-    .sb-link .icon{font-size:16px;width:20px;text-align:center}
-    .sb-footer{padding:12px 10px;border-top:1px solid var(--border)}
-    .content{margin-left:240px;min-height:100vh}
-    .topbar{background:var(--card);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
-    .topbar-title{font-size:20px;font-weight:700;letter-spacing:-.3px}
-    .page-body{padding:24px 28px 48px}
-    .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;font-size:13px;font-weight:600;border:none;border-radius:9px;cursor:pointer;font-family:var(--f);transition:all .15s;text-decoration:none}
-    .btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:#2e4fc7}
-    .btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#15803d}
-    .btn-ghost{background:var(--card);border:1px solid var(--border);color:var(--muted)}.btn-ghost:hover{color:var(--text)}
-    .btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#b91c1c}
-    .btn-amber{background:var(--amber);color:#fff}
-    .btn-sm{padding:6px 12px;font-size:12px}
-    label{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
-    input,select{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:var(--f);font-size:14px;color:var(--text);background:#fff;outline:none;transition:border-color .15s}
-    input:focus,select:focus{border-color:var(--blue)}
-    input::placeholder{color:var(--dim)}
-    .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:24px}
-    .form-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;align-items:end}
-    .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
-    .kpi{background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:18px}
-    .kpi-icon{font-size:22px;margin-bottom:8px}
-    .kpi-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
-    .kpi-value{font-size:28px;font-weight:700;font-family:var(--mono);letter-spacing:-1px}
-    /* EMP TABLE */
-    .table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border);margin-top:20px}
-    table{width:100%;border-collapse:collapse}
-    thead th{padding:11px 16px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;background:#f8fafc;border-bottom:1px solid var(--border);white-space:nowrap;text-align:left}
-    tbody td{padding:14px 16px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle}
-    tbody tr:last-child td{border-bottom:none}
-    tbody tr:hover{background:#f8fafc}
-    /* EMP CARD ROW */
-    .emp-avatar{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;flex-shrink:0;color:#fff}
-    .emp-info{display:flex;align-items:center;gap:12px}
-    .emp-name{font-size:14px;font-weight:700}
-    .emp-sub{font-size:11px;color:var(--muted);margin-top:2px}
-    /* BADGE */
-    .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:700}
-    .b-green{background:var(--green-100);color:#15803d}
-    .b-blue{background:var(--blue-100);color:#1e40af}
-    .b-red{background:var(--red-100);color:#991b1b}
-    .b-amber{background:var(--amber-100);color:#92400e}
-    .b-gray{background:#f1f5f9;color:var(--muted)}
-    .b-purple{background:var(--purple-50);color:#5b21b6}
-    /* INLINE SELECT */
-    .role-sel{width:auto;padding:5px 10px;font-size:12px;border-radius:8px;border:1.5px solid var(--border);font-family:var(--f);cursor:pointer;background:#fff}
-    .pin-field{width:100px;font-family:var(--mono);font-size:13px;letter-spacing:4px;text-align:center}
-    /* MODAL */
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:none;align-items:center;justify-content:center}
-    .modal-overlay.open{display:flex}
-    .modal{background:var(--card);border-radius:20px;padding:28px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
-    .modal-title{font-size:18px;font-weight:700;margin-bottom:6px}
-    .modal-sub{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6}
-    .modal-form{display:grid;gap:14px}
-    .modal-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
-    /* SEARCH */
-    .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
-    .search-input{padding:9px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:var(--f);font-size:13px;outline:none;width:220px;transition:border-color .15s}
-    .search-input:focus{border-color:var(--blue)}
-    .filter-sel{padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:var(--f);font-size:13px;outline:none;cursor:pointer;width:auto}
-    .empty{text-align:center;color:var(--dim);padding:32px!important}
-    /* BLOCKED ROW */
-    tbody tr.blocked-row td{opacity:.5}
-    /* ACTIVITY */
-    .act-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px}
-    .act-dot.active{background:#16a34a;box-shadow:0 0 0 2px #bbf7d0}
-    .act-dot.idle{background:var(--dim)}
-    @media(max-width:960px){.form-grid{grid-template-columns:1fr}.kpi-row{grid-template-columns:1fr 1fr}.sidebar{display:none}.content{margin-left:0}}
-  </style>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Cedarwings — Employee Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#f0f4f8;--card:#fff;--bdr:#e2e8f0;--txt:#0f172a;--mu:#64748b;--dim:#94a3b8;--blue:#3b5fe2;--b50:#eef2ff;--b100:#e0e7ff;--green:#16a34a;--g50:#f0fdf4;--g100:#dcfce7;--amber:#d97706;--a50:#fffbeb;--a100:#fef3c7;--red:#dc2626;--r50:#fef2f2;--r100:#fee2e2;--purple:#7c3aed;--p50:#f5f3ff;--p100:#ede9fe;--f:"DM Sans",sans-serif;--mono:"JetBrains Mono",monospace;--sh:0 1px 3px rgba(0,0,0,.07),0 0 0 1px rgba(0,0,0,.04);--sh2:0 6px 24px rgba(0,0,0,.09),0 0 0 1px rgba(0,0,0,.04)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh}
+/* SIDEBAR */
+.sb{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--card);border-right:1px solid var(--bdr);display:flex;flex-direction:column;z-index:100;overflow-y:auto}
+.sb-top{display:flex;align-items:center;gap:12px;padding:20px 18px 16px;border-bottom:1px solid var(--bdr)}
+.logo{width:38px;height:38px;background:linear-gradient(135deg,#3b5fe2,#6366f1);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.sb-nm{font-weight:800;font-size:14px}.sb-role{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;margin-top:3px;background:var(--b50);color:var(--blue)}
+.sb-nav{flex:1;padding:10px}.sb-s{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;padding:14px 8px 6px}
+.nl{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13px;font-weight:500;color:var(--mu);text-decoration:none;transition:all .12s}
+.nl:hover{background:var(--bg);color:var(--txt)}.nl.on{background:var(--b50);color:var(--blue);font-weight:700}
+.nl .ic{font-size:15px;width:18px;text-align:center}
+.sb-foot{padding:12px 10px;border-top:1px solid var(--bdr)}
+/* MAIN */
+.content{margin-left:240px;min-height:100vh}
+.topbar{background:var(--card);border-bottom:1px solid var(--bdr);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:50}
+.tb-title{font-size:20px;font-weight:800;letter-spacing:-.4px}
+.tb-sub{font-size:12px;color:var(--mu);margin-top:2px}
+.tb-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;font-size:13px;font-weight:600;border:none;border-radius:9px;cursor:pointer;font-family:var(--f);transition:all .12s}
+.bb{background:var(--blue);color:#fff}.bb:hover{background:#2e4fc7}
+.bg{background:var(--green);color:#fff}.bg:hover{background:#15803d}
+.bgh{background:var(--card);border:1px solid var(--bdr);color:var(--mu)}.bgh:hover{color:var(--txt)}
+.br{background:var(--red);color:#fff}
+.body{padding:22px 28px 60px}
+/* EMP SELECTOR */
+.emp-select{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:14px;box-shadow:var(--sh);padding:16px 22px;margin-bottom:20px}
+.emp-select lbl{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;margin-bottom:0}
+.fi{padding:10px 14px;border:1.5px solid var(--bdr);border-radius:10px;font-family:var(--f);font-size:14px;color:var(--txt);background:#fff;outline:none;transition:border-color .15s;min-width:200px}
+.fi:focus{border-color:var(--blue)}
+/* PROFILE HEADER */
+.profile-header{background:linear-gradient(135deg,#3b5fe2,#6366f1);border-radius:16px;padding:24px 28px;margin-bottom:20px;color:#fff;display:flex;align-items:center;gap:20px}
+.emp-av{width:64px;height:64px;border-radius:18px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;flex-shrink:0;border:2.5px solid rgba(255,255,255,.3)}
+.emp-nm{font-size:22px;font-weight:800;letter-spacing:-.3px}
+.emp-role{font-size:13px;opacity:.8;margin-top:4px}
+.emp-since{font-size:11px;opacity:.7;margin-top:3px;font-family:var(--mono)}
+.emp-stats{display:flex;gap:24px;margin-left:auto;flex-wrap:wrap}
+.esk{text-align:center}
+.esv{font-size:26px;font-weight:800;font-family:var(--mono);letter-spacing:-1px}
+.esl{font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+/* DATE RANGE */
+.date-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.dr-tab{padding:6px 16px;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid var(--bdr);background:var(--card);color:var(--mu);cursor:pointer;font-family:var(--f)}
+.dr-tab.on{background:var(--b50);color:var(--blue);border-color:var(--b100)}
+/* KPI ROW */
+.krow{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px}
+.kpi{background:var(--card);border-radius:14px;box-shadow:var(--sh);padding:18px}
+.ki{font-size:22px;margin-bottom:6px}.kl{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.kv{font-size:22px;font-weight:800;font-family:var(--mono);letter-spacing:-1px}
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+/* CARDS */
+.card{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:22px;margin-bottom:18px}
+.card:last-child{margin-bottom:0}
+.ct{font-size:15px;font-weight:800;margin-bottom:4px}
+.cs{font-size:12px;color:var(--mu);margin-bottom:14px}
+/* CALENDAR */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-hdr{font-size:9px;font-weight:700;color:var(--dim);text-align:center;padding:4px 0}
+.cal-day{border-radius:7px;padding:6px 3px;text-align:center;cursor:pointer;border:1.5px solid transparent;transition:all .12s;min-height:40px}
+.cal-day:hover{border-color:var(--blue)}
+.cal-num{font-size:12px;font-weight:600;line-height:1}
+.cal-sub{font-size:9px;margin-top:2px;line-height:1}
+.cd-working{background:var(--g50);border-color:var(--g100)}.cd-working .cal-num{color:#15803d}
+.cd-off{background:#f1f5f9;border-color:var(--bdr)}.cd-off .cal-num{color:var(--dim)}
+.cd-vacation{background:var(--b50);border-color:var(--b100)}.cd-vacation .cal-num{color:var(--blue)}
+.cd-sick{background:var(--r50);border-color:var(--r100)}.cd-sick .cal-num{color:var(--red)}
+.cd-holiday{background:var(--p50);border-color:var(--p100)}.cd-holiday .cal-num{color:var(--purple)}
+.cd-half{background:var(--a50);border-color:var(--a100)}.cd-half .cal-num{color:#92400e}
+.cd-empty{background:transparent;cursor:default}
+.cal-legend{display:flex;gap:14px;margin-top:12px;flex-wrap:wrap}
+.cl-item{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--mu)}
+.cl-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+/* EFFICIENCY BAR */
+.eff-bg{height:8px;background:var(--bg);border-radius:999px;overflow:hidden;border:1px solid var(--bdr);margin:6px 0 4px}
+.eff-f{height:100%;border-radius:999px}
+/* TABLE */
+.tw{overflow-x:auto;border-radius:12px;border:1px solid var(--bdr)}
+table{width:100%;border-collapse:collapse}
+thead th{padding:9px 13px;font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;background:#f8fafc;border-bottom:1px solid var(--bdr);white-space:nowrap;text-align:left}
+tbody td{padding:10px 13px;font-size:13px;border-bottom:1px solid var(--bdr)}
+tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc}
+.mono{font-family:var(--mono);font-size:12px}
+.bdg{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:700}
+.b-g{background:var(--g100);color:#15803d}.b-a{background:var(--a100);color:#92400e}.b-r{background:var(--r100);color:#991b1b}.b-b{background:var(--b100);color:#1e40af}.b-gray{background:#f1f5f9;color:var(--mu)}.b-p{background:var(--p100);color:#5b21b6}
+.ec{color:var(--dim)!important;text-align:center;padding:28px!important}
+/* MODAL */
+.mov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+.mov.on{display:flex}
+.mo{background:var(--card);border-radius:18px;padding:28px;width:100%;max-width:460px;box-shadow:0 20px 60px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto}
+.mot{font-size:17px;font-weight:800;margin-bottom:4px}
+.mos{font-size:13px;color:var(--mu);margin-bottom:18px;line-height:1.5}
+.mof{display:grid;gap:11px}
+lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.mfi{width:100%;padding:10px 12px;border:1.5px solid var(--bdr);border-radius:9px;font-family:var(--f);font-size:13px;color:var(--txt);background:#fff;outline:none;transition:border-color .15s}
+.mfi:focus{border-color:var(--blue)}
+.moa{display:flex;gap:10px;margin-top:18px;justify-content:flex-end}
+.mer{color:var(--red);font-size:12px;margin-top:6px;min-height:14px}
+.notif{position:fixed;bottom:24px;right:24px;padding:13px 18px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;display:none;align-items:center;gap:8px;box-shadow:var(--sh2)}
+.notif.on{display:flex}.notif.ok{background:#15803d;color:#fff}.notif.err{background:var(--red);color:#fff}
+.tab-row{display:flex;gap:3px;margin-bottom:18px;background:var(--bg);border:1px solid var(--bdr);border-radius:10px;padding:3px}
+.tab{padding:7px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:var(--mu);background:transparent;border:none;font-family:var(--f)}
+.tab.on{background:var(--card);color:var(--blue);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.day-type-btns{display:flex;gap:6px;flex-wrap:wrap}
+.dtb{padding:6px 12px;border-radius:8px;font-size:11px;font-weight:700;border:1.5px solid transparent;cursor:pointer;font-family:var(--f)}
+.dtb.sel{box-shadow:0 0 0 2px var(--blue)}
+@media(max-width:1000px){.krow{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1fr}.sb{display:none}.content{margin-left:0}}
+</style>
 </head>
 <body>
-
-<aside class="sidebar">
-  <div class="sb-brand"><div class="sb-logo">⚙</div><div><div class="sb-name">Cedarwings SAS</div><div class="role-badge">Manager</div></div></div>
+<aside class="sb">
+  <div class="sb-top"><div class="logo">&#9881;</div><div><div class="sb-nm">Cedarwings SAS</div><div class="sb-role">Manager</div></div></div>
   <nav class="sb-nav">
-    <div class="sb-sec">Operations</div>
-    <a href="manager.html" class="sb-link"><span class="icon">📊</span>Dashboard</a>
-    <a href="production.html" class="sb-link"><span class="icon">🏭</span>Production</a>
-    <a href="machines.html" class="sb-link"><span class="icon">⚙</span>Machines</a>
-    <div class="sb-sec">Team</div>
-    <a href="employees.html" class="sb-link active"><span class="icon">👥</span>Employees</a>
-    <a href="time_report.html" class="sb-link"><span class="icon">📈</span>Time Report</a>
-    <div class="sb-sec">Resources</div>
-    <a href="inventory.html" class="sb-link"><span class="icon">📦</span>Inventory</a>
-    <div class="sb-sec">Terminal</div>
-    <a href="clocking.html" class="sb-link"><span class="icon">⏱</span>Clocking Terminal</a>
+    <div class="sb-s">Operations</div>
+    <a href="manager.html" class="nl"><span class="ic">&#128202;</span>Dashboard</a>
+    <a href="production.html" class="nl"><span class="ic">&#127981;</span>Production</a>
+    <a href="machines.html" class="nl"><span class="ic">&#9881;</span>Machines</a>
+    <div class="sb-s">Team</div>
+    <a href="employees.html" class="nl"><span class="ic">&#128101;</span>Employees</a>
+    <a href="employee_profile.html" class="nl on"><span class="ic">&#128100;</span>Employee Profile</a>
+    <a href="time_report.html" class="nl"><span class="ic">&#128200;</span>Time Report</a>
+    <div class="sb-s">Resources</div>
+    <a href="inventory.html" class="nl"><span class="ic">&#128230;</span>Inventory</a>
+    <div class="sb-s">Terminal</div>
+    <a href="clocking.html" class="nl"><span class="ic">&#9201;</span>Clocking Terminal</a>
   </nav>
-  <div class="sb-footer"><a href="index.html" class="sb-link"><span class="icon">←</span>Switch Role</a></div>
+  <div class="sb-foot"><a href="index.html" class="nl"><span class="ic">&#8592;</span>Switch Role</a></div>
 </aside>
-
 <div class="content">
   <div class="topbar">
-    <div>
-      <div class="topbar-title">👥 Employee Management</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:3px">Add, edit, assign roles, set PINs, block/unblock employees</div>
-    </div>
-    <button class="btn btn-primary" id="addEmpBtn">+ Add Employee</button>
-  </div>
-
-  <div class="page-body">
-    <!-- KPIs -->
-    <div class="kpi-row">
-      <div class="kpi"><div class="kpi-icon">👥</div><div class="kpi-label">Total</div><div class="kpi-value" id="kpiTotal">—</div></div>
-      <div class="kpi"><div class="kpi-icon">🟢</div><div class="kpi-label">Active Now</div><div class="kpi-value" id="kpiActive" style="color:#16a34a">—</div></div>
-      <div class="kpi"><div class="kpi-icon">📊</div><div class="kpi-label">Managers</div><div class="kpi-value" id="kpiManagers" style="color:#3b5fe2">—</div></div>
-      <div class="kpi"><div class="kpi-icon">🚫</div><div class="kpi-label">Blocked</div><div class="kpi-value" id="kpiBlocked" style="color:#dc2626">—</div></div>
-    </div>
-
-    <!-- TABLE -->
-    <div class="card">
-      <div class="toolbar">
-        <input class="search-input" id="searchInput" placeholder="🔍  Search employees…"/>
-        <select class="filter-sel" id="roleFilter">
-          <option value="all">All Roles</option>
-          <option value="employee">Employee</option>
-          <option value="manager">Manager</option>
-        </select>
-        <select class="filter-sel" id="statusFilter">
-          <option value="all">All Status</option>
-          <option value="active">Active</option>
-          <option value="blocked">Blocked</option>
-        </select>
-        <button class="btn btn-ghost" id="refreshBtn" style="margin-left:auto">↻ Refresh</button>
-      </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Employee</th>
-              <th>Role</th>
-              <th>PIN</th>
-              <th>Status</th>
-              <th>Sessions (All Time)</th>
-              <th>Last Active</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="empTable"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody>
-        </table>
-      </div>
+    <div><div class="tb-title">&#128100; Employee Profile</div><div class="tb-sub">Work history, productivity, schedule management</div></div>
+    <div class="tb-right">
+      <button class="btn bgh" id="btnExport">&#8595; Export CSV</button>
+      <a href="employees.html" class="btn bgh">&#8592; All Employees</a>
     </div>
   </div>
-</div>
-
-<!-- ADD / EDIT MODAL -->
-<div class="modal-overlay" id="modal">
-  <div class="modal">
-    <div class="modal-title" id="modalTitle">Add Employee</div>
-    <div class="modal-sub" id="modalSub">Fill in the details below. PIN is used for manager login.</div>
-    <div class="modal-form">
-      <input type="hidden" id="editId"/>
-      <div>
-        <label>Full Name *</label>
-        <input id="formName" placeholder="e.g. Youssef Benali" autocomplete="off"/>
+  <div class="body">
+    <!-- EMPLOYEE SELECTOR -->
+    <div class="emp-select">
+      <lbl>Employee</lbl>
+      <select class="fi" id="empSel" style="max-width:280px"><option value="">Select employee&hellip;</option></select>
+      <div style="display:flex;gap:6px;margin-left:4px">
+        <button class="btn bgh" id="btnPrev">&#8592;</button>
+        <button class="btn bgh" id="btnNext">&#8594;</button>
       </div>
-      <div>
-        <label>Role</label>
-        <select id="formRole">
-          <option value="employee">Employee</option>
-          <option value="manager">Manager</option>
-        </select>
-      </div>
-      <div>
-        <label>PIN <span style="font-weight:400;text-transform:none;letter-spacing:0">(managers only — used to log in)</span></label>
-        <input id="formPin" placeholder="e.g. 1234" maxlength="6" style="letter-spacing:6px;font-family:var(--mono);font-size:16px" autocomplete="off"/>
-      </div>
+      <div style="flex:1"></div>
+      <div style="font-size:12px;color:var(--mu)" id="lastSeen"></div>
     </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" id="cancelBtn">Cancel</button>
-      <button class="btn btn-primary" id="saveBtn">Save Employee</button>
-    </div>
-    <div id="modalError" style="color:var(--red);font-size:12px;margin-top:8px;text-align:center;min-height:16px"></div>
-  </div>
-</div>
-
-<script type="module">
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { SUPABASE_CONFIG } from './config.js'
-const sb = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey)
-
-const COLORS = ['#3b5fe2','#16a34a','#d97706','#dc2626','#7c3aed','#0d9488','#db2777','#ea580c']
-const colorFor = name => COLORS[name.charCodeAt(0) % COLORS.length]
-const initials = name => name.trim().split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)
-const fdt = v => v ? new Date(v).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—'
-
-let allEmps = [], activeSessions = []
-
-async function load() {
-  const [empRes, sessRes] = await Promise.all([
-    sb.from('employees').select('*').order('name'),
-    sb.from('time_sessions').select('employee_name,started_at,ended_at').is('ended_at', null)
-  ])
-  allEmps = empRes.data || []
-  activeSessions = (sessRes.data || []).map(s => s.employee_name)
-
-  const blocked = allEmps.filter(e => !e.is_active).length
-  const managers = allEmps.filter(e => e.role === 'manager').length
-  document.getElementById('kpiTotal').textContent = allEmps.length
-  document.getElementById('kpiActive').textContent = activeSessions.length
-  document.getElementById('kpiManagers').textContent = managers
-  document.getElementById('kpiBlocked').textContent = blocked
-
-  renderTable()
-}
-
-function renderTable() {
-  const term = document.getElementById('searchInput').value.toLowerCase()
-  const roleF = document.getElementById('roleFilter').value
-  const statusF = document.getElementById('statusFilter').value
-
-  const filtered = allEmps.filter(e => {
-    const matchTerm = !term || e.name.toLowerCase().includes(term)
-    const matchRole = roleF === 'all' || e.role === roleF
-    const matchStatus = statusF === 'all' || (statusF === 'blocked' ? !e.is_active : e.is_active)
-    return matchTerm && matchRole && matchStatus
-  })
-
-  document.getElementById('empTable').innerHTML = filtered.length ? filtered.map(e => {
-    const isActive = activeSessions.includes(e.name)
-    const blocked = !e.is_active
-    return `<tr class="${blocked ? 'blocked-row' : ''}">
-      <td>
-        <div class="emp-info">
-          <div class="emp-avatar" style="background:${colorFor(e.name)}">${initials(e.name)}</div>
-          <div>
-            <div class="emp-name">${e.name}</div>
-            <div class="emp-sub">${isActive ? '<span style="color:#16a34a;font-weight:700">● Active now</span>' : 'Not clocked in'}</div>
+    <div id="profileArea" style="display:none">
+      <!-- PROFILE HEADER -->
+      <div class="profile-header" id="profileHeader">
+        <div class="emp-av" id="phAv">?</div>
+        <div>
+          <div class="emp-nm" id="phName">—</div>
+          <div class="emp-role" id="phRole">—</div>
+          <div class="emp-since" id="phSince">—</div>
+        </div>
+        <div class="emp-stats">
+          <div class="esk"><div class="esv" id="phDays">0</div><div class="esl">Days Worked</div></div>
+          <div class="esk"><div class="esv" id="phTotalH">0h</div><div class="esl">Total Hours</div></div>
+          <div class="esk"><div class="esv" id="phEff">0%</div><div class="esl">Avg Efficiency</div></div>
+          <div class="esk"><div class="esv" id="phSess">0</div><div class="esl">Total Sessions</div></div>
+        </div>
+      </div>
+      <!-- DATE RANGE -->
+      <div class="date-bar">
+        <button class="dr-tab on" data-r="week">This Week</button>
+        <button class="dr-tab" data-r="month">This Month</button>
+        <button class="dr-tab" data-r="3month">3 Months</button>
+        <button class="dr-tab" data-r="all">All Time</button>
+        <input type="date" class="fi" id="drFrom" style="width:140px;font-size:12px;padding:6px 10px"/>
+        <span style="font-size:12px;color:var(--mu)">to</span>
+        <input type="date" class="fi" id="drTo" style="width:140px;font-size:12px;padding:6px 10px"/>
+      </div>
+      <!-- KPIs -->
+      <div class="krow">
+        <div class="kpi"><div class="ki">&#9203;</div><div class="kl">Productive</div><div class="kv" style="color:#16a34a" id="kProd">—</div></div>
+        <div class="kpi"><div class="ki">&#9888;</div><div class="kl">Non-Productive</div><div class="kv" style="color:#d97706" id="kWaste">—</div></div>
+        <div class="kpi"><div class="ki">&#127919;</div><div class="kl">Efficiency</div><div class="kv" id="kEff">—</div></div>
+        <div class="kpi"><div class="ki">&#127981;</div><div class="kl">Sessions</div><div class="kv" id="kSess">—</div></div>
+        <div class="kpi"><div class="ki">&#128221;</div><div class="kl">Orders Worked</div><div class="kv" id="kOrders">—</div></div>
+      </div>
+      <!-- TABS -->
+      <div class="tab-row">
+        <button class="tab on" data-tab="history">&#128203; Work History</button>
+        <button class="tab" data-tab="steps">&#9881; By Step</button>
+        <button class="tab" data-tab="calendar">&#128197; Schedule</button>
+        <button class="tab" data-tab="admin">&#128295; Admin Edit</button>
+      </div>
+      <!-- HISTORY TAB -->
+      <div id="tab-history">
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+            <div><div class="ct">Work History</div><div class="cs" style="margin-bottom:0">All sessions in the selected period</div></div>
+            <div style="display:flex;gap:8px">
+              <input id="histSearch" class="fi" placeholder="&#128269; Search order, step&hellip;" style="font-size:12px;padding:7px 12px;width:180px"/>
+              <select id="histFilter" class="fi" style="font-size:12px;padding:7px 10px;width:140px">
+                <option value="all">All Types</option>
+                <option value="productive">Productive</option>
+                <option value="waste">Non-Productive</option>
+              </select>
+            </div>
+          </div>
+          <div class="tw">
+            <table>
+              <thead><tr><th>Date</th><th>Order</th><th>Step / Category</th><th>Machine</th><th>Start</th><th>End</th><th>Duration</th><th>Type</th></tr></thead>
+              <tbody id="histBody"><tr><td colspan="8" class="ec">Loading&hellip;</td></tr></tbody>
+            </table>
           </div>
         </div>
-      </td>
-      <td>
-        <select class="role-sel" onchange="updateRole('${e.id}', this.value)">
-          <option value="employee" ${e.role==='employee'?'selected':''}>Employee</option>
-          <option value="manager" ${e.role==='manager'?'selected':''}>Manager</option>
-        </select>
-      </td>
-      <td>
-        <span style="font-family:var(--mono);font-size:12px;color:var(--muted)">${e.pin ? '••••' : '—'}</span>
-      </td>
-      <td>
-        ${blocked
-          ? '<span class="badge b-red">🚫 Blocked</span>'
-          : isActive
-            ? '<span class="badge b-green">🟢 Active</span>'
-            : '<span class="badge b-gray">Idle</span>'
-        }
-      </td>
-      <td id="sess-${e.id}" class="mono" style="color:var(--muted)">—</td>
-      <td id="last-${e.id}" style="font-size:11px;color:var(--muted)">—</td>
-      <td>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="btn btn-ghost btn-sm" onclick="openEdit('${e.id}')">✏️ Edit</button>
-          ${blocked
-            ? `<button class="btn btn-green btn-sm" onclick="toggleBlock('${e.id}',true)">✅ Unblock</button>`
-            : `<button class="btn btn-amber btn-sm" onclick="toggleBlock('${e.id}',false)">🚫 Block</button>`
-          }
-          <button class="btn btn-red btn-sm" onclick="deleteEmp('${e.id}','${e.name}')">🗑</button>
+      </div>
+      <!-- BY STEP TAB -->
+      <div id="tab-steps" style="display:none">
+        <div class="g2">
+          <div class="card">
+            <div class="ct">Time by Step</div>
+            <div class="cs">Hours spent on each production step</div>
+            <div id="stepBreak"></div>
+          </div>
+          <div class="card">
+            <div class="ct">Daily Breakdown</div>
+            <div class="cs">Productive vs non-productive per day</div>
+            <div id="dayBreak"></div>
+          </div>
         </div>
-      </td>
-    </tr>`
-  }).join('') : `<tr><td colspan="7" class="empty">No employees found.</td></tr>`
-
-  // Load session stats async
-  filtered.forEach(async e => {
-    const {data} = await sb.from('time_sessions').select('id,started_at').eq('employee_name', e.name).order('started_at', {ascending:false}).limit(100)
-    const el = document.getElementById('sess-'+e.id)
-    const lastEl = document.getElementById('last-'+e.id)
-    if (el) el.textContent = data?.length || 0
-    if (lastEl && data?.length) lastEl.textContent = fdt(data[0].started_at)
-  })
+      </div>
+      <!-- CALENDAR TAB -->
+      <div id="tab-calendar" style="display:none">
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+            <div><div class="ct">Work Schedule</div><div class="cs" style="margin-bottom:0">Mark working and non-working days</div></div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="btn bgh" id="calPrev">&#8592;</button>
+              <div id="calMonthLabel" style="font-size:14px;font-weight:700;min-width:130px;text-align:center"></div>
+              <button class="btn bgh" id="calNext">&#8594;</button>
+              <button class="btn bg" id="btnFillMonth">Fill Month as Working</button>
+            </div>
+          </div>
+          <div class="cal-grid">
+            <div class="cal-hdr">Mon</div><div class="cal-hdr">Tue</div><div class="cal-hdr">Wed</div><div class="cal-hdr">Thu</div><div class="cal-hdr">Fri</div><div class="cal-hdr">Sat</div><div class="cal-hdr">Sun</div>
+            <div id="calBody"></div>
+          </div>
+          <div class="cal-legend">
+            <div class="cl-item"><div class="cl-dot" style="background:#dcfce7;border:1px solid #bbf7d0"></div>Working</div>
+            <div class="cl-item"><div class="cl-dot" style="background:#f1f5f9;border:1px solid #e2e8f0"></div>Day Off</div>
+            <div class="cl-item"><div class="cl-dot" style="background:#eef2ff;border:1px solid #c7d2fe"></div>Vacation</div>
+            <div class="cl-item"><div class="cl-dot" style="background:#fef2f2;border:1px solid #fecaca"></div>Sick Leave</div>
+            <div class="cl-item"><div class="cl-dot" style="background:#f5f3ff;border:1px solid #ddd6fe"></div>Holiday</div>
+            <div class="cl-item"><div class="cl-dot" style="background:#fffbeb;border:1px solid #fde68a"></div>Half Day</div>
+          </div>
+          <!-- Monthly summary -->
+          <div id="calSummary" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--bdr);display:flex;gap:16px;flex-wrap:wrap"></div>
+        </div>
+      </div>
+      <!-- ADMIN EDIT TAB -->
+      <div id="tab-admin" style="display:none">
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+            <div><div class="ct">&#128295; Admin: Correct Clocking</div><div class="cs" style="margin-bottom:0">Edit session times, delete sessions, correct errors</div></div>
+            <button class="btn bb" id="btnAddSession">+ Add Manual Session</button>
+          </div>
+          <div class="tw">
+            <table>
+              <thead><tr><th>Date</th><th>Order</th><th>Step</th><th>Start</th><th>End</th><th>Duration</th><th>Actions</th></tr></thead>
+              <tbody id="adminBody"><tr><td colspan="7" class="ec">Loading&hellip;</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="noProfile" style="text-align:center;padding:60px;color:var(--dim)">
+      <div style="font-size:48px;margin-bottom:12px">&#128100;</div>
+      <div style="font-size:16px;font-weight:700">Select an employee above to view their profile</div>
+    </div>
+  </div>
+</div>
+<!-- MODAL: EDIT SESSION -->
+<div class="mov" id="mEdit">
+  <div class="mo">
+    <div class="mot">Edit Session</div>
+    <div class="mos" id="mEditSub">Correct the clocking time for this session.</div>
+    <input type="hidden" id="editId"/>
+    <div class="mof">
+      <div><lbl>Order No.</lbl><input class="mfi" id="editOrd"/></div>
+      <div><lbl>Work Type / Step</lbl><select class="mfi" id="editStep">
+        <option value="Printing">Printing</option><option value="Cleaning">Cleaning</option>
+        <option value="Thermoforming">Thermoforming</option><option value="Line Cut">Line Cut</option>
+        <option value="Laser Marking">Laser Marking</option><option value="Packaging">Packaging</option>
+        <option value="Waste Time">Waste Time (Non-Productive)</option>
+      </select></div>
+      <div><lbl>Session Type</lbl><select class="mfi" id="editType">
+        <option value="productive">Productive</option><option value="waste">Non-Productive</option><option value="overtime">Overtime</option>
+      </select></div>
+      <div><lbl>Start Time *</lbl><input class="mfi" id="editStart" type="datetime-local"/></div>
+      <div><lbl>End Time *</lbl><input class="mfi" id="editEnd" type="datetime-local"/></div>
+      <div><lbl>Notes</lbl><textarea class="mfi" id="editNotes" style="min-height:55px;resize:vertical"></textarea></div>
+    </div>
+    <div class="moa">
+      <button class="btn bgh" id="cancelEdit">Cancel</button>
+      <button class="btn br" id="deleteSession" style="margin-right:auto">Delete</button>
+      <button class="btn bb" id="saveEdit">Save Changes</button>
+    </div>
+    <div class="mer" id="editErr"></div>
+  </div>
+</div>
+<!-- MODAL: ADD MANUAL SESSION -->
+<div class="mov" id="mAdd">
+  <div class="mo">
+    <div class="mot">Add Manual Session</div>
+    <div class="mos">Add a session that was not recorded automatically.</div>
+    <div class="mof">
+      <div><lbl>Order No.</lbl><input class="mfi" id="addOrd" placeholder="e.g. ORD-1052"/></div>
+      <div><lbl>Work Type</lbl><select class="mfi" id="addStep">
+        <option value="Printing">Printing</option><option value="Cleaning">Cleaning</option>
+        <option value="Thermoforming">Thermoforming</option><option value="Line Cut">Line Cut</option>
+        <option value="Laser Marking">Laser Marking</option><option value="Packaging">Packaging</option>
+        <option value="Waste Time">Waste Time</option>
+      </select></div>
+      <div><lbl>Session Type</lbl><select class="mfi" id="addType">
+        <option value="productive">Productive</option><option value="waste">Non-Productive</option>
+      </select></div>
+      <div><lbl>Start *</lbl><input class="mfi" id="addStart" type="datetime-local"/></div>
+      <div><lbl>End *</lbl><input class="mfi" id="addEnd" type="datetime-local"/></div>
+      <div><lbl>Notes</lbl><textarea class="mfi" id="addNotes" style="min-height:50px;resize:vertical"></textarea></div>
+    </div>
+    <div class="moa">
+      <button class="btn bgh" id="cancelAdd">Cancel</button>
+      <button class="btn bb" id="saveAdd">Add Session</button>
+    </div>
+    <div class="mer" id="addErr"></div>
+  </div>
+</div>
+<!-- MODAL: DAY TYPE -->
+<div class="mov" id="mDay">
+  <div class="mo" style="max-width:360px">
+    <div class="mot">Set Day Type</div>
+    <div class="mos" id="mDaySub">Mark this day for the employee.</div>
+    <input type="hidden" id="dayDate"/>
+    <div class="mof">
+      <div>
+        <lbl>Day Type</lbl>
+        <div class="day-type-btns" id="dayTypeBtns">
+          <button class="dtb" style="background:#f0fdf4;border-color:#bbf7d0;color:#15803d" data-t="working">Working</button>
+          <button class="dtb" style="background:#f1f5f9;border-color:#e2e8f0;color:#64748b" data-t="off">Day Off</button>
+          <button class="dtb" style="background:#eef2ff;border-color:#c7d2fe;color:#3730a3" data-t="vacation">Vacation</button>
+          <button class="dtb" style="background:#fef2f2;border-color:#fecaca;color:#991b1b" data-t="sick">Sick Leave</button>
+          <button class="dtb" style="background:#f5f3ff;border-color:#ddd6fe;color:#5b21b6" data-t="holiday">Holiday</button>
+          <button class="dtb" style="background:#fffbeb;border-color:#fde68a;color:#92400e" data-t="half">Half Day</button>
+        </div>
+      </div>
+      <div><lbl>Expected Hours</lbl><input class="mfi" id="dayHours" type="number" step=".5" min="0" max="24" value="8"/></div>
+      <div><lbl>Notes</lbl><input class="mfi" id="dayNotes" placeholder="Optional&hellip;"/></div>
+    </div>
+    <div class="moa">
+      <button class="btn bgh" id="cancelDay">Cancel</button>
+      <button class="btn bb" id="saveDay">Save</button>
+    </div>
+  </div>
+</div>
+<div class="notif" id="notif"></div>
+<script type="module">
+import{createClient}from"https://esm.sh/@supabase/supabase-js@2"
+import{SUPABASE_CONFIG}from"./config.js"
+const sb=createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey)
+const ICO={Printing:"&#128424;",Cleaning:"&#129529;",Thermoforming:"&#128260;","Line Cut":"&#9986;","Laser Marking":"&#128294;",Packaging:"&#128230;"}
+const COLS=["#3b5fe2","#16a34a","#d97706","#dc2626","#7c3aed","#0d9488","#db2777","#ea580c"]
+const avCol=n=>COLS[(n||"").charCodeAt(0)%COLS.length]
+const ini=n=>(n||"?").trim().split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2)
+const mins=(a,b)=>Math.max(0,Math.round((b-a)/60000))
+const hm=m=>String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0")
+const fdt=v=>v?new Date(v).toLocaleString("en-GB",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}):"—"
+const fd=v=>v?new Date(v).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}):"—"
+const toLocal=v=>v?new Date(new Date(v).getTime()-new Date(v).getTimezoneOffset()*60000).toISOString().slice(0,16):""
+const ntf=(m,t="ok")=>{const e=document.getElementById("notif");e.textContent=(t==="ok"?"✅ ":"❌ ")+m;e.className="notif on "+t;setTimeout(()=>e.classList.remove("on"),3500)}
+let emp="",allEmps=[],allSess=[],calMonth=new Date(),calData={},range="week",selectedDayType="working",editingId=null
+// RANGE
+function getRange(){
+  const n=new Date(),e=new Date();e.setHours(23,59,59,999)
+  let s=new Date()
+  if(range==="week"){const d=n.getDay(),diff=d===0?-6:1-d;s=new Date(n);s.setDate(n.getDate()+diff);s.setHours(0,0,0,0)}
+  else if(range==="month"){s=new Date(n.getFullYear(),n.getMonth(),1)}
+  else if(range==="3month"){s=new Date(n.getFullYear(),n.getMonth()-2,1)}
+  else{s=new Date("2020-01-01")}
+  const cf=document.getElementById("drFrom").value,ct=document.getElementById("drTo").value
+  return{s:cf?new Date(cf):s,e:ct?new Date(ct):e}
 }
-
-// MODAL
-function openModal(title, sub) {
-  document.getElementById('modalTitle').textContent = title
-  document.getElementById('modalSub').textContent = sub
-  document.getElementById('modalError').textContent = ''
-  document.getElementById('modal').classList.add('open')
+// LOAD EMPLOYEES
+async function loadEmps(){
+  const{data}=await sb.from("employees").select("id,name,role,created_at,workflow_step").order("name")
+  allEmps=data||[]
+  const sel=document.getElementById("empSel")
+  sel.innerHTML="<option value=''>Select employee&hellip;</option>"
+  allEmps.forEach(e=>{const o=document.createElement("option");o.value=e.name;o.textContent=e.name;sel.appendChild(o)})
+  // Check URL param
+  const p=new URLSearchParams(location.search).get("emp")
+  if(p){sel.value=p;selectEmp(p)}
 }
-function closeModal() {
-  document.getElementById('modal').classList.remove('open')
-  document.getElementById('editId').value = ''
-  document.getElementById('formName').value = ''
-  document.getElementById('formRole').value = 'employee'
-  document.getElementById('formPin').value = ''
-}
-
-document.getElementById('addEmpBtn').addEventListener('click', () => {
-  document.getElementById('editId').value = ''
-  document.getElementById('formName').value = ''
-  document.getElementById('formRole').value = 'employee'
-  document.getElementById('formPin').value = ''
-  openModal('Add Employee', 'Create a new employee or manager account.')
-})
-document.getElementById('cancelBtn').addEventListener('click', closeModal)
-document.getElementById('modal').addEventListener('click', e => { if(e.target===document.getElementById('modal'))closeModal() })
-
-window.openEdit = (id) => {
-  const e = allEmps.find(x => x.id === id)
-  if (!e) return
-  document.getElementById('editId').value = e.id
-  document.getElementById('formName').value = e.name
-  document.getElementById('formRole').value = e.role
-  document.getElementById('formPin').value = e.pin || ''
-  openModal('Edit Employee', `Editing: ${e.name}`)
-}
-
-document.getElementById('saveBtn').addEventListener('click', async () => {
-  const id = document.getElementById('editId').value
-  const name = document.getElementById('formName').value.trim()
-  const role = document.getElementById('formRole').value
-  const pin = document.getElementById('formPin').value.trim()
-  if (!name) { document.getElementById('modalError').textContent = 'Name is required'; return }
-  try {
-    if (id) {
-      const {error} = await sb.from('employees').update({name, role, pin: pin||null, is_active:true}).eq('id', id)
-      if (error) throw error
-    } else {
-      const {error} = await sb.from('employees').insert([{name, role, pin: pin||null, is_active:true}])
-      if (error) throw error
-    }
-    closeModal()
-    await load()
-  } catch(err) {
-    document.getElementById('modalError').textContent = err.message
+// SELECT EMP
+function selectEmp(name){
+  emp=name
+  if(!emp){document.getElementById("profileArea").style.display="none";document.getElementById("noProfile").style.display="block";return}
+  document.getElementById("profileArea").style.display="block"
+  document.getElementById("noProfile").style.display="none"
+  const e=allEmps.find(x=>x.name===name)
+  if(e){
+    document.getElementById("phAv").textContent=ini(name)
+    document.getElementById("phAv").style.background=avCol(name)+"40"
+    document.getElementById("phName").textContent=name
+    document.getElementById("phRole").textContent=e.role||"Employee"+(e.workflow_step?" · "+e.workflow_step:"")
+    document.getElementById("phSince").textContent="Member since: "+fd(e.created_at)
   }
+  loadProfile()
+}
+document.getElementById("empSel").addEventListener("change",e=>selectEmp(e.target.value))
+// LOAD PROFILE DATA
+async function loadProfile(){
+  if(!emp)return
+  const{s,e}=getRange()
+  const{data}=await sb.from("time_sessions").select("*").eq("employee_name",emp).gte("started_at",s.toISOString()).order("started_at",{ascending:false}).limit(500)
+  allSess=(data||[]).filter(r=>new Date(r.started_at)<=e)
+  // KPIs
+  let pM=0,wM=0,oM=0
+  const orders=new Set()
+  allSess.forEach(r=>{const m=r.ended_at?mins(new Date(r.started_at),new Date(r.ended_at)):0;if(r.session_type==="productive")pM+=m;else if(r.session_type==="waste")wM+=m;else if(r.session_type==="overtime")oM+=m;if(r.order_no)orders.add(r.order_no)})
+  const tot=pM+wM,eff=tot>0?Math.round(pM/tot*100):0,bc=eff>=70?"#16a34a":eff>=40?"#d97706":"#dc2626"
+  document.getElementById("kProd").textContent=hm(pM)
+  document.getElementById("kWaste").textContent=hm(wM)
+  document.getElementById("kEff").textContent=eff+"%";document.getElementById("kEff").style.color=bc
+  document.getElementById("kSess").textContent=allSess.length
+  document.getElementById("kOrders").textContent=orders.size
+  // Header stats - all time
+  const{data:aData}=await sb.from("time_sessions").select("started_at,ended_at,session_type").eq("employee_name",emp).order("started_at",{ascending:true}).limit(2000)
+  const ad=aData||[]
+  let apM=0,awM=0;const days=new Set()
+  ad.forEach(r=>{const m=r.ended_at?mins(new Date(r.started_at),new Date(r.ended_at)):0;if(r.session_type==="productive")apM+=m;if(r.session_type==="waste")awM+=m;if(r.started_at)days.add(r.started_at.slice(0,10))})
+  const atot=apM+awM,aeff=atot>0?Math.round(apM/atot*100):0
+  document.getElementById("phDays").textContent=days.size
+  document.getElementById("phTotalH").textContent=Math.round(apM/60)+"h"
+  document.getElementById("phEff").textContent=aeff+"%"
+  document.getElementById("phSess").textContent=ad.length
+  if(ad.length)document.getElementById("lastSeen").textContent="Last seen: "+fd(ad[ad.length-1].started_at)
+  renderHistory()
+  renderSteps()
+  renderAdmin()
+}
+// RENDER HISTORY
+function renderHistory(){
+  const term=(document.getElementById("histSearch").value||"").toLowerCase()
+  const tf=document.getElementById("histFilter").value
+  const fl=allSess.filter(r=>(!term||(r.order_no||"").toLowerCase().includes(term)||(r.work_type||"").toLowerCase().includes(term))&&(tf==="all"||r.session_type===tf))
+  document.getElementById("histBody").innerHTML=fl.length?fl.map(r=>{
+    const m=r.ended_at?mins(new Date(r.started_at),new Date(r.ended_at)):null
+    const tc=r.session_type==="productive"?"b-g":r.session_type==="waste"?"b-a":"b-gray"
+    return`<tr>
+      <td class="mono" style="font-size:11px">${fd(r.started_at)}</td>
+      <td class="mono">${r.order_no||"—"}</td>
+      <td>${r.session_type==="waste"?r.waste_category||"Waste":ICO[r.work_type]||"⚙"+" "+r.work_type||"—"}</td>
+      <td style="font-size:11px;color:var(--mu)">${r.machine||"—"}</td>
+      <td class="mono" style="font-size:11px">${r.started_at?new Date(r.started_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"—"}</td>
+      <td class="mono" style="font-size:11px">${r.ended_at?new Date(r.ended_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"<span style='color:#16a34a;font-weight:700'>LIVE</span>"}</td>
+      <td class="mono" style="font-weight:700">${m!==null?m+"min":"—"}</td>
+      <td><span class="bdg ${tc}">${r.session_type||"—"}</span></td>
+    </tr>`}).join(""):`<tr><td colspan="8" class="ec">No sessions found.</td></tr>`
+}
+// RENDER STEPS BREAKDOWN
+function renderSteps(){
+  const byStep={};const byDay={}
+  allSess.forEach(r=>{
+    const m=r.ended_at?mins(new Date(r.started_at),new Date(r.ended_at)):0
+    const k=r.session_type==="productive"?r.work_type||"Other":"Non-Productive"
+    byStep[k]=(byStep[k]||0)+m
+    const d=r.started_at?.slice(0,10)||"?";if(!byDay[d])byDay[d]={p:0,w:0};if(r.session_type==="productive")byDay[d].p+=m;else byDay[d].w+=m
+  })
+  const max=Math.max(...Object.values(byStep),1)
+  document.getElementById("stepBreak").innerHTML=Object.entries(byStep).sort((a,b)=>b[1]-a[1]).map(([s,m])=>`
+    <div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>${ICO[s]||"⚙"} ${s}</span><span class="mono" style="font-weight:700">${hm(m)}</span></div>
+      <div class="eff-bg"><div class="eff-f" style="width:${Math.round(m/max*100)}%;background:${s==="Non-Productive"?"#d97706":"#3b5fe2"}"></div></div>
+    </div>`).join("")||"<div style='color:var(--dim);text-align:center;padding:20px'>No data</div>"
+  const days=Object.keys(byDay).sort().slice(-14)
+  const dMax=Math.max(...days.map(d=>byDay[d].p+byDay[d].w),1)
+  document.getElementById("dayBreak").innerHTML=days.map(d=>{const r=byDay[d],t=r.p+r.w,pe=t>0?Math.round(r.p/t*100):0,bc=pe>=70?"#16a34a":pe>=40?"#d97706":"#dc2626";return`
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span>${new Date(d).toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})}</span><span class="mono">${hm(r.p)} prod · ${pe}%</span></div>
+      <div style="height:8px;background:var(--bg);border-radius:99px;overflow:hidden;display:flex">
+        <div style="height:100%;background:#16a34a;width:${Math.round(r.p/dMax*100)}%"></div>
+        <div style="height:100%;background:#d97706;width:${Math.round(r.w/dMax*100)}%"></div>
+      </div>
+    </div>`}).join("")||"<div style='color:var(--dim);text-align:center;padding:20px'>No data</div>"
+}
+// RENDER ADMIN
+function renderAdmin(){
+  document.getElementById("adminBody").innerHTML=allSess.length?allSess.slice(0,50).map(r=>{
+    const m=r.ended_at?mins(new Date(r.started_at),new Date(r.ended_at)):null
+    return`<tr>
+      <td class="mono" style="font-size:11px">${fd(r.started_at)}</td>
+      <td class="mono">${r.order_no||"—"}</td>
+      <td style="font-size:12px">${r.work_type||"—"}</td>
+      <td class="mono" style="font-size:11px">${r.started_at?new Date(r.started_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"—"}</td>
+      <td class="mono" style="font-size:11px">${r.ended_at?new Date(r.ended_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"<span style='color:#16a34a'>OPEN</span>"}</td>
+      <td class="mono">${m!==null?m+"min":"—"}</td>
+      <td><button class="btn bgh" style="padding:4px 10px;font-size:11px" onclick="openEdit('${r.id}')">✏ Edit</button></td>
+    </tr>`}).join(""):`<tr><td colspan="7" class="ec">No sessions.</td></tr>`
+}
+// CALENDAR
+async function loadCalendar(){
+  if(!emp)return
+  const y=calMonth.getFullYear(),m2=calMonth.getMonth()
+  const from=new Date(y,m2,1).toISOString().slice(0,10)
+  const to=new Date(y,m2+1,0).toISOString().slice(0,10)
+  document.getElementById("calMonthLabel").textContent=calMonth.toLocaleDateString("en-GB",{month:"long",year:"numeric"})
+  const{data}=await sb.from("employee_calendar").select("*").eq("employee_name",emp).gte("date",from).lte("date",to)
+  calData={};(data||[]).forEach(r=>{calData[r.date]=r})
+  // Also load actual sessions for this month
+  const{data:sd}=await sb.from("time_sessions").select("started_at,ended_at,session_type").eq("employee_name",emp).gte("started_at",from).lte("started_at",to+"T23:59:59")
+  const actDays={};(sd||[]).forEach(r=>{const d=r.started_at?.slice(0,10);if(d){if(!actDays[d])actDays[d]=0;actDays[d]+=r.ended_at?mins(new Date(r.started_at),new Date(r.ended_at)):0}})
+  const first=new Date(y,m2,1),lastDay=new Date(y,m2+1,0).getDate()
+  // Monday-based week offset
+  let startDow=first.getDay();startDow=startDow===0?6:startDow-1
+  const cells=[]
+  for(let i=0;i<startDow;i++)cells.push(null)
+  for(let d=1;d<=lastDay;d++){const dt=`${y}-${String(m2+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;cells.push({d,dt})}
+  document.getElementById("calBody").outerHTML=`<div id="calBody" style="grid-column:1/-1;display:grid;grid-template-columns:repeat(7,1fr);gap:4px">${cells.map(c=>{if(!c)return`<div></div>`;const cd=calData[c.dt],act=actDays[c.dt];const t=cd?cd.day_type:"";const isWe=new Date(c.dt).getDay()===0||new Date(c.dt).getDay()===6;const cls=t?`cd-${t}`:isWe?"cd-off":"";return`<div class="cal-day ${cls}" onclick="openDay('${c.dt}')"><div class="cal-num">${c.d}</div>${act?`<div class="cal-sub" style="color:var(--green);font-weight:700">${Math.round(act/60)}h</div>`:""}${t?`<div class="cal-sub">${t==="working"?"work":t==="vacation"?"vac":t==="sick"?"sick":t==="holiday"?"hol":t==="half"?"½":"off"}</div>`:""}`;}).join("")}</div>`
+  // Summary
+  const wk=Object.values(calData).filter(r=>r.day_type==="working").length
+  const off=Object.values(calData).filter(r=>r.day_type==="off").length
+  const vac=Object.values(calData).filter(r=>r.day_type==="vacation").length
+  const sick=Object.values(calData).filter(r=>r.day_type==="sick").length
+  document.getElementById("calSummary").innerHTML=`
+    <div style="font-size:12px;font-weight:600;display:flex;gap:14px;flex-wrap:wrap">
+      <span style="color:#15803d">&#10003; ${wk} working days</span>
+      <span style="color:#64748b">&#9208; ${off} off</span>
+      <span style="color:#3730a3">&#9788; ${vac} vacation</span>
+      <span style="color:#991b1b">&#128137; ${sick} sick</span>
+    </div>`
+}
+window.openDay=dt=>{
+  document.getElementById("dayDate").value=dt
+  document.getElementById("mDaySub").textContent="Setting day type for: "+new Date(dt).toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"})
+  selectedDayType=calData[dt]?.day_type||"working"
+  document.getElementById("dayHours").value=calData[dt]?.expected_hours||8
+  document.getElementById("dayNotes").value=calData[dt]?.notes||""
+  document.querySelectorAll(".dtb").forEach(b=>b.classList.toggle("sel",b.dataset.t===selectedDayType))
+  document.getElementById("mDay").classList.add("on")
+}
+document.querySelectorAll(".dtb").forEach(b=>b.addEventListener("click",()=>{
+  selectedDayType=b.dataset.t;document.querySelectorAll(".dtb").forEach(x=>x.classList.remove("sel"));b.classList.add("sel")
+}))
+document.getElementById("saveDay").addEventListener("click",async()=>{
+  const dt=document.getElementById("dayDate").value
+  await sb.from("employee_calendar").upsert([{employee_name:emp,date:dt,day_type:selectedDayType,expected_hours:Number(document.getElementById("dayHours").value||8),notes:document.getElementById("dayNotes").value.trim()||null}],{onConflict:"employee_name,date"})
+  document.getElementById("mDay").classList.remove("on");ntf("Day saved");loadCalendar()
 })
-
-window.updateRole = async (id, role) => {
-  await sb.from('employees').update({role}).eq('id', id)
-  await load()
+document.getElementById("cancelDay").addEventListener("click",()=>document.getElementById("mDay").classList.remove("on"))
+document.getElementById("calPrev").addEventListener("click",()=>{calMonth.setMonth(calMonth.getMonth()-1);loadCalendar()})
+document.getElementById("calNext").addEventListener("click",()=>{calMonth.setMonth(calMonth.getMonth()+1);loadCalendar()})
+document.getElementById("btnFillMonth").addEventListener("click",async()=>{
+  const y=calMonth.getFullYear(),m2=calMonth.getMonth(),last=new Date(y,m2+1,0).getDate()
+  const rows=[]
+  for(let d=1;d<=last;d++){const dt=`${y}-${String(m2+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;const dow=new Date(dt).getDay();rows.push({employee_name:emp,date:dt,day_type:dow===0||dow===6?"off":"working",expected_hours:dow===0||dow===6?0:8})}
+  await sb.from("employee_calendar").upsert(rows,{onConflict:"employee_name,date"})
+  ntf("Month filled");loadCalendar()
+})
+// EDIT SESSION
+window.openEdit=id=>{
+  editingId=id;const s=allSess.find(x=>x.id===id);if(!s)return
+  document.getElementById("editId").value=id
+  document.getElementById("mEditSub").textContent="Editing session — "+fd(s.started_at)
+  document.getElementById("editOrd").value=s.order_no||""
+  document.getElementById("editStep").value=s.work_type||"Printing"
+  document.getElementById("editType").value=s.session_type||"productive"
+  document.getElementById("editStart").value=toLocal(s.started_at)
+  document.getElementById("editEnd").value=toLocal(s.ended_at)
+  document.getElementById("editNotes").value=s.task_description||""
+  document.getElementById("editErr").textContent=""
+  document.getElementById("mEdit").classList.add("on")
 }
-
-window.toggleBlock = async (id, unblock) => {
-  const e = allEmps.find(x => x.id === id)
-  const msg = unblock ? `Unblock ${e?.name}?` : `Block ${e?.name}? They won't be able to clock in.`
-  if (!confirm(msg)) return
-  await sb.from('employees').update({is_active: unblock}).eq('id', id)
-  await load()
-}
-
-window.deleteEmp = async (id, name) => {
-  if (!confirm(`Permanently delete ${name}? This cannot be undone.`)) return
-  await sb.from('employees').delete().eq('id', id)
-  await load()
-}
-
-document.getElementById('searchInput').addEventListener('input', renderTable)
-document.getElementById('roleFilter').addEventListener('change', renderTable)
-document.getElementById('statusFilter').addEventListener('change', renderTable)
-document.getElementById('refreshBtn').addEventListener('click', load)
-load()
+document.getElementById("cancelEdit").addEventListener("click",()=>document.getElementById("mEdit").classList.remove("on"))
+document.getElementById("saveEdit").addEventListener("click",async()=>{
+  const id=document.getElementById("editId").value
+  const st=document.getElementById("editStart").value,en=document.getElementById("editEnd").value
+  if(!st){document.getElementById("editErr").textContent="Start time required";return}
+  try{
+    const{error}=await sb.from("time_sessions").update({order_no:document.getElementById("editOrd").value.trim()||null,work_type:document.getElementById("editStep").value,session_type:document.getElementById("editType").value,started_at:new Date(st).toISOString(),ended_at:en?new Date(en).toISOString():null,task_description:document.getElementById("editNotes").value.trim()||null}).eq("id",id)
+    if(error)throw error
+    document.getElementById("mEdit").classList.remove("on");ntf("Session updated");loadProfile()
+  }catch(err){document.getElementById("editErr").textContent=err.message}
+})
+document.getElementById("deleteSession").addEventListener("click",async()=>{
+  if(!confirm("Delete this session? This cannot be undone."))return
+  await sb.from("time_sessions").delete().eq("id",editingId)
+  document.getElementById("mEdit").classList.remove("on");ntf("Session deleted");loadProfile()
+})
+// ADD SESSION
+document.getElementById("btnAddSession").addEventListener("click",()=>{
+  const now=new Date();const start=new Date(now.getTime()-3600000)
+  document.getElementById("addStart").value=toLocal(start.toISOString())
+  document.getElementById("addEnd").value=toLocal(now.toISOString())
+  ;["addOrd","addNotes"].forEach(i=>document.getElementById(i).value="")
+  document.getElementById("addErr").textContent=""
+  document.getElementById("mAdd").classList.add("on")
+})
+document.getElementById("cancelAdd").addEventListener("click",()=>document.getElementById("mAdd").classList.remove("on"))
+document.getElementById("saveAdd").addEventListener("click",async()=>{
+  const st=document.getElementById("addStart").value,en=document.getElementById("addEnd").value
+  if(!st||!en){document.getElementById("addErr").textContent="Start and end time required";return}
+  try{
+    const{error}=await sb.from("time_sessions").insert([{employee_name:emp,session_type:document.getElementById("addType").value,work_type:document.getElementById("addStep").value,order_no:document.getElementById("addOrd").value.trim()||null,started_at:new Date(st).toISOString(),ended_at:new Date(en).toISOString(),task_description:document.getElementById("addNotes").value.trim()||null}])
+    if(error)throw error
+    document.getElementById("mAdd").classList.remove("on");ntf("Session added");loadProfile()
+  }catch(err){document.getElementById("addErr").textContent=err.message}
+})
+// TABS
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));t.classList.add("on")
+  const tab=t.dataset.tab
+  ;["history","steps","calendar","admin"].forEach(id=>document.getElementById("tab-"+id).style.display=id===tab?"block":"none")
+  if(tab==="calendar")loadCalendar()
+}))
+// DATE RANGE TABS
+document.querySelectorAll(".dr-tab").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".dr-tab").forEach(x=>x.classList.remove("on"));b.classList.add("on")
+  range=b.dataset.r;document.getElementById("drFrom").value="";document.getElementById("drTo").value=""
+  loadProfile()
+}))
+;["drFrom","drTo"].forEach(id=>document.getElementById(id).addEventListener("change",()=>{range="custom";document.querySelectorAll(".dr-tab").forEach(x=>x.classList.remove("on"));loadProfile()}))
+// HISTORY SEARCH/FILTER
+document.getElementById("histSearch").addEventListener("input",renderHistory)
+document.getElementById("histFilter").addEventListener("change",renderHistory)
+// PREV/NEXT EMP
+document.getElementById("btnPrev").addEventListener("click",()=>{const i=allEmps.findIndex(e=>e.name===emp);if(i>0){document.getElementById("empSel").value=allEmps[i-1].name;selectEmp(allEmps[i-1].name)}})
+document.getElementById("btnNext").addEventListener("click",()=>{const i=allEmps.findIndex(e=>e.name===emp);if(i<allEmps.length-1){document.getElementById("empSel").value=allEmps[i+1].name;selectEmp(allEmps[i+1].name)}})
+// EXPORT
+document.getElementById("btnExport").addEventListener("click",()=>{
+  const rows=[["Employee","Date","Order","Step","Machine","Start","End","Duration(min)","Type"]]
+  allSess.forEach(r=>rows.push([r.employee_name||"",r.started_at?.slice(0,10)||"",r.order_no||"",r.work_type||"",r.machine||"",r.started_at||"",r.ended_at||"",r.ended_at?mins(new Date(r.started_at),new Date(r.ended_at)):"OPEN",r.session_type||""]))
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n")
+  const a=document.createElement("a");a.href="data:text/csv;charset=utf-8,"+encodeURIComponent(csv);a.download=`${emp||"employee"}-history.csv`;a.click()
+})
+// NAV BETWEEN SESSIONS
+document.addEventListener("click",e=>{if(e.target===document.getElementById("mEdit")||e.target===document.getElementById("mAdd")||e.target===document.getElementById("mDay"))e.target.classList.remove("on")})
+loadEmps()
 </script>
 </body>
 </html>
