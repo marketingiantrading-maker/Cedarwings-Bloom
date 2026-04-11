@@ -302,12 +302,53 @@ ${a?`<div class="sec"><div class="sec-t">&#128994; Active Session</div><div styl
 <div><div style="font-size:9px;color:var(--mu)">Next maintenance</div><div class="md-dt ${dd===null?'':dd<0?'md-ov':dd<=7?'md-sn':'md-ok'}" style="${mc}">${x.next_maintenance?fD(x.next_maintenance)+' ('+(dd<0?Math.abs(dd)+'d overdue':dd===0?'Today':dd+'d')+')':'Not scheduled'}</div></div>
 <div style="text-align:right"><div style="font-size:9px;color:var(--mu)">Last done</div><div style="font-size:12px;font-weight:600">${x.last_maintenance?fD(x.last_maintenance):'Never'}</div></div>
 </div></div>
+<div class="sec">
+<div class="sec-t">&#128221; Orders on this Machine (Today)</div>
+<div id="ord-${x.id}" style="font-size:11px;color:var(--dim)">Loading...</div>
+</div>
 <div class="sec"><div class="sec-t">&#128230; Materials Installed<button class="btn bs" style="background:var(--a50);border:1px solid var(--a100);color:#92400e;padding:3px 8px" onclick="openInst('${x.id}','${mn}')">+ Install</button></div>
 ${cl.length?cl.map(c=>{const p=c.qty_installed>0?Math.round(c.qty_remaining/c.qty_installed*100):0;return`<div class="cr-row"><div><div style="font-weight:600;font-size:11px">${c.item_name}</div><div style="font-size:10px;color:var(--dim)">Lot: ${c.lot_no||'—'} · ${new Date(c.installed_at).toLocaleDateString()} · By: ${c.installed_by||'—'}</div></div><div style="text-align:right"><div style="font-weight:700;font-family:var(--mono);font-size:12px;color:${p<20?'var(--red)':p<40?'var(--amber)':'var(--green)'}">${c.qty_remaining}/${c.qty_installed} ${c.unit||''}</div><div style="font-size:10px;margin-top:2px"><span style="color:#d97706;font-weight:700">${c.aligners_produced_since_install||0}</span> aligners · <span style="color:#7c3aed;font-weight:700">${c.cases_completed_since_install||0}</span> cases since install</div><div class="crb"><div class="crf" style="width:${p}%;background:${p<20?'#dc2626':p<40?'#d97706':'#16a34a'}"></div></div></div></div>`}).join(''):`<div style="color:var(--dim);font-size:11px;text-align:center;padding:4px">No materials installed.</div>`}
 </div>
 </div></div>`
   }).join(''):`<div style="grid-column:1/-1;text-align:center;color:var(--dim);padding:40px">No machines found. Run fix_machines_v2.sql first.</div>`
   act.forEach(s=>{const e=document.getElementById('el'+s.id);if(e)setInterval(()=>{e.textContent=hms(Date.now()-new Date(s.started_at).getTime())},1000)})
+
+  // Orders per machine — from order_step_tracking + session machine links
+  const td2=new Date();td2.setHours(0,0,0,0)
+  const{data:ostAll}=await sb.from('order_step_tracking').select('*').order('first_started_at',{ascending:false})
+  const machByStep={}
+  sess.forEach(s=>{if(s.machine&&s.order_no&&s.work_type)machByStep[s.order_no+'||'+s.work_type]=s.machine})
+  const ordByMach={}
+  ;(ostAll||[]).forEach(t=>{
+    const mach=machByStep[t.order_no+'||'+t.step]||null
+    if(!mach)return
+    if(!ordByMach[mach])ordByMach[mach]=[]
+    if(!ordByMach[mach].find(x=>x.order_no===t.order_no&&x.step===t.step))ordByMach[mach].push(t)
+  })
+  machines.forEach(x=>{
+    const el=document.getElementById('ord-'+x.id)
+    if(!el)return
+    const orders=ordByMach[x.machine_name]||[]
+    if(!orders.length){el.innerHTML='<span style="color:var(--dim)">No orders recorded on this machine.</span>';return}
+    const byOrd={}
+    orders.forEach(t=>{if(!byOrd[t.order_no])byOrd[t.order_no]={steps:[],hasMR:false};byOrd[t.order_no].steps.push(t);if(t.status==='machine_running')byOrd[t.order_no].hasMR=true})
+    el.innerHTML=Object.keys(byOrd).map(ord=>{
+      const{steps,hasMR}=byOrd[ord]
+      const done=steps.filter(s=>s.status==='complete').length
+      const statusCol=hasMR?'#3b5fe2':done===steps.length?'#16a34a':'#d97706'
+      const statusIcon=hasMR?'&#9881;':done===steps.length?'&#10003;':'&#9654;'
+      const techMins=sess.filter(s=>s.order_no===ord&&s.machine===x.machine_name&&s.session_type==='productive'&&s.ended_at).reduce((a,s)=>a+mins(new Date(s.started_at),new Date(s.ended_at)),0)
+      const earliest=steps.reduce((a,t)=>!a||new Date(t.first_started_at)<new Date(a)?t.first_started_at:a,null)
+      const latest=steps.filter(s=>s.completed_at).reduce((a,t)=>!a||new Date(t.completed_at)>new Date(a)?t.completed_at:a,null)
+      const machMins=earliest&&latest?mins(new Date(earliest),new Date(latest)):null
+      return`<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bdr)">
+        <div><span style="font-weight:700;font-family:var(--mono);font-size:11px">&#128221; ${ord}</span>
+        <span style="color:${statusCol};font-weight:700;margin-left:6px;font-size:10px">${statusIcon} ${done}/${steps.length} steps</span></div>
+        <div style="text-align:right;font-size:10px">
+          <span style="color:#16a34a;font-weight:700">${techMins}m tech</span>${machMins!==null?' &middot; <span style="color:#3b5fe2;font-weight:700">'+machMins+'m machine</span>':""}
+        </div></div>`
+    }).join("")
+  })
   document.getElementById('tMaint').innerHTML=ml.length?ml.map(r=>`<tr>
 <td><strong>${r.machines?.machine_name||'—'}</strong></td>
 <td><span class="bdg ${r.maintenance_type==='emergency'?'b-r':r.maintenance_type==='scheduled'?'b-b':'b-a'}">${r.maintenance_type||'—'}</span></td>
