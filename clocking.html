@@ -530,8 +530,7 @@ window._clockStep=async(step)=>{
 }
 
 document.querySelectorAll(".wb").forEach(b=>b.addEventListener("click",async()=>{
-  const ord=document.getElementById("ord").value.trim()
-  if(!ord){setSt("Enter order number first","","err");return}
+  const ord=document.getElementById("ord").value.trim()||null  // order optional for waste
   if(!emp){window.location.href="index.html";return}
   const now=new Date()
   if(activeSession?.id){await sb.from("time_sessions").update({ended_at:now.toISOString()}).eq("id",activeSession.id)}
@@ -541,9 +540,9 @@ document.querySelectorAll(".wb").forEach(b=>b.addEventListener("click",async()=>
   const{data:row,error}=await sb.from("time_sessions").insert([{employee_name:emp,session_type:"waste",work_type:"Waste Time",waste_category:b.dataset.w,order_no:ord,batch_id:gB(),started_at:now.toISOString(),ended_at:null}]).select().single()
   if(error){setSt("Error",error.message,"err");return}
   activeSession={id:row?.id,step:b.dataset.w,order:ord,type:"waste",startTime:now}
-  showJobBox(b.dataset.w,ord,"waste",now)
+  showJobBox(b.dataset.w,ord||"—","waste",now)
   startTimer()
-  setSt("Non-productive: "+b.dataset.w,`${emp} · ${ord} · ${fT(now.toISOString())}`,"ok")
+  setSt("Non-productive: "+b.dataset.w,`${emp}${ord?" · "+ord:""} · ${fT(now.toISOString())}`,"ok")
   // Clear order field — page ready for next task
   document.getElementById("ord").value=""
   renderPipeline("")
