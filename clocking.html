@@ -170,7 +170,6 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
       &#128119; <span id="empNm">Loading&hellip;</span> <span style="font-size:10px;opacity:.6">&#9660;</span>
     </div>
     <a id="profileLink" href="employee_profile.html" class="btn bn" style="text-decoration:none">&#128100; My Profile</a>
-    <a href="manager.html" class="btn bg-btn" style="text-decoration:none">&#128202; Dashboard</a>
     <a href="index.html" class="btn bg-btn" style="text-decoration:none">&#8592; Home</a>
   </div>
 </header>
@@ -252,6 +251,13 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
             <button class="wb" data-w="Break">&#9749;<br/>W5 Break</button>
             <button class="wb" data-w="Rework">&#128260;<br/>W6 Rework</button>
           </div>
+        </div>
+
+        <!-- END OF DAY -->
+        <div style="margin-top:18px;padding-top:16px;border-top:1.5px solid var(--bdr)">
+          <button onclick="endOfDay()" style="width:100%;padding:13px;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--f);display:flex;align-items:center;justify-content:center;gap:9px;transition:all .15s;letter-spacing:-.1px">
+            <span style="font-size:18px">&#127968;</span> End of Day — Clock Out
+          </button>
         </div>
 
         <!-- STATUS -->
@@ -714,6 +720,85 @@ function setSt(t,d,type){
   document.getElementById("stT").textContent=t;document.getElementById("stD").textContent=d
 }
 
+/* ===================== END OF DAY ===================== */
+window.endOfDay=async()=>{
+  // Load today summary for the confirmation screen
+  const td=new Date();td.setHours(0,0,0,0)
+  const{data}=await sb.from("time_sessions").select("*").eq("employee_name",emp).gte("started_at",td.toISOString()).order("started_at",{ascending:true})
+  const recs=data||[]
+  let pM=0,wM=0,orders=new Set()
+  recs.forEach(r=>{
+    const m=r.ended_at?mins(new Date(r.started_at),new Date(r.ended_at)):0
+    if(r.session_type==="productive")pM+=m
+    if(r.session_type==="waste"&&r.waste_category!=="W9 - Transition Time")wM+=m
+    if(r.order_no)orders.add(r.order_no)
+  })
+  const tot=pM+wM,eff=tot>0?Math.round(pM/tot*100):0
+  const hrs=Math.floor(pM/60),mns=pM%60
+  document.getElementById("eodMessage").innerHTML=
+    `<strong style="color:#0f172a;font-size:16px">${emp}</strong>, here is your day:<br><br>`+
+    `You worked <strong style="color:#16a34a">${hrs}h ${mns}m productively</strong> across <strong>${orders.size} order${orders.size!==1?"s":""}</strong>.<br>`+
+    (activeSession?`<span style="color:#dc2626">⚠ You have an active session that will be closed.</span>`:"All sessions are closed.")
+  document.getElementById("eodStats").innerHTML=
+    `<div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#16a34a;font-family:var(--f)">${hrs}h${mns}m</div><div style="font-size:10px;color:#64748b;margin-top:4px">PRODUCTIVE</div></div>`+
+    `<div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#3b5fe2;font-family:var(--f)">${eff}%</div><div style="font-size:10px;color:#64748b;margin-top:4px">EFFICIENCY</div></div>`+
+    `<div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#7c3aed;font-family:var(--f)">${orders.size}</div><div style="font-size:10px;color:#64748b;margin-top:4px">ORDERS</div></div>`
+  document.getElementById("eodModal").style.display="flex"
+}
+
+window.confirmEndOfDay=async()=>{
+  const now=new Date()
+  // Close active session if any
+  if(activeSession?.id){
+    await sb.from("time_sessions").update({ended_at:now.toISOString()}).eq("id",activeSession.id)
+    clearInterval(timerInt);activeSession=null
+    document.getElementById("jobBox").style.display="none"
+  }
+  document.getElementById("eodModal").style.display="none"
+
+  // Load final stats for goodbye screen
+  const td=new Date();td.setHours(0,0,0,0)
+  const{data}=await sb.from("time_sessions").select("*").eq("employee_name",emp).gte("started_at",td.toISOString())
+  const recs=data||[]
+  let pM=0,wM=0,orders=new Set(),steps=[]
+  recs.forEach(r=>{
+    const m=r.ended_at?mins(new Date(r.started_at),new Date(r.ended_at)):0
+    if(r.session_type==="productive"){pM+=m;if(r.work_type&&r.work_type!=="Waste Time")steps.push(r.work_type)}
+    if(r.session_type==="waste"&&r.waste_category!=="W9 - Transition Time")wM+=m
+    if(r.order_no)orders.add(r.order_no)
+  })
+  const tot=pM+wM,eff=tot>0?Math.round(pM/tot*100):0
+  const hrs=Math.floor(pM/60),mns=pM%60
+  const uniqueSteps=[...new Set(steps)].length
+
+  // Choose goodbye message based on performance
+  let emoji,title,msg
+  if(eff>=80){emoji="&#127775;";title="Outstanding work today!";msg=`${emp}, you achieved <strong>${eff}% efficiency</strong> today — that's exceptional! ${hrs}h ${mns}m of pure productive output. The aligners you produced today will change someone's smile. Rest well — you earned it.`}
+  else if(eff>=60){emoji="&#128079;";title="Great day, ${emp}!";msg=`Solid work today with <strong>${eff}% efficiency</strong>. You completed <strong>${orders.size} order${orders.size!==1?"s":""}</strong> and worked through <strong>${uniqueSteps} production step${uniqueSteps!==1?"s":""}</strong>. See you tomorrow — keep it up!`}
+  else if(pM>0){emoji="&#127774;";title="Good work, ${emp}!";msg=`You put in <strong>${hrs}h ${mns}m</strong> of productive work today across <strong>${orders.size} order${orders.size!==1?"s":""}</strong>. Every shift counts. Rest up and come back strong tomorrow!`}
+  else{emoji="&#128075;";title="See you next time, ${emp}!";msg="No sessions recorded today. If this is unexpected, contact your manager to review the clocking log."}
+
+  // Replace placeholder
+  emoji=emoji;title=title.replace(/\${emp}/g,emp);msg=msg.replace(/\${emp}/g,emp)
+
+  document.getElementById("goodbyeEmoji").innerHTML=emoji
+  document.getElementById("goodbyeTitle").textContent=title
+  document.getElementById("goodbyeMsg").innerHTML=msg
+  document.getElementById("goodbyeStats").innerHTML=
+    `<div style="text-align:center"><div style="font-size:24px;font-weight:800;color:#fff;font-family:var(--f)">${hrs}h${mns}m</div><div style="font-size:10px;color:#94a3b8;margin-top:4px">PRODUCTIVE</div></div>`+
+    `<div style="text-align:center"><div style="font-size:24px;font-weight:800;color:#a5b4fc;font-family:var(--f)">${eff}%</div><div style="font-size:10px;color:#94a3b8;margin-top:4px">EFFICIENCY</div></div>`+
+    `<div style="text-align:center"><div style="font-size:24px;font-weight:800;color:#86efac;font-family:var(--f)">${orders.size}</div><div style="font-size:10px;color:#94a3b8;margin-top:4px">ORDERS</div></div>`
+  document.getElementById("goodbyeModal").style.display="flex"
+  // Clear session data
+  clearInterval(timerInt);clearInterval(window.mrTimerInt)
+  document.getElementById("alertBanner").classList.remove("on")
+}
+
+window.finalLogout=()=>{
+  sessionStorage.removeItem("cw_current_emp")
+  window.location.href="index.html"
+}
+
 /* ===================== INIT ===================== */
 // Set initial day anchor
 const anc=new Date();anc.setHours(8,0,0,0)
@@ -723,6 +808,36 @@ tick();setInterval(tick,1000)
 setInterval(loadToday,15000)
 initEmp()
 </script>
+<!-- END OF DAY MODAL -->
+<div id="eodModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.85);z-index:700;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:20px;padding:36px;max-width:420px;width:100%;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.3)">
+    <div style="font-size:52px;margin-bottom:16px">&#127774;</div>
+    <div style="font-size:22px;font-weight:800;color:#0f172a;margin-bottom:8px">Great work today!</div>
+    <div style="font-size:14px;color:#64748b;line-height:1.7;margin-bottom:20px" id="eodMessage">Loading your day summary...</div>
+    <div style="background:#f0f4f8;border-radius:14px;padding:16px;margin-bottom:24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px" id="eodStats"></div>
+    <div style="font-size:13px;color:#94a3b8;margin-bottom:20px;font-style:italic">"Quality is not an act, it is a habit." — Every aligner you made today matters.</div>
+    <button onclick="confirmEndOfDay()" style="width:100%;padding:14px;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;font-family:var(--f);margin-bottom:10px">
+      &#10003; Confirm — End My Day
+    </button>
+    <button onclick="document.getElementById('eodModal').style.display='none'" style="width:100%;padding:11px;background:transparent;border:1.5px solid #e2e8f0;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--f);color:#64748b">
+      Cancel — Keep working
+    </button>
+  </div>
+</div>
+
+<!-- GOODBYE MODAL -->
+<div id="goodbyeModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.9);z-index:800;align-items:center;justify-content:center;padding:20px">
+  <div style="background:linear-gradient(135deg,#0f172a,#1e293b);border-radius:20px;padding:40px;max-width:420px;width:100%;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.5)">
+    <div style="font-size:60px;margin-bottom:16px" id="goodbyeEmoji">&#127774;</div>
+    <div style="font-size:24px;font-weight:800;color:#fff;margin-bottom:10px" id="goodbyeTitle">See you tomorrow!</div>
+    <div style="font-size:14px;color:#94a3b8;line-height:1.8;margin-bottom:28px" id="goodbyeMsg"></div>
+    <div style="background:rgba(255,255,255,.06);border-radius:12px;padding:16px;margin-bottom:24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px" id="goodbyeStats"></div>
+    <button onclick="finalLogout()" style="width:100%;padding:14px;background:linear-gradient(135deg,#3b5fe2,#6366f1);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;font-family:var(--f)">
+      &#8594; Go to Login
+    </button>
+  </div>
+</div>
+
 <!-- PAUSE DIALOG MODAL -->
 <div id="pauseModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.7);z-index:600;align-items:center;justify-content:center;padding:20px">
   <div style="background:#fff;border-radius:18px;padding:28px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25)">
