@@ -124,6 +124,36 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
 </style>
 </head>
 <body>
+<script>
+// Run immediately before render — hide manager UI for employees
+(function(){
+  const role=sessionStorage.getItem("cw_role")||"employee"
+  if(role!=="manager"){
+    document.documentElement.setAttribute("data-role","employee")
+  }
+})()
+</script>
+<style>
+/* Hide all manager-only elements for employee role */
+[data-role="employee"] .sb,
+[data-role="employee"] #btnExport,
+[data-role="employee"] #backToEmployees,
+[data-role="employee"] #btnPrev,
+[data-role="employee"] #btnNext,
+[data-role="employee"] [data-tab="admin"],
+[data-role="employee"] #tab-admin,
+[data-role="employee"] .emp-select,
+[data-role="employee"] #empGrid,
+[data-role="employee"] #backBar {
+  display: none !important;
+}
+[data-role="employee"] .content {
+  margin-left: 0 !important;
+}
+[data-role="employee"] .topbar {
+  padding-left: 20px;
+}
+</style>
 <aside class="sb">
   <div class="sb-top"><div class="logo">&#9881;</div><div><div class="sb-nm">Cedarwings SAS</div><div class="sb-role">Manager</div></div></div>
   <nav class="sb-nav">
@@ -144,7 +174,10 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
 </aside>
 <div class="content">
   <div class="topbar">
-    <div><div class="tb-title">&#128100; My Profile</div><div class="tb-sub" id="profileSubTitle">Work history &amp; productivity</div></div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <a href="clocking.html" id="backToClocking" class="btn bgh" style="text-decoration:none;display:none">&#8592; Back to Terminal</a>
+      <div><div class="tb-title" id="profilePageTitle">&#128100; Employee Profile</div><div class="tb-sub" id="profileSubTitle">Work history, productivity, schedule management</div></div>
+    </div>
     <div class="tb-right">
       <button class="btn bgh" id="btnExport">&#8595; Export CSV</button>
       <a href="employees.html" class="btn bgh" id="backToEmployees">&#8592; All Employees</a>
@@ -404,25 +437,14 @@ const isManager = currentRole === "manager"
 
 // Hide admin tab and edit button if not manager
 if(!isManager){
-  // Hide admin-only UI
-  const adminTab = document.querySelector('[data-tab="admin"]')
-  if(adminTab) adminTab.style.display = "none"
-  const exportBtn = document.getElementById("btnExport")
-  if(exportBtn) exportBtn.style.display = "none"
-  const backBtn = document.getElementById("backToEmployees")
-  if(backBtn) backBtn.style.display = "none"
-  // Employee can only see their own profile — auto-select from session
-  const myName = sessionStorage.getItem("cw_current_emp") || localStorage.getItem("cw_current_emp")
-  if(myName){
-    // Lock the employee selector so they cant switch to other employees
-    const empSel = document.getElementById("empSel")
-    if(empSel){
-      empSel.style.display = "none"
-      // Also hide prev/next navigation
-      document.getElementById("btnPrev").style.display = "none"
-      document.getElementById("btnNext").style.display = "none"
-    }
-  }
+  // Show back to clocking button for employees
+  const backClocking = document.getElementById("backToClocking")
+  if(backClocking) backClocking.style.display = "inline-flex"
+  // Update page title for employee view
+  const titleEl = document.getElementById("profilePageTitle")
+  if(titleEl) titleEl.textContent = "My Profile"
+  const subEl = document.getElementById("profileSubTitle")
+  if(subEl) subEl.textContent = "Your work history & productivity"
 }
 
 async function loadEmps(){
