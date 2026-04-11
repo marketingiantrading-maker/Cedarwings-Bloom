@@ -1,232 +1,358 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cedarwings SAS — Manager Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-  <style>
-    :root{
-      --bg:#f0f4f8;--card:#fff;--border:#e2e8f0;
-      --text:#0f172a;--muted:#64748b;--dim:#94a3b8;
-      --blue:#3b5fe2;--blue-50:#eef2ff;--blue-100:#e0e7ff;
-      --green:#16a34a;--green-50:#f0fdf4;--green-100:#dcfce7;
-      --amber:#d97706;--amber-50:#fffbeb;--amber-100:#fef3c7;
-      --red:#dc2626;--red-50:#fef2f2;--red-100:#fee2e2;
-      --purple:#7c3aed;--purple-50:#f5f3ff;
-      --teal:#0d9488;--teal-50:#f0fdfa;
-      --f:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;
-      --shadow:0 1px 3px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.04);
-      --shadow-md:0 4px 16px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.04);
-    }
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:var(--f);background:var(--bg);color:var(--text);min-height:100vh}
-    /* SIDEBAR */
-    .sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;overflow-y:auto}
-    .sb-brand{display:flex;align-items:center;gap:12px;padding:20px 18px 16px;border-bottom:1px solid var(--border)}
-    .sb-logo{width:38px;height:38px;background:linear-gradient(135deg,var(--blue),#6366f1);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-    .sb-name{font-weight:700;font-size:14px;letter-spacing:-.2px}
-    .role-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;margin-top:3px}
-    .badge-mgr{background:var(--blue-50);color:var(--blue)}
-    .badge-emp{background:var(--green-50);color:var(--green)}
-    .sb-nav{flex:1;padding:10px 10px}
-    .sb-sec{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;padding:14px 8px 6px}
-    .sb-link{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;transition:all .15s}
-    .sb-link:hover{background:var(--bg);color:var(--text)}
-    .sb-link.active{background:var(--blue-50);color:var(--blue);font-weight:600}
-    .sb-link .icon{font-size:16px;width:20px;text-align:center}
-    .sb-footer{padding:12px 10px;border-top:1px solid var(--border)}
-    /* CONTENT */
-    .content{margin-left:240px;min-height:100vh}
-    .topbar{background:var(--card);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between}
-    .topbar-title{font-size:20px;font-weight:700;letter-spacing:-.3px}
-    .topbar-right{display:flex;align-items:center;gap:10px}
-    .page-body{padding:24px 28px 48px}
-    /* BUTTONS */
-    .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;font-size:13px;font-weight:600;border:none;border-radius:9px;cursor:pointer;font-family:var(--f);transition:all .15s;text-decoration:none;white-space:nowrap}
-    .btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:#2e4fc7}
-    .btn-ghost{background:var(--card);border:1px solid var(--border);color:var(--muted)}.btn-ghost:hover{color:var(--text)}
-    .btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#15803d}
-    .live-dot{width:8px;height:8px;background:#16a34a;border-radius:50%;animation:pulse 2s infinite;display:inline-block}
-    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(22,163,74,.4)}60%{box-shadow:0 0 0 5px rgba(22,163,74,0)}}
-    /* KPI GRID */
-    .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
-    .kpi{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:20px;position:relative;overflow:hidden;transition:box-shadow .2s}
-    .kpi:hover{box-shadow:var(--shadow-md)}
-    .kpi-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px}
-    .kpi-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
-    .kpi-value{font-size:32px;font-weight:700;font-family:var(--mono);letter-spacing:-1px;line-height:1}
-    .kpi-sub{font-size:12px;color:var(--dim);margin-top:8px}
-    /* SECTION HEADER */
-    .sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
-    .sec-title{font-size:16px;font-weight:700}
-    .sec-sub{font-size:12px;color:var(--muted);margin-top:3px}
-    /* CARD */
-    .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:22px}
-    /* CHARTS */
-    .chart-row{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin-bottom:24px}
-    /* TABLE */
-    .table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
-    table{width:100%;border-collapse:collapse}
-    thead th{padding:10px 14px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;background:#f8fafc;border-bottom:1px solid var(--border);white-space:nowrap}
-    tbody td{padding:12px 14px;font-size:13px;border-bottom:1px solid var(--border)}
-    tbody tr:last-child td{border-bottom:none}
-    tbody tr:hover{background:#f8fafc}
-    .mono{font-family:var(--mono);font-size:12px}
-    /* STATUS BADGES */
-    .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap}
-    .b-green{background:var(--green-100);color:#15803d}
-    .b-amber{background:var(--amber-100);color:#92400e}
-    .b-red{background:var(--red-100);color:#991b1b}
-    .b-blue{background:var(--blue-100);color:#1e40af}
-    .b-purple{background:var(--purple-50);color:#5b21b6}
-    .b-gray{background:#f1f5f9;color:var(--muted)}
-    /* GRID */
-    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
-    /* ALERTS */
-    .alert-item{display:flex;align-items:flex-start;gap:12px;padding:14px;border-radius:12px;margin-bottom:8px}
-    .alert-item.warn{background:var(--amber-50);border:1px solid var(--amber-100)}
-    .alert-item.danger{background:var(--red-50);border:1px solid var(--red-100)}
-    .alert-item.info{background:var(--blue-50);border:1px solid var(--blue-100)}
-    .alert-icon{font-size:20px;flex-shrink:0;margin-top:1px}
-    .alert-title{font-size:13px;font-weight:600}
-    .alert-desc{font-size:12px;color:var(--muted);margin-top:2px}
-    /* ACTIVE SESSIONS */
-    .session-item{display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;background:var(--bg);margin-bottom:8px;border:1px solid var(--border)}
-    .session-emp{font-weight:600;font-size:14px}
-    .session-meta{font-size:12px;color:var(--muted);margin-top:2px}
-    /* DATE DISPLAY */
-    .date-badge{font-family:var(--mono);font-size:12px;color:var(--muted);background:var(--bg);padding:6px 12px;border-radius:8px;border:1px solid var(--border)}
-    /* FILTER TABS */
-    .filter-tabs{display:flex;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:3px;gap:2px}
-    .filter-tab{padding:6px 14px;font-size:12px;font-weight:600;border:none;background:transparent;color:var(--muted);border-radius:7px;cursor:pointer;font-family:var(--f);transition:all .15s}
-    .filter-tab.active{background:var(--card);color:var(--blue);box-shadow:0 1px 3px rgba(0,0,0,.1)}
-    /* EFF BAR */
-    .eff-wrap{display:flex;align-items:center;gap:8px}
-    .eff-bg{flex:1;height:6px;background:var(--bg);border-radius:999px;overflow:hidden;border:1px solid var(--border)}
-    .eff-fill{height:100%;border-radius:999px}
-    .eff-pct{font-size:11px;font-family:var(--mono);color:var(--muted);min-width:34px}
-    .empty td{color:var(--dim)!important;text-align:center;padding:28px!important}
-    @media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(3,1fr)}.chart-row,.two-col{grid-template-columns:1fr}.sidebar{display:none}.content{margin-left:0}}
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Cedarwings SAS — Manager Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#f0f4f8;--card:#fff;--bdr:#e2e8f0;--txt:#0f172a;--mu:#64748b;--dim:#94a3b8;
+  --blue:#3b5fe2;--b50:#eef2ff;--b100:#e0e7ff;
+  --green:#16a34a;--g50:#f0fdf4;--g100:#dcfce7;
+  --amber:#d97706;--a50:#fffbeb;--a100:#fef3c7;
+  --red:#dc2626;--r50:#fef2f2;--r100:#fee2e2;
+  --purple:#7c3aed;--p50:#f5f3ff;--p100:#ede9fe;
+  --teal:#0d9488;--t50:#f0fdfa;--t100:#ccfbf1;
+  --f:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 0 0 1px rgba(0,0,0,.04);
+  --sh2:0 6px 24px rgba(0,0,0,.09),0 0 0 1px rgba(0,0,0,.04)
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh;opacity:1!important}
+/* SIDEBAR */
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--card);border-right:1px solid var(--bdr);display:flex;flex-direction:column;z-index:100;overflow-y:auto}
+.sb-top{display:flex;align-items:center;gap:12px;padding:20px 18px 16px;border-bottom:1px solid var(--bdr)}
+.sb-logo{width:40px;height:40px;background:linear-gradient(135deg,#3b5fe2,#6366f1);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:0 4px 12px rgba(59,95,226,.3)}
+.sb-name{font-weight:800;font-size:14px;letter-spacing:-.2px}
+.sb-badge{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;margin-top:3px;background:var(--b50);color:var(--blue)}
+.sb-nav{flex:1;padding:10px}
+.sb-sec{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;padding:14px 8px 6px}
+.nav-link{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13px;font-weight:500;color:var(--mu);text-decoration:none;transition:background .12s,color .12s}
+.nav-link:hover{background:var(--bg);color:var(--txt)}
+.nav-link.active{background:var(--b50);color:var(--blue);font-weight:700}
+.nav-link .ic{font-size:15px;width:18px;text-align:center;flex-shrink:0}
+.sb-foot{padding:12px 10px;border-top:1px solid var(--bdr)}
+/* MAIN CONTENT */
+.content{margin-left:240px;min-height:100vh}
+.topbar{background:var(--card);border-bottom:1px solid var(--bdr);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:50;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.top-left .page-title{font-size:20px;font-weight:800;letter-spacing:-.4px}
+.top-left .page-date{font-size:12px;color:var(--mu);margin-top:2px}
+.top-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.live-badge{display:flex;align-items:center;gap:6px;background:var(--g50);border:1px solid var(--g100);padding:5px 13px;border-radius:999px;font-size:12px;font-weight:700;color:var(--green)}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(22,163,74,.4)}60%{box-shadow:0 0 0 5px rgba(22,163,74,0)}}
+/* RANGE TABS */
+.range-tabs{display:flex;background:var(--bg);border:1px solid var(--bdr);border-radius:9px;padding:3px;gap:2px}
+.rt{padding:5px 14px;font-size:12px;font-weight:600;border:none;background:transparent;color:var(--mu);border-radius:7px;cursor:pointer;font-family:var(--f);transition:all .12s}
+.rt.active{background:var(--card);color:var(--blue);box-shadow:0 1px 3px rgba(0,0,0,.12);font-weight:700}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;font-size:13px;font-weight:600;border:none;border-radius:9px;cursor:pointer;font-family:var(--f);transition:all .12s}
+.btn-ghost{background:var(--card);border:1px solid var(--bdr);color:var(--mu)}.btn-ghost:hover{color:var(--txt);border-color:var(--blue)}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#2e4fc7}
+/* PAGE BODY */
+.body{padding:22px 28px 60px}
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:22px}
+.kpi{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:20px 18px 16px;position:relative;overflow:hidden;transition:box-shadow .2s;cursor:default}
+.kpi:hover{box-shadow:var(--sh2);transform:translateY(-1px)}
+.kpi-stripe{position:absolute;top:0;left:0;right:0;height:3px}
+.kpi-ico{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px}
+.kpi-val{font-size:32px;font-weight:800;font-family:var(--mono);letter-spacing:-1.5px;line-height:1;color:var(--txt)}
+.kpi-lbl{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-top:8px}
+.kpi-sub{font-size:11px;color:var(--dim);margin-top:4px;min-height:16px}
+/* SECTION */
+.section-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:8px}
+.section-title{font-size:15px;font-weight:700;letter-spacing:-.1px}
+.section-sub{font-size:12px;color:var(--mu);margin-top:3px}
+/* CARDS */
+.card{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:22px;margin-bottom:16px}
+/* GRIDS */
+.g2{display:grid;grid-template-columns:3fr 2fr;gap:16px;margin-bottom:16px}
+.g2e{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+/* TABLE */
+.tw{overflow-x:auto;border-radius:12px;border:1px solid var(--bdr)}
+table{width:100%;border-collapse:collapse}
+thead th{padding:10px 14px;font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;background:#f8fafc;border-bottom:1px solid var(--bdr);white-space:nowrap;text-align:left}
+tbody td{padding:12px 14px;font-size:13px;border-bottom:1px solid var(--bdr);color:var(--txt)}
+tbody tr:last-child td{border:none}
+tbody tr:hover{background:#f8fafc}
+.mono{font-family:var(--mono);font-size:12px}
+/* BADGES */
+.bdg{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700}
+.b-g{background:var(--g100);color:#15803d}
+.b-a{background:var(--a100);color:#92400e}
+.b-r{background:var(--r100);color:#991b1b}
+.b-b{background:var(--b100);color:#1e40af}
+.b-p{background:var(--p100);color:#5b21b6}
+.b-t{background:var(--t100);color:#0f766e}
+.b-gray{background:#f1f5f9;color:var(--mu)}
+/* ACTIVE SESSION CARDS */
+.ac{background:var(--bg);border:1.5px solid var(--bdr);border-radius:12px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;transition:border-color .15s}
+.ac:hover{border-color:var(--blue)}
+.ac-av{width:42px;height:42px;border-radius:12px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0}
+.ac-name{font-size:14px;font-weight:700}
+.ac-meta{font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5}
+.ac-time{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--green);line-height:1}
+.ac-time.waste{color:var(--amber)}
+.ac-type{font-size:11px;font-weight:600;margin-top:3px}
+/* ALERT ITEMS */
+.ali{display:flex;gap:10px;padding:11px 14px;border-radius:10px;margin-bottom:7px;align-items:flex-start}
+.ali-d{background:var(--r50);border:1px solid var(--r100)}
+.ali-w{background:var(--a50);border:1px solid var(--a100)}
+.ali-i{font-size:20px;flex-shrink:0;margin-top:1px}
+.ali-title{font-size:13px;font-weight:700}
+.ali-desc{font-size:11px;color:var(--mu);margin-top:2px}
+/* EFF BAR */
+.eff{display:flex;align-items:center;gap:8px}
+.eff-bg{flex:1;height:7px;background:var(--bg);border-radius:999px;overflow:hidden;border:1px solid var(--bdr)}
+.eff-f{height:100%;border-radius:999px}
+.eff-pct{font-family:var(--mono);font-size:11px;min-width:34px;font-weight:700}
+/* EMPTY */
+.empty-cell{color:var(--dim)!important;text-align:center;padding:28px!important}
+/* REQ ITEM */
+.req-i{background:var(--bg);border:1px solid var(--bdr);border-radius:10px;padding:12px;margin-bottom:7px;display:flex;gap:10px;align-items:flex-start}
+.req-name{font-size:13px;font-weight:700}
+.req-meta{font-size:11px;color:var(--mu);margin-top:3px}
+@media(max-width:1300px){.kpi-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.g2,.g3{grid-template-columns:1fr}.sidebar{display:none}.content{margin-left:0}}
+@media(max-width:640px){.kpi-grid{grid-template-columns:1fr 1fr}.g2e{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 
 <aside class="sidebar">
-  <div class="sb-brand">
+  <div class="sb-top">
     <div class="sb-logo">⚙</div>
     <div>
       <div class="sb-name">Cedarwings SAS</div>
-      <div class="role-badge badge-mgr">Manager</div>
+      <div class="sb-badge">Manager</div>
     </div>
   </div>
   <nav class="sb-nav">
     <div class="sb-sec">Operations</div>
-    <a href="manager.html" class="sb-link active"><span class="icon">📊</span>Dashboard</a>
-    <a href="production.html" class="sb-link"><span class="icon">🏭</span>Production</a>
-    <a href="machines.html" class="sb-link"><span class="icon">⚙</span>Machines</a>
+    <a href="manager.html" class="nav-link active"><span class="ic">📊</span>Dashboard</a>
+    <a href="production.html" class="nav-link"><span class="ic">🏭</span>Production</a>
+    <a href="machines.html" class="nav-link"><span class="ic">⚙</span>Machines</a>
     <div class="sb-sec">Team</div>
-    <a href="employees.html" class="sb-link"><span class="icon">👥</span>Employees</a>
+    <a href="employees.html" class="nav-link"><span class="ic">👥</span>Employees</a>
+    <a href="time_report.html" class="nav-link"><span class="ic">📈</span>Time Report</a>
     <div class="sb-sec">Resources</div>
-    <a href="inventory.html" class="sb-link"><span class="icon">📦</span>Inventory</a>
-    <a href="time_report.html" class="sb-link"><span class="icon">📈</span>Time Report</a>
+    <a href="inventory.html" class="nav-link"><span class="ic">📦</span>Inventory</a>
     <div class="sb-sec">Terminal</div>
-    <a href="clocking.html" class="sb-link"><span class="icon">⏱</span>Clocking Terminal</a>
+    <a href="clocking.html" class="nav-link"><span class="ic">⏱</span>Clocking Terminal</a>
   </nav>
-  <div class="sb-footer">
-    <a href="index.html" class="sb-link"><span class="icon">←</span>Switch Role</a>
+  <div class="sb-foot">
+    <a href="index.html" class="nav-link"><span class="ic">←</span>Switch Role</a>
   </div>
 </aside>
 
 <div class="content">
   <div class="topbar">
-    <div>
-      <div class="topbar-title">Operations Dashboard</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:3px" id="dateDisplay">Loading…</div>
+    <div class="top-left">
+      <div class="page-title">Operations Dashboard</div>
+      <div class="page-date" id="pageDate">Loading…</div>
     </div>
-    <div class="topbar-right">
-      <span class="live-dot"></span>
-      <span style="font-size:12px;color:var(--muted)">Live</span>
-      <div class="filter-tabs">
-        <button class="filter-tab active" data-range="today">Today</button>
-        <button class="filter-tab" data-range="week">This Week</button>
-        <button class="filter-tab" data-range="month">This Month</button>
+    <div class="top-right">
+      <div class="live-badge"><div class="live-dot"></div>Live</div>
+      <div class="range-tabs">
+        <button class="rt active" data-r="today">Today</button>
+        <button class="rt" data-r="week">This Week</button>
+        <button class="rt" data-r="month">This Month</button>
       </div>
-      <button class="btn btn-primary" id="refreshBtn">↻ Refresh</button>
+      <button class="btn btn-ghost" id="exportBtn">⬇ Export CSV</button>
+      <button class="btn btn-blue" id="refreshBtn">↻ Refresh</button>
     </div>
   </div>
 
-  <div class="page-body">
-    <!-- KPI Row -->
+  <div class="body">
+
+    <!-- KPI CARDS -->
     <div class="kpi-grid">
-      <div class="kpi"><div class="kpi-icon" style="background:#eff6ff">⏱</div><div class="kpi-label">Sessions</div><div class="kpi-value" id="kpiSessions">—</div><div class="kpi-sub" id="kpiSessionsSub">—</div></div>
-      <div class="kpi"><div class="kpi-icon" style="background:#f0fdf4">✅</div><div class="kpi-label">Productive Hrs</div><div class="kpi-value" id="kpiProductive">—</div><div class="kpi-sub" id="kpiProductiveSub">—</div></div>
-      <div class="kpi"><div class="kpi-icon" style="background:#fff7ed">⚙</div><div class="kpi-label">Aligners Today</div><div class="kpi-value" id="kpiAligners">—</div><div class="kpi-sub">Produced (manual entry)</div></div>
-      <div class="kpi"><div class="kpi-icon" style="background:#f5f3ff">📁</div><div class="kpi-label">Cases Today</div><div class="kpi-value" id="kpiCases">—</div><div class="kpi-sub">Completed cases</div></div>
-      <div class="kpi"><div class="kpi-icon" style="background:#fef2f2">⚠</div><div class="kpi-label">Low Stock Alerts</div><div class="kpi-value" id="kpiLowStock">—</div><div class="kpi-sub">Items below minimum</div></div>
-      <div class="kpi"><div class="kpi-icon" style="background:#fef3c7">📋</div><div class="kpi-label">Open Requisitions</div><div class="kpi-value" id="kpiReqs">—</div><div class="kpi-sub">Pending / Approved</div></div>
+      <div class="kpi">
+        <div class="kpi-stripe" style="background:linear-gradient(90deg,#3b5fe2,#6366f1)"></div>
+        <div class="kpi-ico" style="background:var(--b50)">⏱</div>
+        <div class="kpi-val" id="kSess">—</div>
+        <div class="kpi-lbl">Total Sessions</div>
+        <div class="kpi-sub" id="kSessSub">Loading…</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-stripe" style="background:linear-gradient(90deg,#16a34a,#059669)"></div>
+        <div class="kpi-ico" style="background:var(--g50)">✅</div>
+        <div class="kpi-val" id="kEff">—</div>
+        <div class="kpi-lbl">Efficiency</div>
+        <div class="kpi-sub" id="kEffSub">Loading…</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-stripe" style="background:linear-gradient(90deg,#d97706,#f59e0b)"></div>
+        <div class="kpi-ico" style="background:var(--a50)">🦷</div>
+        <div class="kpi-val" id="kAl">—</div>
+        <div class="kpi-lbl">Aligners Produced</div>
+        <div class="kpi-sub" id="kAlSub">Loading…</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-stripe" style="background:linear-gradient(90deg,#7c3aed,#8b5cf6)"></div>
+        <div class="kpi-ico" style="background:var(--p50)">📁</div>
+        <div class="kpi-val" id="kCs">—</div>
+        <div class="kpi-lbl">Cases Completed</div>
+        <div class="kpi-sub" id="kCsSub">Loading…</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-stripe" style="background:linear-gradient(90deg,#dc2626,#ef4444)"></div>
+        <div class="kpi-ico" style="background:var(--r50)">⚠</div>
+        <div class="kpi-val" id="kLow">—</div>
+        <div class="kpi-lbl">Stock Alerts</div>
+        <div class="kpi-sub" id="kLowSub">Loading…</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-stripe" style="background:linear-gradient(90deg,#0d9488,#14b8a6)"></div>
+        <div class="kpi-ico" style="background:var(--t50)">📋</div>
+        <div class="kpi-val" id="kReq">—</div>
+        <div class="kpi-lbl">Open Requisitions</div>
+        <div class="kpi-sub" id="kReqSub">Loading…</div>
+      </div>
     </div>
 
-    <!-- Charts Row -->
-    <div class="chart-row">
+    <!-- CHARTS ROW 1: trend + doughnut -->
+    <div class="g2">
       <div class="card">
-        <div class="sec-hdr"><div><div class="sec-title">Employee Productivity</div><div class="sec-sub">Productive vs non-productive minutes</div></div></div>
-        <canvas id="empChart" height="230"></canvas>
-      </div>
-      <div class="card">
-        <div class="sec-hdr"><div><div class="sec-title">Session Types</div><div class="sec-sub">Distribution by type</div></div></div>
-        <canvas id="typeChart" height="230"></canvas>
-      </div>
-    </div>
-
-    <!-- Active + Alerts Row -->
-    <div class="two-col">
-      <div class="card">
-        <div class="sec-hdr">
-          <div><div class="sec-title">🟢 Active Sessions</div><div class="sec-sub">Employees currently working</div></div>
-          <span class="badge b-green" id="activeCount">0 active</span>
+        <div class="section-hdr">
+          <div>
+            <div class="section-title">📈 7-Day Productivity Trend</div>
+            <div class="section-sub">Daily productive vs non-productive hours</div>
+          </div>
         </div>
-        <div id="activeList"><div style="color:var(--dim);font-size:13px">No active sessions.</div></div>
+        <canvas id="chartTrend" height="220"></canvas>
       </div>
       <div class="card">
-        <div class="sec-hdr"><div><div class="sec-title">⚠ Alerts</div><div class="sec-sub">Low stock & near expiry</div></div></div>
-        <div id="alertsList"><div style="color:var(--dim);font-size:13px">Loading…</div></div>
+        <div class="section-hdr">
+          <div>
+            <div class="section-title">🍩 Session Types</div>
+            <div class="section-sub">Distribution breakdown</div>
+          </div>
+        </div>
+        <canvas id="chartType" height="220"></canvas>
       </div>
     </div>
 
-    <!-- Production + Employees -->
-    <div class="two-col">
+    <!-- CHARTS ROW 2: employees + production -->
+    <div class="g2">
       <div class="card">
-        <div class="sec-hdr">
-          <div><div class="sec-title">Recent Production</div><div class="sec-sub">Aligners & cases recorded</div></div>
-          <a href="production.html" class="btn btn-ghost" style="font-size:12px">View All →</a>
+        <div class="section-hdr">
+          <div>
+            <div class="section-title">👥 Employee Efficiency</div>
+            <div class="section-sub">Productive vs non-productive per person</div>
+          </div>
         </div>
-        <div class="table-wrap">
+        <canvas id="chartEmp" height="220"></canvas>
+      </div>
+      <div class="card">
+        <div class="section-hdr">
+          <div>
+            <div class="section-title">🏭 Production by Day</div>
+            <div class="section-sub">Aligners produced &amp; cases completed</div>
+          </div>
+        </div>
+        <canvas id="chartProd" height="220"></canvas>
+      </div>
+    </div>
+
+    <!-- ACTIVE + ALERTS + REQS -->
+    <div class="g3">
+      <div class="card">
+        <div class="section-hdr">
+          <div><div class="section-title">🟢 Active Sessions</div><div class="section-sub">Currently clocked in</div></div>
+          <span class="bdg b-g" id="activeCount">0 active</span>
+        </div>
+        <div id="activeList"><div style="color:var(--dim);font-size:13px;text-align:center;padding:20px">No active sessions right now.</div></div>
+      </div>
+      <div class="card">
+        <div class="section-hdr"><div><div class="section-title">⚠ Stock Alerts</div><div class="section-sub">Low stock &amp; near expiry</div></div></div>
+        <div id="alertList"><div style="color:var(--dim);font-size:13px;text-align:center;padding:16px">Loading…</div></div>
+      </div>
+      <div class="card">
+        <div class="section-hdr">
+          <div><div class="section-title">📋 Open Requisitions</div><div class="section-sub">Pending &amp; approved</div></div>
+          <a href="inventory.html" style="font-size:12px;color:var(--blue);text-decoration:none;font-weight:600">Manage →</a>
+        </div>
+        <div id="reqList"><div style="color:var(--dim);font-size:13px;text-align:center;padding:16px">Loading…</div></div>
+      </div>
+    </div>
+
+    <!-- EMP SUMMARY + PRODUCTION LOG -->
+    <div class="g2e">
+      <div class="card">
+        <div class="section-hdr">
+          <div><div class="section-title">👥 Employee Summary</div><div class="section-sub">Productivity for selected period</div></div>
+          <a href="time_report.html" class="btn btn-ghost" style="font-size:12px;padding:6px 12px">Full Report →</a>
+        </div>
+        <div class="tw">
           <table>
-            <thead><tr><th>Order</th><th>Aligners</th><th>Cases</th><th>Employee</th><th>Date</th></tr></thead>
-            <tbody id="productionBody"><tr class="empty"><td colspan="5">Loading…</td></tr></tbody>
+            <thead><tr><th>Employee</th><th>Sessions</th><th>Prod. Hrs</th><th>Efficiency</th><th>Status</th></tr></thead>
+            <tbody id="empTable"><tr><td colspan="5" class="empty-cell">Loading…</td></tr></tbody>
           </table>
         </div>
       </div>
       <div class="card">
-        <div class="sec-hdr"><div><div class="sec-title">Employee Summary</div><div class="sec-sub">Efficiency for selected period</div></div></div>
-        <div class="table-wrap">
+        <div class="section-hdr">
+          <div><div class="section-title">🏭 Recent Production</div><div class="section-sub">Latest recorded batches</div></div>
+          <a href="production.html" class="btn btn-ghost" style="font-size:12px;padding:6px 12px">All Records →</a>
+        </div>
+        <div class="tw">
           <table>
-            <thead><tr><th>Employee</th><th>Sessions</th><th>Efficiency</th><th>Status</th></tr></thead>
-            <tbody id="empSummaryBody"><tr class="empty"><td colspan="4">Loading…</td></tr></tbody>
+            <thead><tr><th>Order</th><th>Aligners</th><th>Cases</th><th>Employee</th><th>Time</th></tr></thead>
+            <tbody id="prodTable"><tr><td colspan="5" class="empty-cell">Loading…</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
+
+    <!-- FULL SESSION LOG -->
+    <div class="card">
+      <div class="section-hdr" style="flex-wrap:wrap;gap:12px">
+        <div>
+          <div class="section-title">📋 Session Log</div>
+          <div class="section-sub" id="sessCount">All sessions for selected period</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <input id="sessSearch" placeholder="🔍 Search employee, order…" style="padding:7px 12px;border:1.5px solid var(--bdr);border-radius:8px;font-family:var(--f);font-size:13px;outline:none;width:200px;color:var(--txt);background:#fff"/>
+          <select id="sessFilter" style="padding:7px 11px;border:1.5px solid var(--bdr);border-radius:8px;font-family:var(--f);font-size:13px;outline:none;cursor:pointer;color:var(--txt);background:#fff">
+            <option value="all">All Types</option>
+            <option value="productive">Productive</option>
+            <option value="waste">Non-Productive</option>
+            <option value="overtime">Overtime</option>
+          </select>
+        </div>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Employee</th><th>Type</th><th>Step / Category</th><th>Machine</th><th>Order</th><th>Start</th><th>End</th><th>Duration</th></tr></thead>
+          <tbody id="sessTable"><tr><td colspan="8" class="empty-cell">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 </div>
 
 <script type="module">
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { SUPABASE_CONFIG } from './config.js'
-const sb = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey)
-let range='today', charts={}
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2'
+import{SUPABASE_CONFIG}from'./config.js'
+const sb=createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey)
+
+const COLORS=['#3b5fe2','#16a34a','#d97706','#dc2626','#7c3aed','#0d9488','#db2777','#ea580c','#0891b2','#65a30d']
+const avCol=n=>COLORS[(n||'').charCodeAt(0)%COLORS.length]
+const init=n=>(n||'?').trim().split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)
+const mins=(a,b)=>Math.max(0,Math.round((b-a)/60000))
+const dur=r=>r.started_at&&r.ended_at?mins(new Date(r.started_at),new Date(r.ended_at)):0
+const hm=m=>`${Math.floor(m/60)}h ${String(m%60).padStart(2,'0')}m`
+const hms=ms=>{const t=Math.max(0,Math.floor(ms/1000));return String(Math.floor(t/3600)).padStart(2,'0')+':'+String(Math.floor(t%3600/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0')}
+const fdt=v=>v?new Date(v).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'—'
+const dUntil=d=>{if(!d)return null;const a=new Date();a.setHours(0,0,0,0);return Math.round((new Date(d)-a)/86400000)}
+
+let range='today',charts={},allSess=[],allProd=[]
 
 function getRange(){
   const n=new Date();let s,e
@@ -235,120 +361,204 @@ function getRange(){
   else{s=new Date(n.getFullYear(),n.getMonth(),1);e=new Date(n);e.setHours(23,59,59,999)}
   return{s,e}
 }
-const mins=(a,b)=>Math.max(0,Math.round((b-a)/60000))
-const hm=m=>`${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`
-const dur=r=>!r.started_at||!r.ended_at?0:mins(new Date(r.started_at),new Date(r.ended_at))
-const fdt=v=>v?new Date(v).toLocaleDateString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'—'
-function badge(type){
-  const l=(type||'').toLowerCase()
-  if(l==='productive'||l==='active'||l==='fulfilled')return'<span class="badge b-green">'+type+'</span>'
-  if(l==='waste')return'<span class="badge b-amber">Non-Productive</span>'
-  if(l==='overtime')return'<span class="badge b-purple">Overtime</span>'
-  if(l==='closed')return'<span class="badge b-gray">Closed</span>'
-  return'<span class="badge b-gray">'+type+'</span>'
-}
-function chOpts(){return{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#64748b',font:{family:"'DM Sans'",size:12}}}},scales:{x:{ticks:{color:'#94a3b8'},grid:{color:'#f1f5f9'}},y:{ticks:{color:'#94a3b8'},grid:{color:'#f1f5f9'}}}}}
-function mkOrUp(key,el,type,data,opts){if(charts[key])charts[key].destroy();charts[key]=new Chart(document.getElementById(el),{type,data,options:opts})}
 
-document.getElementById('dateDisplay').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})
+function mkC(key,el,cfg){if(charts[key])charts[key].destroy();charts[key]=new Chart(document.getElementById(el),cfg)}
+function lineOpts(){return{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#64748b',font:{family:"'DM Sans'",size:11},boxWidth:11,padding:14}}},scales:{x:{ticks:{color:'#94a3b8',font:{size:10}},grid:{color:'#f1f5f9'}},y:{beginAtZero:true,ticks:{color:'#94a3b8',font:{size:10}},grid:{color:'#f1f5f9'}}}}}
+function barOpts(){return{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#64748b',font:{family:"'DM Sans'",size:11},boxWidth:11,padding:14}}},scales:{x:{ticks:{color:'#94a3b8',font:{size:10}},grid:{display:false}},y:{beginAtZero:true,ticks:{color:'#94a3b8',font:{size:10}},grid:{color:'#f1f5f9'}}}}}
+function dnutOpts(){return{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'right',labels:{color:'#64748b',font:{family:"'DM Sans'",size:11},boxWidth:11,padding:12}}}}}
 
 async function load(){
   const{s,e}=getRange()
-  const[sessRes,prodRes,lotsRes,reqRes]=await Promise.all([
+  const[sR,pR,lR,rR]=await Promise.all([
     sb.from('time_sessions').select('*').gte('started_at',s.toISOString()).lte('started_at',e.toISOString()).order('started_at',{ascending:false}).limit(500),
-    sb.from('production_records').select('*').gte('created_at',s.toISOString()).lte('created_at',e.toISOString()).order('created_at',{ascending:false}).limit(20),
-    sb.from('inventory_lots_enriched_view').select('*'),
-    sb.from('inventory_requisitions').select('*').in('status',['pending','approved'])
+    sb.from('production_records').select('*').gte('created_at',s.toISOString()).lte('created_at',e.toISOString()).order('created_at',{ascending:false}).limit(50),
+    sb.from('inventory_lots_enriched_view').select('item_name,available_qty,min_qty,min_stock,expiry_date,lot_no').limit(200),
+    sb.from('inventory_requisitions').select('*').in('status',['pending','approved']).order('created_at',{ascending:false}).limit(10)
   ])
-  const rows=sessRes.data||[], prods=prodRes.data||[], lots=lotsRes.data||[], reqs=reqRes.data||[]
-  const active=rows.filter(r=>!r.ended_at)
-  let pMin=0,wMin=0,oMin=0
+  allSess=sR.data||[];allProd=pR.data||[]
+  const lots=lR.data||[],reqs=rR.data||[]
+  const active=allSess.filter(r=>!r.ended_at)
+
+  // per-employee map
   const byEmp=new Map()
-  rows.forEach(r=>{
+  let pMin=0,wMin=0,oMin=0
+  allSess.forEach(r=>{
     const m=dur(r),t=r.session_type||''
     if(t==='productive')pMin+=m;if(t==='waste')wMin+=m;if(t==='overtime')oMin+=m
     const k=r.employee_name||'Unknown'
-    if(!byEmp.has(k))byEmp.set(k,{name:k,sessions:0,p:0,w:0,status:'Closed',latestStart:null,latestEnded:true})
-    const it=byEmp.get(k);it.sessions++
-    if(t==='productive')it.p+=m;if(t==='waste')it.w+=m
-    const rs=r.started_at?new Date(r.started_at):null
-    if(rs&&(!it.latestStart||rs>it.latestStart)){it.latestStart=rs;it.status=r.ended_at?'Closed':'Active';it.latestEnded=!!r.ended_at}
+    if(!byEmp.has(k))byEmp.set(k,{name:k,n:0,p:0,w:0,o:0,active:false,order:r.order_no,machine:r.machine,wt:r.work_type,st:r.started_at,stype:t})
+    const it=byEmp.get(k);it.n++
+    if(t==='productive')it.p+=m;if(t==='waste')it.w+=m;if(t==='overtime')it.o+=m
+    if(!r.ended_at){it.active=true;it.order=r.order_no;it.machine=r.machine;it.wt=r.work_type;it.st=r.started_at;it.stype=t}
   })
+
+  const totAl=allProd.reduce((a,r)=>a+(r.aligners_count||0),0)
+  const totCs=allProd.reduce((a,r)=>a+(r.cases_count||0),0)
+  const tot=pMin+wMin,eff=tot>0?Math.round(pMin/tot*100):0
+  const lowItems=lots.filter(r=>{const q=Number(r.available_qty||0),m=Number(r.min_qty||r.min_stock||0);return q<=0||(m>0&&q<=m)})
+  const nearExp=lots.filter(r=>{const d=dUntil(r.expiry_date);return d!==null&&d>=0&&d<=30})
+
   // KPIs
-  const totAligners=prods.reduce((a,r)=>a+(r.aligners_count||0),0)
-  const totCases=prods.reduce((a,r)=>a+(r.cases_count||0),0)
-  const lowStock=lots.filter(r=>{const qty=Number(r.available_qty||0),min=Number(r.min_qty||r.min_stock||0);return min>0&&qty<=min}).length
-  document.getElementById('kpiSessions').textContent=rows.length
-  document.getElementById('kpiSessionsSub').textContent=`${active.length} currently open`
-  document.getElementById('kpiProductive').textContent=hm(pMin)
-  document.getElementById('kpiProductiveSub').textContent=(pMin+wMin)>0?`${Math.round(pMin/(pMin+wMin)*100)}% efficiency`:'No sessions'
-  document.getElementById('kpiAligners').textContent=totAligners
-  document.getElementById('kpiCases').textContent=totCases
-  document.getElementById('kpiLowStock').textContent=lowStock
-  document.getElementById('kpiReqs').textContent=reqs.length
-  // Charts
+  document.getElementById('kSess').textContent=allSess.length
+  document.getElementById('kSessSub').textContent=`${active.length} currently active`
+  document.getElementById('kSessSub').style.color=active.length>0?'var(--green)':'var(--dim)'
+  document.getElementById('kEff').textContent=eff+'%'
+  document.getElementById('kEffSub').textContent=`${hm(pMin)} productive`
+  document.getElementById('kEffSub').style.color=eff>=70?'var(--green)':eff>=40?'var(--amber)':'var(--red)'
+  document.getElementById('kAl').textContent=totAl.toLocaleString()
+  document.getElementById('kAlSub').textContent=`${allProd.length} batches recorded`
+  document.getElementById('kCs').textContent=totCs
+  document.getElementById('kCsSub').textContent=`Cases this period`
+  document.getElementById('kLow').textContent=lowItems.length
+  document.getElementById('kLowSub').textContent=lowItems.length>0?`⏰ ${nearExp.length} near expiry`:'All stock OK'
+  document.getElementById('kLowSub').style.color=lowItems.length>0?'var(--red)':'var(--green)'
+  document.getElementById('kReq').textContent=reqs.length
+  document.getElementById('kReqSub').textContent=`${reqs.filter(r=>r.status==='approved').length} approved`
+  document.getElementById('kReqSub').style.color=reqs.length>0?'var(--amber)':'var(--dim)'
+
+  // 7-day data
+  const days7=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);d.setHours(0,0,0,0);days7.push(d.toISOString().slice(0,10))}
+  const dp={},dw={},dal={},dcs={}
+  days7.forEach(d=>{dp[d]=0;dw[d]=0;dal[d]=0;dcs[d]=0})
+  allSess.forEach(r=>{const k=(r.started_at||'').slice(0,10);if(dp[k]!==undefined){const m=dur(r);if(r.session_type==='productive')dp[k]+=m;if(r.session_type==='waste')dw[k]+=m}})
+  allProd.forEach(r=>{const k=(r.created_at||'').slice(0,10);if(dal[k]!==undefined){dal[k]+=(r.aligners_count||0);dcs[k]+=(r.cases_count||0)}})
+  const dayLabels=days7.map(d=>new Date(d+'T12:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}))
+
+  // Chart: Trend
+  mkC('trend','chartTrend',{type:'line',data:{labels:dayLabels,datasets:[
+    {label:'Productive (min)',data:days7.map(d=>dp[d]),borderColor:'#16a34a',backgroundColor:'rgba(22,163,74,.1)',fill:true,tension:.4,pointBackgroundColor:'#16a34a',pointRadius:4,pointHoverRadius:6,borderWidth:2.5},
+    {label:'Non-Productive (min)',data:days7.map(d=>dw[d]),borderColor:'#d97706',backgroundColor:'rgba(217,119,6,.08)',fill:true,tension:.4,pointBackgroundColor:'#d97706',pointRadius:4,pointHoverRadius:6,borderWidth:2.5}
+  ]},options:lineOpts()})
+
+  // Chart: Doughnut
+  mkC('type','chartType',{type:'doughnut',data:{labels:['Productive','Non-Productive','Overtime'],datasets:[{data:[pMin||0.1,wMin||0,oMin||0],backgroundColor:['rgba(22,163,74,.85)','rgba(217,119,6,.85)','rgba(124,58,237,.85)'],borderColor:['#16a34a','#d97706','#7c3aed'],borderWidth:2,hoverOffset:8}]},options:dnutOpts()})
+
+  // Chart: Emp efficiency
   const empArr=[...byEmp.values()].sort((a,b)=>b.p-a.p).slice(0,8)
-  mkOrUp('emp','empChart','bar',{
-    labels:empArr.map(e=>e.name),
-    datasets:[
-      {label:'Productive (min)',data:empArr.map(e=>e.p),backgroundColor:'rgba(22,163,74,.7)',borderColor:'#16a34a',borderWidth:1.5},
-      {label:'Non-Productive (min)',data:empArr.map(e=>e.w),backgroundColor:'rgba(217,119,6,.6)',borderColor:'#d97706',borderWidth:1.5}
-    ]
-  },chOpts())
-  const co={...chOpts()};delete co.scales
-  mkOrUp('type','typeChart','doughnut',{
-    labels:['Productive','Non-Productive','Overtime'],
-    datasets:[{data:[pMin,wMin,oMin],backgroundColor:['rgba(22,163,74,.8)','rgba(217,119,6,.8)','rgba(124,58,237,.8)'],borderColor:['#16a34a','#d97706','#7c3aed'],borderWidth:2}]
-  },{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#64748b',font:{family:"'DM Sans'",size:12}}}}})
+  mkC('emp','chartEmp',{type:'bar',data:{labels:empArr.map(e=>e.name),datasets:[
+    {label:'Productive (min)',data:empArr.map(e=>e.p),backgroundColor:empArr.map(e=>{const t=e.p+e.w;return t>0&&e.p/t>=.7?'rgba(22,163,74,.8)':t>0&&e.p/t>=.4?'rgba(217,119,6,.8)':'rgba(220,38,38,.8)'}),borderRadius:5,borderSkipped:false},
+    {label:'Non-Productive (min)',data:empArr.map(e=>e.w),backgroundColor:'rgba(217,119,6,.25)',borderRadius:5,borderSkipped:false}
+  ]},options:barOpts()})
+
+  // Chart: Production
+  mkC('prod','chartProd',{type:'bar',data:{labels:dayLabels,datasets:[
+    {label:'Aligners',data:days7.map(d=>dal[d]),backgroundColor:'rgba(217,119,6,.8)',borderRadius:5,borderSkipped:false},
+    {label:'Cases',data:days7.map(d=>dcs[d]),backgroundColor:'rgba(124,58,237,.8)',borderRadius:5,borderSkipped:false}
+  ]},options:barOpts()})
+
   // Active sessions
   document.getElementById('activeCount').textContent=`${active.length} active`
-  document.getElementById('activeList').innerHTML=active.length?active.map(r=>`<div class="session-item">
-    <div class="live-dot"></div>
-    <div>
-      <div class="session-emp">${r.employee_name||'—'}</div>
-      <div class="session-meta">${r.work_type||r.session_type||'—'} · ${r.machine||'—'} · Order: ${r.order_no||'—'}</div>
-    </div>
-    <div style="margin-left:auto">${badge(r.session_type)}</div>
-  </div>`)
-  .join(''):`<div style="color:var(--dim);font-size:13px;text-align:center;padding:12px">No active sessions right now.</div>`
+  document.getElementById('activeList').innerHTML=active.length
+    ?active.map(r=>`<div class="ac">
+        <div class="ac-av" style="background:${avCol(r.employee_name||'?')}">${init(r.employee_name||'?')}</div>
+        <div style="flex:1;min-width:0">
+          <div class="ac-name">${r.employee_name||'—'}</div>
+          <div class="ac-meta">${r.work_type||r.session_type||'—'} · ${r.machine||'—'}<br>Order: <strong>${r.order_no||'—'}</strong></div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div class="ac-time ${r.session_type==='waste'?'waste':''}" id="act-${r.id}">${r.started_at?hms(Date.now()-new Date(r.started_at).getTime()):'—'}</div>
+          <div class="ac-type">${r.session_type==='productive'?'<span style="color:#16a34a">● Productive</span>':r.session_type==='waste'?'<span style="color:#d97706">● Non-Prod</span>':'<span style="color:var(--mu)">● '+r.session_type+'</span>'}</div>
+        </div>
+      </div>`).join('')
+    :`<div style="color:var(--dim);font-size:13px;text-align:center;padding:20px">No employees clocked in right now.</div>`
+  active.forEach(r=>{if(r.started_at){const el=document.getElementById('act-'+r.id);if(el)setInterval(()=>{el.textContent=hms(Date.now()-new Date(r.started_at).getTime())},1000)}})
+
   // Alerts
   const alerts=[]
   lots.forEach(r=>{
-    const qty=Number(r.available_qty||0),min=Number(r.min_qty||r.min_stock||0)
-    const d=r.expiry_date?Math.round((new Date(r.expiry_date)-new Date())/86400000):null
-    if(min>0&&qty<=0)alerts.push({type:'danger',icon:'🚫',title:`Out of stock: ${r.item_name}`,desc:`Available: 0 · Min required: ${min}`})
-    else if(min>0&&qty<=min)alerts.push({type:'warn',icon:'⚠',title:`Low stock: ${r.item_name}`,desc:`Available: ${qty} · Min: ${min}`})
-    if(d!==null&&d<=30&&d>=0)alerts.push({type:'warn',icon:'⏰',title:`Expiring soon: ${r.item_name}`,desc:`Lot ${r.lot_no||'—'} · Expires in ${d} day(s)`})
-    if(d!==null&&d<0)alerts.push({type:'danger',icon:'⚠',title:`Expired: ${r.item_name}`,desc:`Lot ${r.lot_no||'—'} expired ${Math.abs(d)} day(s) ago`})
+    const q=Number(r.available_qty||0),m=Number(r.min_qty||r.min_stock||0),d=dUntil(r.expiry_date)
+    if(q<=0)alerts.push({t:'d',i:'🚫',h:`Out of stock: ${r.item_name}`,d:'0 remaining — urgent reorder needed'})
+    else if(m>0&&q<=m)alerts.push({t:'w',i:'⚠',h:`Low stock: ${r.item_name}`,d:`${q} left · min ${m} · Lot: ${r.lot_no||'—'}`})
+    if(d!==null&&d>=0&&d<=30)alerts.push({t:'w',i:'⏰',h:`Near expiry: ${r.item_name}`,d:`Lot ${r.lot_no||'—'} · expires in ${d}d`})
+    if(d!==null&&d<0)alerts.push({t:'d',i:'☠',h:`Expired: ${r.item_name}`,d:`Lot ${r.lot_no||'—'} · ${Math.abs(d)}d ago`})
   })
-  document.getElementById('alertsList').innerHTML=alerts.slice(0,6).length?alerts.slice(0,6).map(a=>`<div class="alert-item ${a.type}">
-    <div class="alert-icon">${a.icon}</div>
-    <div><div class="alert-title">${a.title}</div><div class="alert-desc">${a.desc}</div></div>
-  </div>`).join(''):`<div style="color:var(--dim);font-size:13px;text-align:center;padding:12px">✅ No alerts — everything looks good!</div>`
-  // Production
-  document.getElementById('productionBody').innerHTML=prods.length?prods.slice(0,8).map(r=>`<tr>
-    <td class="mono">${r.order_no||'—'}</td>
-    <td class="mono" style="font-weight:700;color:#d97706">${r.aligners_count||0}</td>
-    <td class="mono" style="font-weight:700;color:#7c3aed">${r.cases_count||0}</td>
-    <td>${r.employee_name||'—'}</td>
-    <td class="mono" style="font-size:11px;color:var(--muted)">${fdt(r.created_at)}</td>
-  </tr>`).join(''):`<tr class="empty"><td colspan="5">No production records for this period.</td></tr>`
-  // Emp summary
-  document.getElementById('empSummaryBody').innerHTML=[...byEmp.values()].map(e=>{
-    const tot=e.p+e.w,pct=tot>0?Math.round(e.p/tot*100):0,bc=pct>=70?'#16a34a':pct>=40?'#d97706':'#dc2626'
+  document.getElementById('alertList').innerHTML=alerts.slice(0,5).length
+    ?alerts.slice(0,5).map(a=>`<div class="ali ali-${a.t}"><div class="ali-i">${a.i}</div><div><div class="ali-title">${a.h}</div><div class="ali-desc">${a.d}</div></div></div>`).join('')
+    :`<div style="background:var(--g50);border:1px solid var(--g100);border-radius:10px;padding:12px;font-size:13px;color:var(--green);font-weight:600;text-align:center">✅ All stock levels healthy</div>`
+
+  // Requisitions
+  document.getElementById('reqList').innerHTML=reqs.length
+    ?reqs.slice(0,5).map(r=>`<div class="req-i">
+        <div style="flex:1">
+          <div class="req-name">${r.item_name}</div>
+          <div class="req-meta">Qty: ${r.quantity_requested} · ${r.requester_name||'—'}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end">
+          <span class="bdg ${r.status==='approved'?'b-b':'b-a'}">${r.status}</span>
+          <span class="bdg ${r.priority==='urgent'?'b-r':r.priority==='high'?'b-a':'b-gray'}" style="font-size:9px">${r.priority}</span>
+        </div>
+      </div>`).join('')
+    :`<div style="color:var(--dim);font-size:13px;text-align:center;padding:16px">✅ No open requisitions</div>`
+
+  // Emp table
+  document.getElementById('empTable').innerHTML=[...byEmp.values()].slice(0,10).map(e=>{
+    const t=e.p+e.w,pct=t>0?Math.round(e.p/t*100):0,bc=pct>=70?'var(--green)':pct>=40?'var(--amber)':'var(--red)'
     return`<tr>
-      <td><strong>${e.name}</strong></td>
-      <td class="mono">${e.sessions}</td>
-      <td><div class="eff-wrap"><div class="eff-bg"><div class="eff-fill" style="width:${pct}%;background:${bc}"></div></div><span class="eff-pct" style="color:${bc}">${pct}%</span></div></td>
-      <td>${e.status==='Active'?'<span class="badge b-green">Active</span>':'<span class="badge b-gray">Closed</span>'}</td>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div style="width:32px;height:32px;border-radius:9px;background:${avCol(e.name)};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0">${init(e.name)}</div>
+        <strong>${e.name}</strong>
+      </div></td>
+      <td class="mono">${e.n}</td>
+      <td class="mono" style="color:var(--green)">${hm(e.p)}</td>
+      <td><div class="eff"><div class="eff-bg"><div class="eff-f" style="width:${pct}%;background:${bc}"></div></div><span class="eff-pct" style="color:${bc}">${pct}%</span></div></td>
+      <td>${e.active?`<span class="bdg b-g" style="gap:4px"><span class="live-dot" style="width:6px;height:6px"></span>Active</span>`:'<span class="bdg b-gray">Idle</span>'}</td>
     </tr>`
-  }).join('')||'<tr class="empty"><td colspan="4">No sessions.</td></tr>'
+  }).join('')||'<tr><td colspan="5" class="empty-cell">No sessions in this period.</td></tr>'
+
+  // Production table
+  document.getElementById('prodTable').innerHTML=allProd.slice(0,8).map(r=>`<tr>
+    <td class="mono">${r.order_no||'—'}</td>
+    <td><span style="font-weight:700;color:var(--amber);font-family:var(--mono)">${r.aligners_count||0}</span></td>
+    <td><span style="font-weight:700;color:var(--purple);font-family:var(--mono)">${r.cases_count||0}</span></td>
+    <td>${r.employee_name||'—'}</td>
+    <td class="mono" style="font-size:11px;color:var(--mu)">${fdt(r.created_at)}</td>
+  </tr>`).join('')||'<tr><td colspan="5" class="empty-cell">No production records yet.</td></tr>'
+
+  renderSessions()
+  document.getElementById('sessCount').textContent=`${allSess.length} sessions in this period`
 }
-document.querySelectorAll('.filter-tab').forEach(btn=>btn.addEventListener('click',()=>{
-  document.querySelectorAll('.filter-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');range=btn.dataset.range;load()
+
+function renderSessions(){
+  const term=(document.getElementById('sessSearch').value||'').toLowerCase()
+  const tf=document.getElementById('sessFilter').value
+  const fl=allSess.filter(r=>(!term||(r.employee_name||'').toLowerCase().includes(term)||(r.order_no||'').toLowerCase().includes(term))&&(tf==='all'||r.session_type===tf))
+  document.getElementById('sessTable').innerHTML=fl.length?fl.map(r=>{
+    const m=r.ended_at?dur(r):null
+    const tc=r.session_type==='productive'?'b-g':r.session_type==='waste'?'b-a':r.session_type==='overtime'?'b-p':'b-gray'
+    return`<tr>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div style="width:26px;height:26px;border-radius:7px;background:${avCol(r.employee_name||'?')};color:#fff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0">${init(r.employee_name||'?')}</div>
+        ${r.employee_name||'—'}
+      </div></td>
+      <td><span class="bdg ${tc}">${r.session_type||'—'}</span></td>
+      <td style="font-size:12px;color:var(--mu)">${r.work_type||r.waste_category||'—'}</td>
+      <td style="font-size:12px">${r.machine||'—'}</td>
+      <td class="mono">${r.order_no||'—'}</td>
+      <td class="mono" style="font-size:11px">${fdt(r.started_at)}</td>
+      <td class="mono" style="font-size:11px">${fdt(r.ended_at)}</td>
+      <td class="mono" style="font-weight:700">${m!==null?m+' min':'<span style="color:var(--green)">LIVE</span>'}</td>
+    </tr>`
+  }).join(''):`<tr><td colspan="8" class="empty-cell">No sessions found.</td></tr>`
+}
+
+// Export CSV
+document.getElementById('exportBtn').addEventListener('click',()=>{
+  const rows=[['Employee','Type','Work','Machine','Order','Start','End','Duration(min)']]
+  allSess.forEach(r=>rows.push([r.employee_name||'',r.session_type||'',r.work_type||r.waste_category||'',r.machine||'',r.order_no||'',r.started_at||'',r.ended_at||'',r.ended_at?dur(r):'LIVE']))
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n')
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=`report-${range}-${new Date().toISOString().slice(0,10)}.csv`;a.click()
+})
+
+document.querySelectorAll('.rt').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.rt').forEach(x=>x.classList.remove('active'))
+  b.classList.add('active');range=b.dataset.r;load()
 }))
 document.getElementById('refreshBtn').addEventListener('click',load)
-load();setInterval(load,30000)
+document.getElementById('sessSearch').addEventListener('input',renderSessions)
+document.getElementById('sessFilter').addEventListener('change',renderSessions)
+document.getElementById('pageDate').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})
+load()
+setInterval(load,30000)
 </script>
 </body>
 </html>
