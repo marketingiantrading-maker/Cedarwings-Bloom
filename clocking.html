@@ -391,9 +391,41 @@ async function renderPipeline(ord){
   const trackMap={}; (tracking||[]).forEach(t=>trackMap[t.step]=t)
 
   const rws=rows||[]
-  const done=new Set((tracking||[]).filter(t=>t.status==="complete").map(t=>t.step))
-  const machineRunning=new Set((tracking||[]).filter(t=>t.status==="machine_running").map(t=>t.step))
-  const inProgress=new Set((tracking||[]).filter(t=>t.status==="in_progress").map(t=>t.step))
+  
+  // BUILD STATUS FROM BOTH SOURCES
+  // Primary: order_step_tracking (new sessions)
+  // Fallback: derive from time_sessions directly (old sessions before table existed)
+  const done=new Set()
+  const machineRunning=new Set()
+  const inProgress=new Set()
+  
+  // From order_step_tracking
+  ;(tracking||[]).forEach(t=>{
+    if(t.status==="complete")done.add(t.step)
+    else if(t.status==="machine_running")machineRunning.add(t.step)
+    else if(t.status==="in_progress")inProgress.add(t.step)
+  })
+  
+  // Fallback from time_sessions for steps NOT in tracking table
+  const trackedSteps=new Set(Object.keys(trackMap))
+  STEPS.forEach(step=>{
+    if(trackedSteps.has(step))return // already handled above
+    const stepSessions=rws.filter(r=>r.work_type===step&&r.session_type==="productive")
+    if(!stepSessions.length)return
+    // Check if any session is still open (active)
+    const hasOpen=stepSessions.some(r=>!r.ended_at)
+    if(hasOpen){inProgress.add(step);return}
+    // All ended - check last pause_reason
+    const last=stepSessions[stepSessions.length-1]
+    if(last.pause_reason==="machine_running")machineRunning.add(step)
+    else if(last.pause_reason==="paused"||last.pause_reason){}// paused - don't mark done
+    else done.add(step) // properly completed
+    // Build a virtual trackMap entry for machine running display
+    if(last.pause_reason==="machine_running"&&!trackMap[step]){
+      trackMap[step]={step,order_no:ord,status:"machine_running",first_started_at:stepSessions[0].started_at}
+    }
+  })
+  
   machineRunningData=trackMap
 
   const lastDone=STEPS.filter(s=>done.has(s)).pop()||null
