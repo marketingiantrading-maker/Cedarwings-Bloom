@@ -1,388 +1,170 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Cedarwings — Machines</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --page:#F4F7FE;--surface:#FFFFFF;--border:#E4ECF7;--border2:#CDD8EE;
-  --text:#0F172A;--muted:#64748B;--dim:#94A3B8;
-  --indigo:#4F46E5;--indigo-l:#EEF2FF;
-  --green:#10B981;--green-l:#D1FAE5;--green-t:#064E3B;
-  --amber:#F59E0B;--amber-l:#FEF3C7;--amber-t:#78350F;
-  --red:#EF4444;--red-l:#FEE2E2;--red-t:#7F1D1D;
-  --blue:#3B82F6;--blue-l:#DBEAFE;--blue-t:#1E3A8A;
-  --purple:#8B5CF6;--purple-l:#EDE9FE;--purple-t:#4C1D95;
-  --cyan:#06B6D4;--cyan-l:#CFFAFE;--cyan-t:#164E63;
-  --slate:#64748B;--slate-l:#F1F5F9;
-  --sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
-  --sh-md:0 4px 16px rgba(0,0,0,.08);--sh-lg:0 12px 32px rgba(0,0,0,.1);
-  --r:14px;--font:'Outfit',sans-serif;--mono:'JetBrains Mono',monospace;
-}
-*{font-family:var(--font);-webkit-font-smoothing:antialiased}
-body{background:var(--page);color:var(--text);min-height:100vh;font-size:14px}
-/* NAV */
-.navbar{background:var(--surface);border-bottom:1.5px solid var(--border);position:sticky;top:0;z-index:300;height:60px;display:flex;align-items:center;padding:0 28px;box-shadow:var(--sh)}
-.brand{display:flex;align-items:center;gap:10px;text-decoration:none;margin-right:36px}
-.brand-logo{width:34px;height:34px;background:linear-gradient(135deg,#4F46E5,#818CF8);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:#fff}
-.brand-name{font-weight:800;font-size:15px}.brand-sub{font-size:10px;color:var(--muted);font-weight:600}
-.nav-links{display:flex;gap:2px}
-.nl{text-decoration:none;color:var(--muted);font-size:13px;font-weight:600;padding:7px 14px;border-radius:10px;transition:all .15s}
-.nl:hover{color:var(--text);background:var(--page)}.nl.on{color:var(--indigo);background:var(--indigo-l)}
-.nav-r{display:flex;align-items:center;gap:8px;margin-left:auto}
-.live-dot{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--green);font-family:var(--mono);padding:5px 10px;background:var(--green-l);border-radius:20px}
-.live-dot::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;flex-shrink:0}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.4)}50%{box-shadow:0 0 0 5px rgba(16,185,129,0)}}
-/* HERO */
-.hero{background:linear-gradient(135deg,#0F172A 0%,#1E3A5F 50%,#1D4ED8 100%);padding:28px 28px 0;position:relative;overflow:hidden}
-.hero::before,.hero::after{content:'';position:absolute;border-radius:50%;pointer-events:none}
-.hero::before{width:350px;height:350px;top:-100px;right:-80px;background:rgba(255,255,255,.06)}
-.hero::after{width:200px;height:200px;bottom:-50px;left:60px;background:rgba(59,130,246,.15)}
-.hero-inner{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;padding-bottom:24px}
-.hero-title{font-size:28px;font-weight:800;color:#fff;letter-spacing:-.6px;margin-bottom:6px}
-.hero-sub{font-size:13px;color:rgba(255,255,255,.65)}
-/* LAYOUT */
-.page{padding:28px 28px 60px;max-width:1440px;margin:0 auto}
-/* KPI */
-.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:28px}
-.kc{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:20px 20px 16px;box-shadow:var(--sh);position:relative;overflow:hidden;transition:all .2s;animation:su .35s both}
-.kc:nth-child(2){animation-delay:.06s}.kc:nth-child(3){animation-delay:.12s}.kc:nth-child(4){animation-delay:.18s}.kc:nth-child(5){animation-delay:.24s}
-@keyframes su{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-.kc:hover{box-shadow:var(--sh-md);transform:translateY(-2px)}
-.ki{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:12px}
-.ki-gr{background:var(--green-l)}.ki-am{background:var(--amber-l)}.ki-rd{background:var(--red-l)}.ki-sl{background:var(--slate-l)}.ki-in{background:var(--indigo-l)}
-.kl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
-.kv{font-size:32px;font-weight:800;font-family:var(--mono);letter-spacing:-1.5px;line-height:1}
-.ks{font-size:11px;color:var(--dim);font-family:var(--mono);margin-top:8px}
-.kb{position:absolute;bottom:0;left:0;right:0;height:3px}
-/* MACHINE GRID */
-.machine-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
-.machine-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--sh);position:relative;transition:all .2s;animation:su .4s both}
-.machine-card:nth-child(odd){animation-delay:.05s}.machine-card:nth-child(even){animation-delay:.1s}
-.machine-card:hover{box-shadow:var(--sh-md);transform:translateY(-2px)}
-.machine-card.status-active{border-top:3px solid var(--green)}
-.machine-card.status-idle{border-top:3px solid var(--amber)}
-.machine-card.status-maintenance{border-top:3px solid var(--red)}
-.machine-card.status-offline{border-top:3px solid var(--slate)}
-.mc-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
-.mc-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
-.mc-status-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;font-family:var(--mono)}
-.s-active{background:var(--green-l);color:var(--green-t)}.s-idle{background:var(--amber-l);color:var(--amber-t)}.s-maintenance{background:var(--red-l);color:var(--red-t)}.s-offline{background:var(--slate-l);color:var(--slate)}
-.mc-name{font-size:14px;font-weight:800;color:var(--text);margin-bottom:3px;line-height:1.2}
-.mc-type{font-size:11px;color:var(--muted);font-weight:600;margin-bottom:12px}
-.mc-step{font-size:12px;color:var(--indigo);font-weight:700;background:var(--indigo-l);padding:4px 10px;border-radius:20px;display:inline-block;margin-bottom:12px}
-.mc-job{font-size:12px;color:var(--muted);line-height:1.5;border-top:1.5px solid var(--border);padding-top:12px;margin-top:4px}
-.mc-job strong{color:var(--text)}
-.mc-util{margin-bottom:12px}
-.mc-util-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
-.mc-util-bar{height:6px;background:var(--border);border-radius:99px;overflow:hidden}
-.mc-util-fill{height:100%;border-radius:99px;transition:width .5s ease}
-.mc-util-pct{font-size:10px;font-family:var(--mono);font-weight:700;color:var(--muted);margin-top:3px}
-/* STATUS BUTTONS */
-.mc-actions{display:flex;gap:4px;flex-wrap:wrap;margin-top:12px;border-top:1.5px solid var(--border);padding-top:12px}
-.mc-btn{flex:1;min-width:60px;padding:5px 6px;font-size:10px;font-weight:700;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;background:transparent;color:var(--muted);font-family:var(--font);transition:all .12s;text-align:center}
-.mc-btn:hover{opacity:.8}
-.mc-btn.btn-active{background:var(--green-l);border-color:var(--green);color:var(--green-t)}
-.mc-btn.btn-idle{background:var(--amber-l);border-color:var(--amber);color:var(--amber-t)}
-.mc-btn.btn-maint{background:var(--red-l);border-color:var(--red);color:var(--red-t)}
-.mc-btn.btn-offline{background:var(--slate-l);border-color:var(--border2);color:var(--slate)}
-/* CARDS */
-.card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:24px;box-shadow:var(--sh)}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
-/* SECTION */
-.section{margin-bottom:24px}
-.sh{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:10px;flex-wrap:wrap}
-.st{font-size:17px;font-weight:700}.ss{font-size:12px;color:var(--muted);margin-top:3px}
-/* TABLE */
-.tw{overflow-x:auto;border-radius:12px;border:1.5px solid var(--border)}
-table{width:100%;border-collapse:collapse;min-width:700px}
-thead th{padding:9px 12px;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;background:#F8FAFF;border-bottom:1.5px solid var(--border);white-space:nowrap;text-align:left}
-tbody td{padding:11px 12px;font-size:13px;border-bottom:1.5px solid var(--border);font-weight:500}
-tbody tr:last-child td{border-bottom:none}
-tbody tr:hover td{background:#FAFBFF}
-.mono{font-family:var(--mono);font-size:12px}
-.badge{display:inline-flex;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--mono)}
-.b-gr{background:var(--green-l);color:var(--green-t)}.b-am{background:var(--amber-l);color:var(--amber-t)}.b-rd{background:var(--red-l);color:var(--red-t)}.b-sl{background:var(--slate-l);color:var(--slate)}
-.empty td{text-align:center;color:var(--dim)!important;padding:28px!important;font-style:italic}
-/* BTN */
-.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;font-size:13px;font-weight:700;border:none;border-radius:10px;cursor:pointer;transition:all .15s}
-.btn-ind{background:var(--indigo);color:#fff}.btn-ind:hover{background:var(--indigo-h)}
-.btn-gh{background:transparent;border:1.5px solid var(--border2);color:var(--muted)}.btn-gh:hover{border-color:var(--indigo);color:var(--indigo)}
-.btn-sm{padding:6px 12px;font-size:12px;border-radius:9px}
-/* INPUTS */
-.inp{width:100%;padding:10px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-weight:500;outline:none;transition:all .15s}
-.inp:focus{border-color:var(--indigo);box-shadow:0 0 0 3px rgba(79,70,229,.1)}
-.lbl{display:block;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
-@media(max-width:1200px){.machine-grid{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:900px){.machine-grid{grid-template-columns:repeat(2,1fr)}.kpi-row{grid-template-columns:repeat(3,1fr)}.grid-2{grid-template-columns:1fr}}
-@media(max-width:600px){.machine-grid{grid-template-columns:1fr}.kpi-row{grid-template-columns:repeat(2,1fr)}.page{padding:16px}.navbar{padding:0 16px}.nav-links{display:none}}
-</style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Cedarwings — Machines</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--bg:#f0f4f8;--card:#fff;--border:#e2e8f0;--text:#0f172a;--muted:#64748b;--dim:#94a3b8;--blue:#3b5fe2;--blue-50:#eef2ff;--blue-100:#e0e7ff;--green:#16a34a;--green-50:#f0fdf4;--green-100:#dcfce7;--amber:#d97706;--amber-50:#fffbeb;--amber-100:#fef3c7;--red:#dc2626;--red-50:#fef2f2;--red-100:#fee2e2;--f:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;--shadow:0 1px 3px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.04)}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--f);background:var(--bg);color:var(--text);min-height:100vh}
+    .sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;overflow-y:auto}
+    .sb-brand{display:flex;align-items:center;gap:12px;padding:20px 18px 16px;border-bottom:1px solid var(--border)}
+    .sb-logo{width:38px;height:38px;background:linear-gradient(135deg,#3b5fe2,#6366f1);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+    .sb-name{font-weight:700;font-size:14px}.role-badge{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;margin-top:3px;background:var(--blue-50);color:var(--blue)}
+    .sb-nav{flex:1;padding:10px}.sb-sec{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;padding:14px 8px 6px}
+    .sb-link{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;transition:all .15s}
+    .sb-link:hover{background:var(--bg);color:var(--text)}.sb-link.active{background:var(--blue-50);color:var(--blue);font-weight:600}
+    .sb-link .icon{font-size:16px;width:20px;text-align:center}
+    .sb-footer{padding:12px 10px;border-top:1px solid var(--border)}
+    .content{margin-left:240px;min-height:100vh}
+    .topbar{background:var(--card);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between}
+    .topbar-title{font-size:20px;font-weight:700;letter-spacing:-.3px}
+    .page-body{padding:24px 28px 48px}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;font-size:13px;font-weight:600;border:none;border-radius:9px;cursor:pointer;font-family:var(--f);transition:all .15s}
+    .btn-ghost{background:var(--card);border:1px solid var(--border);color:var(--muted)}.btn-ghost:hover{color:var(--text)}
+    .live-dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0}
+    .live-dot.green{background:#16a34a;animation:pulse 2s infinite}
+    .live-dot.amber{background:#d97706}.live-dot.red{background:#dc2626}.live-dot.gray{background:var(--dim)}
+    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(22,163,74,.4)}60%{box-shadow:0 0 0 5px rgba(22,163,74,0)}}
+    .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+    .kpi{background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:18px}
+    .kpi-icon{font-size:24px;margin-bottom:8px}.kpi-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+    .kpi-value{font-size:28px;font-weight:700;font-family:var(--mono);letter-spacing:-1px}
+    .machine-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px;margin-bottom:24px}
+    .mc{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:22px;border-left:4px solid var(--border)}
+    .mc.running{border-left-color:#16a34a}.mc.idle{border-left-color:var(--dim)}.mc.maintenance{border-left-color:#d97706}.mc.offline{border-left-color:#dc2626}
+    .mc-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+    .mc-name{font-size:16px;font-weight:700}.mc-type{font-size:12px;color:var(--muted);margin-top:3px}
+    .st-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700}
+    .st-running{background:var(--green-100);color:#15803d}.st-idle{background:#f1f5f9;color:var(--muted)}.st-maintenance{background:var(--amber-100);color:#92400e}.st-offline{background:var(--red-100);color:#991b1b}
+    .mc-session{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;font-size:12px}
+    .mc-emp{font-size:13px;font-weight:700;margin-bottom:3px}
+    .mc-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+    .mc-stat{background:var(--bg);border-radius:8px;padding:10px;text-align:center;border:1px solid var(--border)}
+    .mc-stat-val{font-size:20px;font-weight:700;font-family:var(--mono)}.mc-stat-lbl{font-size:11px;color:var(--muted);margin-top:3px}
+    .util-wrap{margin-bottom:14px}
+    .util-bar{height:8px;background:var(--bg);border-radius:999px;overflow:hidden;border:1px solid var(--border);margin-top:4px}
+    .util-fill{height:100%;border-radius:999px;transition:width .4s}
+    .util-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+    .mc-ctrl{display:flex;gap:6px;flex-wrap:wrap}
+    .ctrl-btn{padding:6px 11px;border-radius:8px;font-size:11px;font-weight:700;border:1.5px solid transparent;cursor:pointer;font-family:var(--f);transition:all .15s}
+    .ctrl-run{background:var(--green-50);border-color:#bbf7d0;color:#15803d}.ctrl-idle{background:#f1f5f9;border-color:var(--border);color:var(--muted)}.ctrl-maint{background:var(--amber-50);border-color:var(--amber-100);color:#92400e}.ctrl-off{background:var(--red-50);border-color:var(--red-100);color:#991b1b}
+    .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:22px}
+    .table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
+    table{width:100%;border-collapse:collapse;min-width:700px}
+    thead th{padding:10px 12px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;background:#f8fafc;border-bottom:1px solid var(--border);white-space:nowrap;text-align:left}
+    tbody td{padding:11px 12px;font-size:13px;border-bottom:1px solid var(--border)}
+    tbody tr:last-child td{border-bottom:none}tbody tr:hover{background:#f8fafc}
+    .mono{font-family:var(--mono);font-size:12px}
+    .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600}
+    .b-green{background:var(--green-100);color:#15803d}.b-amber{background:var(--amber-100);color:#92400e}.b-blue{background:var(--blue-100);color:#1e40af}.b-gray{background:#f1f5f9;color:var(--muted)}
+    .empty td{color:var(--dim)!important;text-align:center;padding:28px!important}
+    @media(max-width:960px){.kpi-row{grid-template-columns:1fr 1fr}.sidebar{display:none}.content{margin-left:0}}
+  </style>
 </head>
 <body>
-
-<nav class="navbar">
-  <a class="brand" href="index18.html">
-    <div class="brand-logo">C</div>
-    <div><div class="brand-name">Cedarwings SAS</div><div class="brand-sub">Operations Platform</div></div>
-  </a>
-  <div class="nav-links">
-    <a href="index18.html" class="nl">📊 Dashboard</a>
-    <a href="clocking.html" class="nl">⏱ Clocking</a>
-    <a href="employees.html" class="nl">👥 Employees</a>
-    <a href="inventory.html" class="nl">📦 Inventory</a>
-    <a href="machines.html" class="nl on">⚙ Machines</a>
+<aside class="sidebar">
+  <div class="sb-brand"><div class="sb-logo">⚙</div><div><div class="sb-name">Cedarwings SAS</div><div class="role-badge">Manager</div></div></div>
+  <nav class="sb-nav">
+    <div class="sb-sec">Operations</div>
+    <a href="manager.html" class="sb-link"><span class="icon">📊</span>Dashboard</a>
+    <a href="production.html" class="sb-link"><span class="icon">🏭</span>Production</a>
+    <a href="machines.html" class="sb-link active"><span class="icon">⚙</span>Machines</a>
+    <div class="sb-sec">Team</div>
+    <a href="employees.html" class="sb-link"><span class="icon">👥</span>Employees</a>
+    <a href="time_report.html" class="sb-link"><span class="icon">📈</span>Time Report</a>
+    <div class="sb-sec">Resources</div>
+    <a href="inventory.html" class="sb-link"><span class="icon">📦</span>Inventory</a>
+    <div class="sb-sec">Terminal</div>
+    <a href="clocking.html" class="sb-link"><span class="icon">⏱</span>Clocking Terminal</a>
+  </nav>
+  <div class="sb-footer"><a href="index.html" class="sb-link"><span class="icon">←</span>Switch Role</a></div>
+</aside>
+<div class="content">
+  <div class="topbar">
+    <div><div class="topbar-title">⚙ Machine Dashboard</div><div style="font-size:12px;color:var(--muted);margin-top:3px">Real-time status · Utilisation · Auto-refreshes every 20s</div></div>
+    <button class="btn btn-ghost" id="refreshBtn">↻ Refresh</button>
   </div>
-  <div class="nav-r">
-    <div class="live-dot">LIVE</div>
-    <button class="btn btn-gh btn-sm" id="refreshBtn">↻ Refresh</button>
-  </div>
-</nav>
-
-<div class="hero">
-  <div class="hero-inner">
-    <div>
-      <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Production Floor</div>
-      <div class="hero-title">⚙ Machine Dashboard</div>
-      <div class="hero-sub">Real-time status · Utilization tracking · Current jobs · Maintenance management</div>
+  <div class="page-body">
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-icon">🟢</div><div class="kpi-label">Running</div><div class="kpi-value" id="kpiRunning" style="color:#16a34a">0</div></div>
+      <div class="kpi"><div class="kpi-icon">⏸</div><div class="kpi-label">Idle</div><div class="kpi-value" id="kpiIdle" style="color:var(--muted)">0</div></div>
+      <div class="kpi"><div class="kpi-icon">🔧</div><div class="kpi-label">Maintenance</div><div class="kpi-value" id="kpiMaint" style="color:#d97706">0</div></div>
+      <div class="kpi"><div class="kpi-icon">⚡</div><div class="kpi-label">Sessions Today</div><div class="kpi-value" id="kpiSess">0</div></div>
     </div>
-    <div style="text-align:right;padding-bottom:4px">
-      <div style="font-size:11px;color:rgba(255,255,255,.5);font-family:var(--mono)" id="refreshLabel">Loading…</div>
+    <div class="machine-grid" id="machineGrid"><div style="grid-column:1/-1;text-align:center;color:var(--dim);padding:40px">Loading machines…</div></div>
+    <div class="card">
+      <div style="font-size:16px;font-weight:700;margin-bottom:4px">Today's Machine Activity</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px">All sessions by machine</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Machine</th><th>Employee</th><th>Order</th><th>Type</th><th>Start</th><th>End</th><th>Duration</th><th>Status</th></tr></thead>
+          <tbody id="sessBody"><tr class="empty"><td colspan="8">Loading…</td></tr></tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
-
-<main class="page">
-
-  <!-- KPI ROW -->
-  <div class="kpi-row">
-    <div class="kc"><div class="ki ki-gr">✅</div><div class="kl">Running</div><div class="kv" id="kRunning" style="color:var(--green)">—</div><div class="ks">Active now</div><div class="kb" style="background:var(--green)"></div></div>
-    <div class="kc"><div class="ki ki-am">⏸</div><div class="kl">Idle</div><div class="kv" id="kIdle" style="color:var(--amber)">—</div><div class="ks">Waiting for work</div><div class="kb" style="background:var(--amber)"></div></div>
-    <div class="kc"><div class="ki ki-rd">🔧</div><div class="kl">Maintenance</div><div class="kv" id="kMaint" style="color:var(--red)">—</div><div class="ks">Under service</div><div class="kb" style="background:var(--red)"></div></div>
-    <div class="kc"><div class="ki ki-sl">⛔</div><div class="kl">Offline</div><div class="kv" id="kOffline" style="color:var(--muted)">—</div><div class="ks">Out of service</div><div class="kb" style="background:var(--muted)"></div></div>
-    <div class="kc"><div class="ki ki-in">📋</div><div class="kl">Sessions Today</div><div class="kv" id="kSessTd">—</div><div class="ks">Machine sessions</div><div class="kb" style="background:var(--indigo)"></div></div>
-  </div>
-
-  <!-- MACHINE CARDS GRID -->
-  <div class="section">
-    <div class="sh">
-      <div><div class="st">All Machines</div><div class="ss">Click status buttons to update machine state — changes save to Supabase</div></div>
-      <button class="btn btn-ind btn-sm" id="addMachineToggle">+ Add Machine</button>
-    </div>
-
-    <!-- ADD MACHINE FORM -->
-    <div id="addMachineForm" style="display:none;background:var(--indigo-l);border:1.5px solid #C7D2FE;border-radius:var(--r);padding:20px;margin-bottom:20px">
-      <div style="font-size:15px;font-weight:700;color:var(--indigo);margin-bottom:14px">Add New Machine</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px">
-        <div><label class="lbl">Name *</label><input class="inp" id="mName" placeholder="Machine name"/></div>
-        <div><label class="lbl">Type</label><input class="inp" id="mType" placeholder="3D Printer…"/></div>
-        <div><label class="lbl">Workflow Step</label><select class="inp" id="mStep"><option value="">Select…</option><option>Printing</option><option>Cleaning</option><option>Thermoforming</option><option>Line Cut</option><option>Laser Marking</option><option>Packaging</option></select></div>
-        <div><label class="lbl">Location</label><input class="inp" id="mLocation" placeholder="Production Floor A"/></div>
-        <div style="grid-column:1/-1"><label class="lbl">Notes</label><input class="inp" id="mNotes" placeholder="Optional notes"/></div>
-      </div>
-      <div style="display:flex;gap:10px;align-items:center">
-        <button class="btn btn-ind" id="saveMachineBtn">✓ Add Machine</button>
-        <button class="btn btn-gh btn-sm" id="cancelMachineBtn">Cancel</button>
-        <span id="machineMsg" style="font-size:13px;font-weight:700;display:none;margin-left:4px"></span>
-      </div>
-    </div>
-
-    <div class="machine-grid" id="machineGrid">
-      <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--dim)">Loading machines…</div>
-    </div>
-  </div>
-
-  <!-- CURRENT JOBS -->
-  <div class="grid-2">
-    <div class="section">
-      <div class="sh"><div><div class="st">Current Jobs</div><div class="ss">Open sessions per machine right now</div></div></div>
-      <div class="tw">
-        <table>
-          <thead><tr><th>Machine</th><th>Employee</th><th>Order</th><th>Step</th><th>Type</th><th>Started</th><th>Elapsed</th></tr></thead>
-          <tbody id="currentJobsBody"><tr class="empty"><td colspan="7">Loading…</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="sh"><div><div class="st">Today's Machine Activity</div><div class="ss">All completed and active sessions today</div></div></div>
-      <div class="tw">
-        <table>
-          <thead><tr><th>Machine</th><th>Employee</th><th>Order</th><th>Type</th><th>Start</th><th>End</th><th>Duration</th></tr></thead>
-          <tbody id="activityBody"><tr class="empty"><td colspan="7">Loading…</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-</main>
-
 <script type="module">
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { SUPABASE_CONFIG } from './config.js'
-const sb = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey)
-
-let machines = [], sessions = []
-
-const hm = m => `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`
-const fd = v => v ? new Date(v).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—'
-const dur = r => { if (!r.started_at || !r.ended_at) return '⏳'; return hm(Math.max(0,Math.round((new Date(r.ended_at)-new Date(r.started_at))/60000))) }
-const elapsed = s => { const m = Math.max(0,Math.floor((Date.now()-new Date(s))/60000)); return hm(m) }
-
-const STEP_ICONS = { Printing:'🖨', Cleaning:'🫧', Thermoforming:'♨', 'Line Cut':'✂', 'Laser Marking':'🔆', Packaging:'📦' }
-const STATUS_ICON = { active:'✅', idle:'⏸', maintenance:'🔧', offline:'⛔' }
-
-function badge(t) {
-  if (!t) return '<span style="color:var(--dim)">—</span>'
-  const l = t.toLowerCase()
-  if (['active','productive'].includes(l)) return '<span class="badge b-gr">'+t+'</span>'
-  if (['idle','waste'].includes(l)) return '<span class="badge b-am">'+t+'</span>'
-  if (['maintenance','offline'].includes(l)) return '<span class="badge b-rd">'+t+'</span>'
-  return `<span class="badge b-sl">${t}</span>`
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2'
+import{SUPABASE_CONFIG}from'./config.js'
+const sb=createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey)
+const ICONS={Printer:'🖨',Cleaning:'🧼',Thermoformer:'🔄',Cutting:'✂',Laser:'🔆',Packaging:'📦'}
+const fdt=v=>v?new Date(v).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'—'
+const mins=(a,b)=>Math.max(0,Math.round((b-a)/60000))
+const hms=ms=>{const t=Math.max(0,Math.floor(ms/1000));return String(Math.floor(t/3600)).padStart(2,'0')+':'+String(Math.floor(t%3600/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0')}
+window.setStatus=async(id,st)=>{await sb.from('machines').update({status:st,updated_at:new Date().toISOString()}).eq('id',id);load()}
+async function load(){
+  const now=new Date(),today=new Date(now);today.setHours(0,0,0,0)
+  const[mr,sr]=await Promise.all([
+    sb.from('machines').select('id,machine_name,machine_type,status,notes,updated_at,created_at').order('machine_name'),
+    sb.from('time_sessions').select('id,employee_name,order_no,work_type,session_type,machine,started_at,ended_at').gte('started_at',today.toISOString()).order('started_at',{ascending:false}).limit(200)
+  ])
+  if(mr.error){document.getElementById('machineGrid').innerHTML=`<div style="grid-column:1/-1;text-align:center;color:#dc2626;padding:40px">Error: ${mr.error.message}</div>`;return}
+  const machines=mr.data||[],sessions=sr.data||[]
+  const active=sessions.filter(s=>!s.ended_at)
+  const byMachine={};active.forEach(s=>{if(s.machine)byMachine[s.machine]=s})
+  const stats={};sessions.forEach(s=>{if(!s.machine)return;if(!stats[s.machine])stats[s.machine]={n:0,p:0};stats[s.machine].n++;if(s.session_type==='productive'&&s.ended_at)stats[s.machine].p+=mins(new Date(s.started_at),new Date(s.ended_at))})
+  let running=0,idle=0,maint=0
+  machines.forEach(m=>{const st=byMachine[m.machine_name]?'running':m.status;if(st==='running')running++;else if(st==='maintenance')maint++;else if(st!=='offline')idle++})
+  document.getElementById('kpiRunning').textContent=running
+  document.getElementById('kpiIdle').textContent=idle
+  document.getElementById('kpiMaint').textContent=maint
+  document.getElementById('kpiSess').textContent=sessions.length
+  document.getElementById('machineGrid').innerHTML=machines.length?machines.map(m=>{
+    const act=byMachine[m.machine_name],st=act?'running':m.status,s=stats[m.machine_name]||{n:0,p:0}
+    const pct=Math.min(100,Math.round(s.p/(8*60)*100)),bc=pct>=70?'#16a34a':pct>=40?'#d97706':'#94a3b8'
+    const dc=st==='running'?'green':st==='maintenance'?'amber':st==='offline'?'red':'gray'
+    const sbc=`st-${st==='running'?'running':st==='maintenance'?'maintenance':st==='offline'?'offline':'idle'}`
+    return`<div class="mc ${st}">
+      <div class="mc-head">
+        <div><div class="mc-name">${ICONS[m.machine_type]||'⚙'} ${m.machine_name}</div><div class="mc-type">${m.machine_type||'Machine'}</div></div>
+        <div class="st-badge ${sbc}"><span class="live-dot ${dc}"></span>${st.charAt(0).toUpperCase()+st.slice(1)}</div>
+      </div>
+      ${act?`<div class="mc-session"><div class="mc-emp">👷 ${act.employee_name||'—'}</div><div style="color:var(--muted);line-height:1.6">Order: <strong>${act.order_no||'—'}</strong> · ${act.work_type||'—'}<br>Elapsed: <strong id="el-${act.id}" style="color:#15803d;font-family:var(--mono)">${hms(Date.now()-new Date(act.started_at).getTime())}</strong></div></div>`:`<div style="font-size:12px;color:var(--dim);padding:8px 0 12px">No active session</div>`}
+      <div class="mc-stats">
+        <div class="mc-stat"><div class="mc-stat-val">${s.n}</div><div class="mc-stat-lbl">Sessions today</div></div>
+        <div class="mc-stat"><div class="mc-stat-val">${Math.floor(s.p/60)}h${s.p%60}m</div><div class="mc-stat-lbl">Productive</div></div>
+      </div>
+      <div class="util-wrap">
+        <div class="util-label"><span>Utilisation</span><span style="font-family:var(--mono)">${pct}%</span></div>
+        <div class="util-bar"><div class="util-fill" style="width:${pct}%;background:${bc}"></div></div>
+      </div>
+      <div class="mc-ctrl">
+        <button class="ctrl-btn ctrl-run" onclick="setStatus('${m.id}','running')">🟢 Running</button>
+        <button class="ctrl-btn ctrl-idle" onclick="setStatus('${m.id}','idle')">⏸ Idle</button>
+        <button class="ctrl-btn ctrl-maint" onclick="setStatus('${m.id}','maintenance')">🔧 Maint.</button>
+        <button class="ctrl-btn ctrl-off" onclick="setStatus('${m.id}','offline')">⛔ Offline</button>
+      </div>
+    </div>`
+  }).join(''):`<div style="grid-column:1/-1;text-align:center;color:var(--dim);padding:40px">No machines found. Run new_tables.sql in Supabase first.</div>`
+  active.forEach(s=>{const el=document.getElementById('el-'+s.id);if(el)setInterval(()=>{el.textContent=hms(Date.now()-new Date(s.started_at).getTime())},1000)})
+  document.getElementById('sessBody').innerHTML=sessions.length?sessions.map(s=>{const d=s.ended_at?mins(new Date(s.started_at),new Date(s.ended_at)):null;const tc=s.session_type==='productive'?'b-green':s.session_type==='waste'?'b-amber':'b-blue';return`<tr><td><strong>${s.machine||'—'}</strong></td><td>${s.employee_name||'—'}</td><td class="mono">${s.order_no||'—'}</td><td><span class="badge ${tc}">${s.session_type||'—'}</span></td><td class="mono" style="font-size:11px">${fdt(s.started_at)}</td><td class="mono" style="font-size:11px">${fdt(s.ended_at)}</td><td class="mono">${d!==null?d+'m':'<span style="color:#16a34a;font-weight:700">LIVE</span>'}</td><td>${s.ended_at?'<span class="badge b-gray">Done</span>':'<span class="badge b-green">Active</span>'}</td></tr>`}).join(''):`<tr class="empty"><td colspan="8">No sessions today.</td></tr>`
 }
-
-async function loadMachines() {
-  const { data } = await sb.from('machines').select('*').order('workflow_step,name')
-  machines = data || []
-}
-async function loadSessions() {
-  const today = new Date(); today.setHours(0,0,0,0)
-  const { data } = await sb.from('time_sessions').select('*')
-    .gte('started_at', today.toISOString()).order('started_at', { ascending: false }).limit(200)
-  sessions = data || []
-}
-
-function render() {
-  // KPIs
-  const active = machines.filter(m => m.status === 'active').length
-  const idle = machines.filter(m => m.status === 'idle').length
-  const maint = machines.filter(m => m.status === 'maintenance').length
-  const offline = machines.filter(m => m.status === 'offline').length
-  document.getElementById('kRunning').textContent = active
-  document.getElementById('kIdle').textContent = idle
-  document.getElementById('kMaint').textContent = maint
-  document.getElementById('kOffline').textContent = offline
-  document.getElementById('kSessTd').textContent = sessions.length
-
-  // Machine utilization: productive minutes per machine today / total minutes today
-  const now = new Date()
-  const startOfDay = new Date(now); startOfDay.setHours(0,0,0,0)
-  const totalDayMins = Math.max(1, Math.round((now - startOfDay) / 60000))
-
-  const utilByMach = {}
-  sessions.forEach(s => {
-    if (!s.machine) return
-    const m = Math.max(0, Math.round((new Date(s.ended_at || now) - new Date(s.started_at)) / 60000))
-    if (s.session_type === 'productive') utilByMach[s.machine] = (utilByMach[s.machine] || 0) + m
-  })
-
-  // Current jobs (open sessions) per machine
-  const currentJobs = {}
-  sessions.filter(s => !s.ended_at).forEach(s => { if (s.machine) currentJobs[s.machine] = s })
-
-  // Machine cards
-  document.getElementById('machineGrid').innerHTML = machines.length
-    ? machines.map(m => {
-        const util = Math.min(100, Math.round((utilByMach[m.name] || 0) / totalDayMins * 100))
-        const utilColor = util >= 60 ? '#10B981' : util >= 30 ? '#F59E0B' : '#EF4444'
-        const job = currentJobs[m.name]
-        const step = m.workflow_step || '—'
-        const stepIcon = STEP_ICONS[step] || '⚙'
-        const statCls = `status-${m.status || 'offline'}`
-        const badgeCls = `s-${m.status || 'offline'}`
-        return `<div class="machine-card ${statCls}" data-id="${m.id}">
-          <div class="mc-header">
-            <div class="mc-icon" style="background:${m.status==='active'?'var(--green-l)':m.status==='idle'?'var(--amber-l)':m.status==='maintenance'?'var(--red-l)':'var(--slate-l)'}">${STATUS_ICON[m.status||'offline']}</div>
-            <span class="mc-status-badge ${badgeCls}">${(m.status||'offline').toUpperCase()}</span>
-          </div>
-          <div class="mc-name">${m.name}</div>
-          <div class="mc-type">${m.type||'—'} · ${m.location||'—'}</div>
-          ${step !== '—' ? `<div class="mc-step">${stepIcon} ${step}</div>` : ''}
-          <div class="mc-util">
-            <div class="mc-util-label">Utilization Today</div>
-            <div class="mc-util-bar"><div class="mc-util-fill" style="width:${util}%;background:${utilColor}"></div></div>
-            <div class="mc-util-pct">${util}% · ${hm(utilByMach[m.name]||0)} productive</div>
-          </div>
-          ${job ? `<div class="mc-job"><strong>${job.employee_name||'—'}</strong> · ${job.order_no||'No order'}<br>Started: ${fd(job.started_at)}</div>` : '<div class="mc-job" style="color:var(--dim)">No active job</div>'}
-          <div class="mc-actions">
-            <button class="mc-btn btn-active" onclick="setStatus(${m.id},'active')">✅ Active</button>
-            <button class="mc-btn btn-idle" onclick="setStatus(${m.id},'idle')">⏸ Idle</button>
-            <button class="mc-btn btn-maint" onclick="setStatus(${m.id},'maintenance')">🔧 Maint.</button>
-            <button class="mc-btn btn-offline" onclick="setStatus(${m.id},'offline')">⛔ Offline</button>
-          </div>
-        </div>`
-      }).join('')
-    : '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--dim)">No machines found. Run setup_new_tables.sql in Supabase first.</div>'
-
-  // Current jobs table
-  const openSess = sessions.filter(s => !s.ended_at && s.machine)
-  document.getElementById('currentJobsBody').innerHTML = openSess.length
-    ? openSess.map(s => `<tr>
-        <td><strong>${s.machine}</strong></td>
-        <td>${s.employee_name||'—'}</td>
-        <td class="mono">${s.order_no||'—'}</td>
-        <td>${s.work_type||'—'}</td>
-        <td>${badge(s.session_type)}</td>
-        <td class="mono" style="font-size:11px">${fd(s.started_at)}</td>
-        <td class="mono" style="color:var(--green);font-weight:700">${elapsed(s.started_at)}</td>
-      </tr>`).join('')
-    : '<tr class="empty"><td colspan="7">No active jobs right now.</td></tr>'
-
-  // Activity table
-  document.getElementById('activityBody').innerHTML = sessions.filter(s => s.machine).slice(0,20).map(s => `<tr>
-    <td><strong>${s.machine}</strong></td>
-    <td>${s.employee_name||'—'}</td>
-    <td class="mono">${s.order_no||'—'}</td>
-    <td>${badge(s.session_type)}</td>
-    <td class="mono" style="font-size:11px">${fd(s.started_at)}</td>
-    <td class="mono" style="font-size:11px">${fd(s.ended_at)}</td>
-    <td class="mono">${dur(s)}</td>
-  </tr>`).join('') || '<tr class="empty"><td colspan="7">No machine sessions today.</td></tr>'
-}
-
-// Update machine status
-window.setStatus = async (id, status) => {
-  await sb.from('machines').update({ status, last_updated: new Date().toISOString() }).eq('id', id)
-  await loadMachines(); render()
-}
-
-// Add machine
-document.getElementById('addMachineToggle').addEventListener('click', () => {
-  const f = document.getElementById('addMachineForm')
-  f.style.display = f.style.display === 'none' ? 'block' : 'none'
-})
-document.getElementById('cancelMachineBtn').addEventListener('click', () => {
-  document.getElementById('addMachineForm').style.display = 'none'
-})
-document.getElementById('saveMachineBtn').addEventListener('click', async () => {
-  const name = document.getElementById('mName').value.trim()
-  const msg = document.getElementById('machineMsg')
-  if (!name) { msg.style.display='inline'; msg.style.color='var(--red-t)'; msg.textContent='Machine name required'; return }
-  msg.style.display='inline'; msg.style.color='var(--amber-t)'; msg.textContent='Adding…'
-  const { error } = await sb.from('machines').insert([{
-    name, type: document.getElementById('mType').value.trim()||null,
-    workflow_step: document.getElementById('mStep').value||null,
-    location: document.getElementById('mLocation').value.trim()||null,
-    notes: document.getElementById('mNotes').value.trim()||null, status: 'active'
-  }])
-  if (error) { msg.style.color='var(--red-t)'; msg.textContent='Error: '+error.message; return }
-  msg.style.color='var(--green-t)'; msg.textContent='✓ Machine added!'
-  document.getElementById('addMachineForm').style.display = 'none'
-  await loadAll()
-})
-
-async function loadAll() {
-  document.getElementById('refreshLabel').textContent = 'Refreshing…'
-  await Promise.all([loadMachines(), loadSessions()])
-  render()
-  document.getElementById('refreshLabel').textContent = `Updated ${new Date().toLocaleTimeString()}`
-}
-
-document.getElementById('refreshBtn').addEventListener('click', loadAll)
-loadAll()
-setInterval(loadAll, 20000)
+document.getElementById('refreshBtn').addEventListener('click',load)
+load();setInterval(load,20000)
 </script>
 </body>
 </html>
