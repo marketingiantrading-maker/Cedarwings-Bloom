@@ -808,6 +808,25 @@ renderPipeline("")
 tick();setInterval(tick,1000)
 setInterval(loadToday,15000)
 initEmp()
+
+// On load: close any orphaned sessions older than 12 hours
+// This prevents ghost sessions from browser crashes or tab closes
+async function cleanOrphans(){
+  const cutoff=new Date(Date.now()-12*60*60*1000) // 12 hours ago
+  const{data}=await sb.from("time_sessions")
+    .select("id,started_at,employee_name")
+    .is("ended_at",null)
+    .lt("started_at",cutoff.toISOString())
+  if(data&&data.length){
+    for(const s of data){
+      // Close at 1 minute after start (orphan — we don't know real end)
+      const orphanEnd=new Date(new Date(s.started_at).getTime()+60000)
+      await sb.from("time_sessions").update({ended_at:orphanEnd.toISOString()}).eq("id",s.id)
+    }
+    console.log(`Cleaned ${data.length} orphaned sessions`)
+  }
+}
+cleanOrphans()
 </script>
 <!-- END OF DAY MODAL -->
 <div id="eodModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.85);z-index:700;align-items:center;justify-content:center;padding:20px">
