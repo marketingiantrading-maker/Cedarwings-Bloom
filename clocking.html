@@ -1,489 +1,377 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Cedarwings — Clocking</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Cedarwings - Clocking</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
 <style>
+:root{--bg:#f0f4f8;--card:#fff;--bdr:#e2e8f0;--txt:#0f172a;--mu:#64748b;--dim:#94a3b8;--blue:#3b5fe2;--b50:#eef2ff;--b100:#e0e7ff;--green:#16a34a;--g50:#f0fdf4;--g100:#dcfce7;--amber:#d97706;--a50:#fffbeb;--a100:#fef3c7;--red:#dc2626;--r50:#fef2f2;--r100:#fee2e2;--f:"DM Sans",sans-serif;--mono:"JetBrains Mono",monospace;--sh:0 1px 3px rgba(0,0,0,.07),0 0 0 1px rgba(0,0,0,.04)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --page:#F4F7FE;--surface:#FFFFFF;--border:#E4ECF7;--border2:#CDD8EE;
-  --text:#0F172A;--muted:#64748B;--dim:#94A3B8;
-  --indigo:#4F46E5;--indigo-h:#4338CA;--indigo-l:#EEF2FF;
-  --green:#10B981;--green-l:#D1FAE5;--green-t:#064E3B;
-  --amber:#F59E0B;--amber-l:#FEF3C7;--amber-t:#78350F;
-  --red:#EF4444;--red-l:#FEE2E2;--red-t:#7F1D1D;
-  --blue:#3B82F6;--blue-l:#DBEAFE;--blue-t:#1E3A8A;
-  --purple:#8B5CF6;--purple-l:#EDE9FE;--purple-t:#4C1D95;
-  --sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
-  --sh-md:0 4px 16px rgba(0,0,0,.08);--sh-lg:0 12px 32px rgba(0,0,0,.1);
-  --r:14px;--font:'Outfit',sans-serif;--mono:'JetBrains Mono',monospace;
-}
-*{font-family:var(--font);-webkit-font-smoothing:antialiased}
-body{background:var(--page);color:var(--text);min-height:100vh;font-size:14px}
-/* NAV */
-.navbar{background:var(--surface);border-bottom:1.5px solid var(--border);position:sticky;top:0;z-index:300;height:60px;display:flex;align-items:center;padding:0 28px;box-shadow:var(--sh)}
-.brand{display:flex;align-items:center;gap:10px;text-decoration:none;margin-right:36px}
-.brand-logo{width:34px;height:34px;background:linear-gradient(135deg,#4F46E5,#818CF8);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:#fff}
-.brand-name{font-weight:800;font-size:15px}.brand-sub{font-size:10px;color:var(--muted);font-weight:600}
-.nav-links{display:flex;gap:2px}
-.nl{text-decoration:none;color:var(--muted);font-size:13px;font-weight:600;padding:7px 14px;border-radius:10px;transition:all .15s}
-.nl:hover{color:var(--text);background:var(--page)}.nl.on{color:var(--indigo);background:var(--indigo-l)}
-.nav-r{display:flex;align-items:center;gap:8px;margin-left:auto}
-/* HERO */
-.hero{background:linear-gradient(135deg,#7C3AED 0%,#8B5CF6 50%,#A78BFA 100%);padding:28px 28px 0;position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;width:300px;height:300px;top:-80px;right:-60px;border-radius:50%;background:rgba(255,255,255,.08)}
-.hero-inner{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;padding-bottom:24px}
-.hero-title{font-size:28px;font-weight:800;color:#fff;letter-spacing:-.6px;margin-bottom:6px}
-.hero-sub{font-size:13px;color:rgba(255,255,255,.75)}
-.clock-display{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
-.clock-time{font-size:36px;font-weight:800;color:#fff;font-family:var(--mono);letter-spacing:-1px}
-.clock-date{font-size:13px;color:rgba(255,255,255,.7);font-family:var(--mono)}
-/* LAYOUT */
-.page{padding:28px 28px 60px;max-width:1440px;margin:0 auto}
-/* CARDS */
-.card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:24px;box-shadow:var(--sh)}
-.card-title{font-size:16px;font-weight:700;margin-bottom:4px}
-.card-sub{font-size:12px;color:var(--muted);margin-bottom:18px}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-/* EMPLOYEE SELECTOR */
-.emp-selector{position:relative}
-.emp-input-row{display:flex;gap:8px;margin-bottom:8px}
-.emp-history{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;box-shadow:var(--sh-lg);z-index:100;display:none;max-height:200px;overflow-y:auto}
-.emp-history.open{display:block}
-.emp-hist-item{padding:10px 14px;font-size:13px;cursor:pointer;transition:background .12s;display:flex;align-items:center;gap:8px;font-weight:600}
-.emp-hist-item:hover{background:var(--page)}
-.emp-hist-item .emp-dot{width:8px;height:8px;border-radius:50%;background:var(--purple);flex-shrink:0}
-/* WORKFLOW STEPS */
-.workflow{display:flex;gap:0;flex-wrap:wrap;background:var(--page);border-radius:var(--r);padding:6px;border:1.5px solid var(--border);margin-bottom:4px}
-.wf-step{flex:1;min-width:100px;text-align:center;padding:10px 8px;border-radius:10px;cursor:pointer;border:none;background:transparent;font-size:12px;font-weight:700;color:var(--muted);font-family:var(--font);transition:all .15s;position:relative}
-.wf-step:hover{color:var(--text);background:var(--surface)}
-.wf-step.active{background:var(--surface);color:var(--purple);box-shadow:var(--sh-md);border-radius:10px}
-.wf-step .step-icon{font-size:18px;display:block;margin-bottom:4px}
-.wf-step .step-name{font-size:11px;display:block;white-space:nowrap}
-/* FORM */
-.field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
-.field label{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
-.inp{width:100%;padding:10px 13px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-weight:500;outline:none;transition:all .15s}
-.inp:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(139,92,246,.1)}
-.inp::placeholder{color:var(--dim);font-weight:400}
-.type-pills{display:flex;gap:8px;flex-wrap:wrap}
-.type-pill{padding:8px 16px;border:1.5px solid var(--border2);border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;background:transparent;color:var(--muted);font-family:var(--font);transition:all .15s}
-.type-pill:hover{border-color:var(--purple);color:var(--purple)}
-.type-pill.active{background:var(--purple);color:#fff;border-color:var(--purple);box-shadow:0 2px 8px rgba(139,92,246,.3)}
-.type-pill.active-prod{background:var(--green);border-color:var(--green);color:#fff;box-shadow:0 2px 8px rgba(16,185,129,.3)}
-.type-pill.active-waste{background:var(--amber);border-color:var(--amber);color:#fff;box-shadow:0 2px 8px rgba(245,158,11,.3)}
-.type-pill.active-ot{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(59,130,246,.3)}
-/* ACTIVE SESSION */
-.active-sess{background:linear-gradient(135deg,var(--green-l),var(--indigo-l));border:2px solid #A7F3D0;border-radius:var(--r);padding:22px}
-.active-title{font-size:14px;font-weight:800;color:var(--green-t);margin-bottom:6px}
-.active-timer{font-size:48px;font-weight:900;font-family:var(--mono);color:var(--text);letter-spacing:-2px;line-height:1;margin-bottom:8px}
-.active-meta{font-size:12px;color:var(--muted);font-family:var(--mono)}
+body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh}
+.topbar{background:var(--card);border-bottom:1px solid var(--bdr);padding:0 28px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.tbl{display:flex;align-items:center;gap:12px}
+.logo{width:34px;height:34px;background:linear-gradient(135deg,#3b5fe2,#6366f1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.tnm{font-weight:800;font-size:15px}.tsep{width:1px;height:20px;background:var(--bdr)}.tpg{font-size:13px;font-weight:600;color:var(--mu)}
+.tbr{display:flex;align-items:center;gap:10px}
+.epill{display:flex;align-items:center;gap:7px;background:var(--g50);border:1.5px solid var(--g100);padding:6px 14px;border-radius:999px;font-size:13px;font-weight:700;color:#15803d;cursor:pointer}
+.epill:hover{background:var(--g100)}
+.ldot{width:8px;height:8px;border-radius:50%;background:#16a34a;animation:pu 2s infinite}
+@keyframes pu{0%,100%{box-shadow:0 0 0 0 rgba(22,163,74,.4)}60%{box-shadow:0 0 0 6px rgba(22,163,74,0)}}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;font-size:13px;font-weight:600;border:none;border-radius:9px;cursor:pointer;font-family:var(--f)}
+.bg{background:var(--card);border:1px solid var(--bdr);color:var(--mu)}
+.bn{background:var(--b50);color:var(--blue);border:1px solid var(--b100)}
+.body{padding:20px 28px 60px;max-width:1400px;margin:0 auto}
+/* PIPELINE */
+.pcard{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:22px 26px;margin-bottom:20px}
+.ptit{font-size:15px;font-weight:800;margin-bottom:2px}
+.psub{font-size:12px;color:var(--mu);margin-bottom:20px}
+.pipe{display:flex;align-items:center;overflow-x:auto;padding-bottom:4px}
+.ps{display:flex;flex-direction:column;align-items:center;flex-shrink:0;cursor:pointer}
+.psc{width:54px;height:54px;border-radius:50%;border:2.5px solid var(--bdr);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:22px;transition:all .15s;margin-bottom:7px;position:relative;z-index:1}
+.ps.done .psc{border-color:#16a34a;background:var(--g50)}
+.ps.done .psc::after{content:"\2713";position:absolute;bottom:-4px;right:-4px;width:18px;height:18px;background:#16a34a;border-radius:50%;font-size:10px;color:#fff;display:flex;align-items:center;justify-content:center;border:2px solid #fff;font-weight:700}
+.ps.active .psc{border-color:var(--blue);background:var(--b50);box-shadow:0 0 0 5px rgba(59,95,226,.12)}
+.ps.locked .psc{opacity:.3;cursor:not-allowed}
+.ps.ok:hover .psc{border-color:var(--blue);background:var(--b50)}
+.pslbl{font-size:10px;font-weight:600;color:var(--mu);text-align:center;max-width:64px;line-height:1.3}
+.ps.done .pslbl{color:#16a34a;font-weight:700}
+.ps.active .pslbl{color:var(--blue);font-weight:800}
+.pcon{flex:1;height:2.5px;background:var(--bdr);margin-top:-30px;min-width:16px}
+.pcon.done{background:#16a34a}
+.pinfo{display:flex;align-items:center;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--bdr);flex-wrap:wrap}
+.pbdg{padding:4px 12px;border-radius:999px;font-size:11px;font-weight:700;font-family:var(--mono)}
+.pbg{background:var(--g50);color:#15803d;border:1px solid var(--g100)}
+.pbb{background:var(--b50);color:var(--blue);border:1px solid var(--b100)}
+.pba{background:var(--a50);color:#92400e;border:1px solid var(--a100)}
+.pbgr{background:#f1f5f9;color:var(--mu);border:1px solid var(--bdr)}
+/* GRID */
+.grid{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;align-items:start}
+.card{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:22px;margin-bottom:16px}
+.card:last-child{margin-bottom:0}
+.ct{font-size:15px;font-weight:800;margin-bottom:4px}
+.cs{font-size:12px;color:var(--mu);line-height:1.6;margin-bottom:16px}
+lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.fi{width:100%;padding:11px 14px;border:1.5px solid var(--bdr);border-radius:10px;font-family:var(--f);font-size:14px;color:var(--txt);background:#fff;outline:none;transition:border-color .15s}
+.fi:focus{border-color:var(--blue)}.fi::placeholder{color:var(--dim)}
+.fg{margin-bottom:14px}
 /* BUTTONS */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;font-size:14px;font-weight:800;border:none;border-radius:var(--r);cursor:pointer;font-family:var(--font);transition:all .15s;white-space:nowrap}
-.btn-clock-in{background:var(--green);color:#fff;width:100%;font-size:16px;padding:16px;box-shadow:0 4px 16px rgba(16,185,129,.3)}.btn-clock-in:hover{background:#059669;transform:translateY(-1px)}
-.btn-clock-out{background:var(--red);color:#fff;width:100%;font-size:16px;padding:16px;box-shadow:0 4px 16px rgba(239,68,68,.3)}.btn-clock-out:hover{background:#DC2626;transform:translateY(-1px)}
-.btn-ghost{background:transparent;border:1.5px solid var(--border2);color:var(--muted);padding:8px 16px;font-size:13px;border-radius:10px}.btn-ghost:hover{border-color:var(--purple);color:var(--purple)}
-.btn-ind{background:var(--indigo);color:#fff;padding:8px 16px;font-size:13px;border-radius:10px}.btn-ind:hover{background:var(--indigo-h)}
-/* STATUS MSG */
-.smsg{font-size:13px;font-weight:700;display:none;padding:10px 14px;border-radius:10px;margin-top:12px}
-.smsg.ok{background:var(--green-l);color:var(--green-t);display:block}.smsg.err{background:var(--red-l);color:var(--red-t);display:block}.smsg.info{background:var(--indigo-l);color:var(--indigo);display:block}
-/* DAY SUMMARY */
-.sum-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1.5px solid var(--border)}
-.sum-row:last-child{border-bottom:none}
-.sum-label{font-size:12px;color:var(--muted);font-weight:600}
-.sum-val{font-size:15px;font-weight:800;font-family:var(--mono)}
-/* TABLE */
-.tw{overflow-x:auto;border-radius:12px;border:1.5px solid var(--border);margin-top:16px}
-table{width:100%;border-collapse:collapse;min-width:600px}
-thead th{padding:9px 12px;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;background:#F8FAFF;border-bottom:1.5px solid var(--border);white-space:nowrap;text-align:left}
-tbody td{padding:11px 12px;font-size:13px;border-bottom:1.5px solid var(--border);font-weight:500}
-tbody tr:last-child td{border-bottom:none}
-tbody tr:hover td{background:#FAFBFF}
-.mono{font-family:var(--mono);font-size:12px}
-.badge{display:inline-flex;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--mono)}
-.b-gr{background:var(--green-l);color:var(--green-t)}.b-am{background:var(--amber-l);color:var(--amber-t)}.b-bl{background:var(--blue-l);color:var(--blue-t)}.b-pu{background:var(--purple-l);color:var(--purple-t)}.b-rd{background:var(--red-l);color:var(--red-t)}
-.empty td{text-align:center;color:var(--dim)!important;padding:28px!important;font-style:italic}
-/* SECTION */
-.section-title{font-size:17px;font-weight:700;margin-bottom:14px}
-@media(max-width:900px){.grid-2{grid-template-columns:1fr}.workflow{flex-wrap:wrap}.wf-step{min-width:80px}}
-@media(max-width:768px){.page{padding:16px}.navbar{padding:0 16px}.nav-links{display:none}}
+.sg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:0}
+.sb2{padding:10px 8px;border-radius:11px;border:1.5px solid var(--bdr);background:#f8fafc;color:#94a3b8;font-size:11px;font-weight:600;cursor:not-allowed;font-family:var(--f);text-align:center;line-height:1.4;transition:all .15s;position:relative}
+.sb2.next-step{background:var(--b50);border:2.5px solid var(--blue);color:#1d4ed8;cursor:pointer;font-weight:800;box-shadow:0 0 0 4px rgba(59,95,226,.12)}
+.sb2.next-step:hover{background:var(--b100);transform:translateY(-1px)}
+.sb2.next-step::after{content:"NEXT";position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-size:8px;font-weight:800;padding:1px 6px;border-radius:999px;white-space:nowrap}
+.sb2.done-step{background:var(--g50);border:1.5px solid var(--g100);color:#bbf7d0;cursor:not-allowed}
+.sb2.on{background:var(--blue);color:#fff;border-color:var(--blue);cursor:pointer;box-shadow:0 4px 14px rgba(59,95,226,.3)}
+.sb2.on::after{display:none}
+
+.sb2 .si{font-size:14px;display:block;margin-bottom:2px}
+.wg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.wb{padding:10px 7px;border-radius:10px;border:1.5px solid var(--a100);background:var(--a50);color:#92400e;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--f);text-align:center;line-height:1.5;transition:all .15s}
+.wb:hover{border-color:#d97706;background:var(--a100)}
+.wb.on{background:var(--amber);color:#fff;border-color:var(--amber)}
+.af{background:var(--bg);border-radius:10px;padding:13px;margin-bottom:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.afl{font-size:9px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.afv{font-size:12px;font-weight:600;background:var(--card);padding:6px 10px;border-radius:7px;border:1px solid var(--bdr)}
+.btn-ci{background:linear-gradient(135deg,#16a34a,#059669);color:#fff;width:100%;justify-content:center;padding:14px;font-size:15px;font-weight:800;border-radius:12px;box-shadow:0 4px 16px rgba(22,163,74,.3);margin-bottom:10px}
+.btn-en{background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;width:100%;justify-content:center;padding:12px;font-size:13px;font-weight:700;border-radius:11px;margin-bottom:12px}
+.sbox{padding:13px 16px;border-radius:11px;background:var(--bg);border:1.5px solid var(--bdr)}
+.sbox.ok{background:var(--g50);border-color:var(--g100)}.sbox.err{background:var(--r50);border-color:var(--r100)}
+.st{font-weight:700;margin-bottom:3px}.sd{font-size:12px;color:var(--mu)}
+/* RIGHT */
+.clk{font-family:var(--mono);font-size:50px;font-weight:800;letter-spacing:-2px;text-align:center;line-height:1;padding:14px 0 6px}
+.clkd{font-size:12px;color:var(--mu);text-align:center;margin-bottom:16px}
+.as{border-radius:12px;padding:16px;margin-bottom:14px}
+.as.r{background:linear-gradient(135deg,var(--g50),#ecfdf5);border:1.5px solid var(--g100)}
+.as.w{background:linear-gradient(135deg,var(--a50),#fefce8);border:1.5px solid var(--a100)}
+.as.n{background:var(--bg);border:1.5px solid var(--bdr)}
+.asl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.asl.r{color:#15803d}.asl.w{color:#92400e}.asl.n{color:var(--dim)}
+.ast{font-family:var(--mono);font-size:36px;font-weight:800;line-height:1}
+.ast.r{color:#15803d}.ast.w{color:#d97706}
+.asm{font-size:12px;color:var(--mu);margin-top:6px;line-height:1.6}
+.anr{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.anb{background:var(--bg);border-radius:10px;padding:12px;border:1px solid var(--bdr)}
+.anl{font-size:9px;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.anv{font-size:20px;font-weight:800;font-family:var(--mono)}
+.sg2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.sb3{border-radius:11px;padding:14px;text-align:center}
+.sb3.g{background:var(--g50);border:1px solid var(--g100)}.sb3.a{background:var(--a50);border:1px solid var(--a100)}
+.sv2{font-size:24px;font-weight:800;font-family:var(--mono);line-height:1}
+.sl{font-size:9px;color:var(--mu);margin-top:5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.effb{height:8px;background:var(--bg);border-radius:999px;overflow:hidden;border:1px solid var(--bdr);margin:6px 0 12px}
+.efff{height:100%;border-radius:999px;transition:width .4s}
+.tl{padding:10px 13px;border-radius:10px;background:var(--bg);border:1px solid var(--bdr);margin-bottom:7px;border-left:3px solid var(--bdr)}
+.tl.productive{border-left-color:#16a34a;background:linear-gradient(to right,#f0fdf4,var(--bg))}
+.tl.waste{border-left-color:#d97706;background:linear-gradient(to right,#fffbeb,var(--bg))}
+.tlm{font-size:12px;font-weight:600}.tls{font-size:10px;color:var(--mu);font-family:var(--mono);margin-top:3px}
+@media(max-width:1000px){.grid{grid-template-columns:1fr}.sg,.wg{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
-
-<nav class="navbar">
-  <a class="brand" href="index18.html">
-    <div class="brand-logo">C</div>
-    <div><div class="brand-name">Cedarwings SAS</div><div class="brand-sub">Operations Platform</div></div>
-  </a>
-  <div class="nav-links">
-    <a href="index18.html" class="nl">📊 Dashboard</a>
-    <a href="clocking.html" class="nl on">⏱ Clocking</a>
-    <a href="employees.html" class="nl">👥 Employees</a>
-    <a href="inventory.html" class="nl">📦 Inventory</a>
-    <a href="machines.html" class="nl">⚙ Machines</a>
+<header class="topbar">
+  <div class="tbl">
+    <div class="logo">&#9881;</div>
+    <div class="tnm">Cedarwings SAS</div>
+    <div class="tsep"></div>
+    <div class="tpg">&#9201; Clocking Terminal</div>
   </div>
-  <div class="nav-r">
-    <button class="btn-ghost" id="refreshSummaryBtn" style="cursor:pointer">↻ Refresh</button>
-  </div>
-</nav>
-
-<div class="hero">
-  <div class="hero-inner">
-    <div>
-      <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Employee Terminal</div>
-      <div class="hero-title">⏱ Clocking</div>
-      <div class="hero-sub">Clock in and out · Workflow step tracking · Day summary</div>
+  <div class="tbr">
+    <div class="ldot"></div>
+    <div class="epill" id="epill" onclick="changeEmp()">
+      &#128119; <span id="empNm">Loading&hellip;</span> <span style="font-size:10px;opacity:.6">&#9660;</span>
     </div>
-    <div class="clock-display">
-      <div class="clock-time" id="clockTime">00:00:00</div>
-      <div class="clock-date" id="clockDate">—</div>
+    <a href="manager.html" class="btn bn">&#128202; Dashboard</a>
+    <a href="index.html" class="btn bg">&#8592; Home</a>
+  </div>
+</header>
+<div class="body">
+  <div class="pcard">
+    <div class="ptit">&#127981; Production Pipeline</div>
+    <div class="psub">Track each order through all 6 production steps. Enter an order number below &mdash; the pipeline shows completed steps and what is next.</div>
+    <div class="pipe" id="pipe"></div>
+    <div class="pinfo" id="pinfo"><span class="pbdg pbgr">Enter order number below to see pipeline status</span></div>
+  </div>
+  <div class="grid">
+    <div>
+      <div class="card">
+        <div class="ct">Clock In / Start Session</div>
+        <div class="cs">Enter order number below — then <strong>tap a step to instantly clock in</strong>. The pipeline enforces the correct order automatically.</div>
+        <div class="fg"><lbl>Order Number *</lbl><input class="fi" id="ord" placeholder="e.g. ORD-1048" autocomplete="off"/></div>
+        <div class="fg">
+          <lbl>&#10003; Tap a step to instantly clock in</lbl>
+          <div class="sg">
+            <button class="sb2" data-step="Printing" data-mach="3D Printing Machine 1"><span class="si">&#128424;</span>Printing</button>
+            <button class="sb2" data-step="Cleaning" data-mach="Cleaning Station"><span class="si">&#129529;</span>Cleaning</button>
+            <button class="sb2" data-step="Thermoforming" data-mach="Thermoforming Machine 1"><span class="si">&#128260;</span>Thermoforming</button>
+            <button class="sb2" data-step="Line Cut" data-mach="Line Cut Station"><span class="si">&#9986;</span>Line Cut</button>
+            <button class="sb2" data-step="Laser Marking" data-mach="Laser Marking Station"><span class="si">&#128294;</span>Laser Marking</button>
+            <button class="sb2" data-step="Packaging" data-mach="Packaging Station"><span class="si">&#128230;</span>Packaging</button>
+          </div>
+        </div>
+        <div class="fg">
+          <lbl>&#9888; Tap a category to record non-productive time</lbl>
+          <div class="wg">
+            <button class="wb" data-w="Waiting for next job">&#8987;<br/>W1 Waiting</button>
+            <button class="wb" data-w="General cleaning">&#129531;<br/>W2 Cleaning</button>
+            <button class="wb" data-w="Machine down">&#128295;<br/>W3 Machine</button>
+            <button class="wb" data-w="Waiting for material">&#128230;<br/>W4 Material</button>
+            <button class="wb" data-w="Break">&#9749;<br/>W5 Break</button>
+            <button class="wb" data-w="Rework">&#128260;<br/>W6 Rework</button>
+          </div>
+        </div>
+        <div class="af" id="af" style="display:none">
+          <div><div class="afl">Session Type</div><div class="afv" id="afT">&#8212;</div></div>
+          <div><div class="afl">Machine / Category</div><div class="afv" id="afM">&#8212;</div></div>
+          <div><div class="afl">Work Type</div><div class="afv" id="afW">&#8212;</div></div>
+          <div><div class="afl">Batch ID</div><div class="afv" id="afB">&#8212;</div></div>
+        </div>
+        <div class="fg"><lbl>Note (optional)</lbl><input class="fi" id="note" placeholder="Task description&hellip;"/></div>
+        <!-- Clock in button is now automatic when clicking a step above -->
+<button class="btn btn-ci" id="btnCI" style="display:none">&#9201; Clock In</button>
+        <button class="btn btn-en" id="btnEnd">&#9632; End Current Session</button>
+        <div class="sbox" id="sbox"><div class="st" id="stT">No active session</div><div class="sd" id="stD">Enter order number and select a step to begin.</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="clk" id="clk">--:--:--</div>
+        <div class="clkd" id="clkd"></div>
+        <div class="as n" id="asC">
+          <div class="asl n" id="asL">Active Session</div>
+          <div class="ast" id="asT">&#8212;</div>
+          <div class="asm" id="asM">No session in progress.</div>
+        </div>
+        <div class="anr">
+          <div class="anb"><div class="anl">Day Start</div><div class="anv" id="anS">08:00</div></div>
+          <div class="anb"><div class="anl">First Clock-In</div><div class="anv" id="anF">&#8212;</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct" style="margin-bottom:12px">Day Summary</div>
+        <div class="sg2">
+          <div class="sb3 g"><div class="sv2" style="color:#15803d" id="sP">00:00</div><div class="sl">Productive</div></div>
+          <div class="sb3 a"><div class="sv2" style="color:#d97706" id="sW">00:00</div><div class="sl">Non-Productive</div></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mu)"><span>Efficiency</span><span id="sE" style="font-family:var(--mono);font-weight:700;color:#16a34a">0%</span></div>
+        <div class="effb"><div class="efff" id="eff" style="width:0%;background:#16a34a"></div></div>
+        <div style="font-size:12px;color:var(--mu)" id="sS">0 sessions today</div>
+      </div>
+      <div class="card" style="max-height:380px;display:flex;flex-direction:column">
+        <div class="ct" style="margin-bottom:4px">Today's Timeline</div>
+        <div style="font-size:12px;color:var(--mu);margin-bottom:12px">Sessions logged today</div>
+        <div style="overflow-y:auto;flex:1" id="tldiv"><div style="color:var(--dim);font-size:13px;text-align:center;padding:20px">No sessions yet.</div></div>
+      </div>
     </div>
   </div>
 </div>
-
-<main class="page">
-
-  <div class="grid-2">
-
-    <!-- LEFT: CLOCKING FORM -->
-    <div>
-      <!-- EMPLOYEE SELECTOR -->
-      <div class="card" style="margin-bottom:16px">
-        <div class="card-title">👤 Employee</div>
-        <div class="card-sub">Select your name or type to search</div>
-        <div class="emp-selector">
-          <div class="emp-input-row">
-            <input class="inp" id="empName" placeholder="Your name…" autocomplete="off" style="flex:1"/>
-            <button class="btn-ind" id="loadEmpBtn" onclick="loadEmpData()">Load ↗</button>
-          </div>
-          <div class="emp-history" id="empHistory"></div>
-        </div>
-        <div id="empBadge" style="display:none;margin-top:10px;padding:10px 14px;background:var(--purple-l);border-radius:10px;font-size:13px;font-weight:700;color:var(--purple-t)">
-          👤 <span id="empBadgeName">—</span> &nbsp;·&nbsp; <span id="empBadgeStats" style="font-weight:500;color:var(--muted)">—</span>
-        </div>
-      </div>
-
-      <!-- ACTIVE SESSION DISPLAY -->
-      <div class="active-sess" id="activeSessCard" style="display:none;margin-bottom:16px">
-        <div class="active-title">🟢 SESSION ACTIVE</div>
-        <div class="active-timer" id="activeTimer">00:00:00</div>
-        <div class="active-meta" id="activeMeta">—</div>
-        <div style="margin-top:12px">
-          <button class="btn btn-clock-out" id="clockOutBtn">⏹ Clock Out</button>
-        </div>
-        <div class="smsg" id="outMsg"></div>
-      </div>
-
-      <!-- CLOCK IN FORM -->
-      <div class="card" id="clockInCard">
-        <div class="card-title">🕐 Clock In</div>
-        <div class="card-sub">Select your workflow step and fill in the details below</div>
-
-        <!-- WORKFLOW PIPELINE -->
-        <div style="margin-bottom:16px">
-          <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Workflow Step</div>
-          <div class="workflow" id="workflowSteps">
-            <button class="wf-step" data-step="Printing"><span class="step-icon">🖨</span><span class="step-name">Printing</span></button>
-            <button class="wf-step" data-step="Cleaning"><span class="step-icon">🫧</span><span class="step-name">Cleaning</span></button>
-            <button class="wf-step" data-step="Thermoforming"><span class="step-icon">♨</span><span class="step-name">Thermoform</span></button>
-            <button class="wf-step" data-step="Line Cut"><span class="step-icon">✂</span><span class="step-name">Line Cut</span></button>
-            <button class="wf-step" data-step="Laser Marking"><span class="step-icon">🔆</span><span class="step-name">Laser Mark</span></button>
-            <button class="wf-step" data-step="Packaging"><span class="step-icon">📦</span><span class="step-name">Packaging</span></button>
-          </div>
-        </div>
-
-        <!-- SESSION TYPE -->
-        <div class="field">
-          <label>Session Type</label>
-          <div class="type-pills" id="typePills">
-            <button class="type-pill" data-type="productive">✅ Productive</button>
-            <button class="type-pill" data-type="waste">⚠ Non-Productive</button>
-            <button class="type-pill" data-type="overtime">🌙 Overtime</button>
-          </div>
-        </div>
-
-        <!-- WASTE CATEGORY (shown if waste) -->
-        <div class="field" id="wasteCatField" style="display:none">
-          <label>Waste / Issue Category</label>
-          <select class="inp" id="wasteCat">
-            <option value="">Select reason…</option>
-            <option>Machine breakdown</option>
-            <option>Material shortage</option>
-            <option>Quality issue</option>
-            <option>Power outage</option>
-            <option>Training</option>
-            <option>Meeting</option>
-            <option>Cleaning/Setup</option>
-            <option>Other</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Order Number</label>
-          <input class="inp" id="orderNo" placeholder="e.g. ORD-1048"/>
-        </div>
-
-        <div class="field">
-          <label>Machine</label>
-          <select class="inp" id="machineSelect">
-            <option value="">Select machine…</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Task Description (optional)</label>
-          <input class="inp" id="taskDesc" placeholder="Brief description of the task"/>
-        </div>
-
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <button class="btn btn-clock-in" id="clockInBtn">▶ Clock In</button>
-          <div class="smsg" id="inMsg"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- RIGHT: SUMMARY -->
-    <div>
-
-      <!-- DAY SUMMARY -->
-      <div class="card" style="margin-bottom:16px">
-        <div class="card-title">📊 Today's Summary</div>
-        <div class="card-sub" id="summaryEmpLabel">No employee selected</div>
-        <div class="sum-row"><span class="sum-label">Total Sessions</span><span class="sum-val" id="sumSessions" style="color:var(--purple)">—</span></div>
-        <div class="sum-row"><span class="sum-label">Productive Time</span><span class="sum-val" id="sumProd" style="color:var(--green)">—</span></div>
-        <div class="sum-row"><span class="sum-label">Non-Productive</span><span class="sum-val" id="sumWaste" style="color:var(--amber)">—</span></div>
-        <div class="sum-row"><span class="sum-label">Overtime</span><span class="sum-val" id="sumOT" style="color:var(--blue)">—</span></div>
-        <div class="sum-row" style="border-bottom:none">
-          <span class="sum-label" style="font-weight:800;color:var(--text)">Efficiency</span>
-          <span class="sum-val" id="sumEff" style="color:var(--indigo)">—%</span>
-        </div>
-      </div>
-
-      <!-- SESSION LIST -->
-      <div class="card">
-        <div class="section-title">Today's Sessions</div>
-        <div class="tw">
-          <table>
-            <thead><tr><th>Order</th><th>Step</th><th>Machine</th><th>Type</th><th>Start</th><th>End</th><th>Duration</th></tr></thead>
-            <tbody id="sessListBody"><tr class="empty"><td colspan="7">No sessions today. Clock in above.</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-
-    </div>
-
-  </div><!-- /grid-2 -->
-
-</main>
-
 <script type="module">
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { SUPABASE_CONFIG } from './config.js'
-const sb = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey)
-
-// ─── Clock ────────────────────────────────────────────────────────
-function updateClock() {
-  const now = new Date()
-  document.getElementById('clockTime').textContent = now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'})
-  document.getElementById('clockDate').textContent = now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})
+import{createClient}from"https://esm.sh/@supabase/supabase-js@2"
+import{SUPABASE_CONFIG}from"./config.js"
+const sb=createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey)
+const STEPS=["Printing","Cleaning","Thermoforming","Line Cut","Laser Marking","Packaging"]
+const ICO={Printing:"&#128424;",Cleaning:"&#129529;",Thermoforming:"&#128260;","Line Cut":"&#9986;","Laser Marking":"&#128294;",Packaging:"&#128230;"}
+const EK="cedarwings_logged_employee",SK="cedarwings_active_session",DK="cedarwings_day_anchor_"
+const ts=()=>{const d=new Date();d.setHours(0,0,0,0);return d}
+const te=()=>{const d=new Date();d.setHours(23,59,59,999);return d}
+const gS=()=>{try{return JSON.parse(localStorage.getItem(SK)||"null")}catch{return null}}
+const sS=s=>localStorage.setItem(SK,JSON.stringify(s))
+const cS=()=>localStorage.removeItem(SK)
+const mins=(a,b)=>Math.max(0,Math.round((b-a)/60000))
+const hm=m=>String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0")
+const hms=ms=>{const t=Math.max(0,Math.floor(ms/1000));return String(Math.floor(t/3600)).padStart(2,"0")+":"+String(Math.floor(t%3600/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")}
+const fT=v=>v?new Date(v).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"&#8212;"
+const gB=()=>"B-"+new Date().toISOString().replace(/[-:TZ.]/g,"").slice(2,14)
+let cfg=null,emp=""
+function initEmp(){let e=localStorage.getItem(EK)||sessionStorage.getItem("cw_current_emp");if(!e){e=prompt("Enter your name to clock in:");if(!e)e="Employee";localStorage.setItem(EK,e)}emp=e;document.getElementById("empNm").textContent=e}
+window.changeEmp=()=>{const n=prompt("Enter your name:");if(n){localStorage.setItem(EK,n);emp=n;document.getElementById("empNm").textContent=n}}
+function ensureAnc(){const k=DK+new Date().toISOString().slice(0,10);if(!localStorage.getItem(k)){const d=new Date();d.setHours(8,0,0,0);localStorage.setItem(k,d.toISOString())}return localStorage.getItem(k)}
+async function renderPipe(ord){
+  const pv=document.getElementById("pipe"),pi=document.getElementById("pinfo")
+  if(!ord){pv.innerHTML=STEPS.map((s,i)=>(i>0?"<div class=\"pcon\"></div>":"")+"<div class=\"ps locked\"><div class=\"psc\">"+ICO[s]+"</div><div class=\"pslbl\">"+s+"</div></div>").join("");pi.innerHTML="<span class=\"pbdg pbgr\">Enter an order number to see pipeline</span>";return null}
+  const{data}=await sb.from("time_sessions").select("work_type,session_type,ended_at").eq("order_no",ord).order("started_at",{ascending:true})
+  const done=new Set((data||[]).filter(r=>r.session_type==="productive"&&r.ended_at&&STEPS.includes(r.work_type)).map(r=>r.work_type))
+  const lastDone=STEPS.filter(s=>done.has(s)).pop()||null
+  const nextIdx=lastDone?STEPS.indexOf(lastDone)+1:0,next=STEPS[nextIdx]||null
+  pv.innerHTML=STEPS.map((s,i)=>{
+    const d=done.has(s),a=s===next,ldIdx=lastDone?STEPS.indexOf(lastDone):-1
+    const con=i>0?"<div class=\"pcon"+(i<=ldIdx+1&&ldIdx>=0?" done":"")+"\"\></div>":""
+    const cls=d?"done":a?"active ok":"locked"
+    return con+"<div class=\"ps "+cls+"\" "+(a?"onclick=\"pickStep(\'"+s+"\')\"":"")+"><div class=\"psc\">"+ICO[s]+"</div><div class=\"pslbl\">"+s+"</div></div>"
+  }).join("")
+  const tot=data?.length||0,comp=(data||[]).filter(r=>r.session_type==="productive"&&r.ended_at).length
+  pi.innerHTML=(lastDone?"<span class=\"pbdg pbg\">&#10003; Last: "+lastDone+"</span>":"")+" "+(next?"<span class=\"pbdg pba\">&#8594; Next: "+next+"</span>":"<span class=\"pbdg pbg\">&#10003; Complete!</span>")+" <span class=\"pbdg pbgr\">"+comp+" steps done &#183; "+tot+" sessions</span>"
+  return {next,done}
 }
-updateClock(); setInterval(updateClock, 1000)
-
-// ─── State ────────────────────────────────────────────────────────
-let selectedStep = '', selectedType = '', activeSession = null, timerInterval = null
-
-// Load active session from localStorage
-function loadActiveFromLocal() {
-  const s = localStorage.getItem('cedarwings_active_session')
-  if (s) try { activeSession = JSON.parse(s) } catch {}
-}
-
-// ─── Employee ─────────────────────────────────────────────────────
-function getEmpHistory() { try { return JSON.parse(localStorage.getItem('cw_emp_history') || '[]') } catch { return [] } }
-function saveEmpHistory(name) {
-  let h = getEmpHistory().filter(n => n !== name)
-  h.unshift(name); h = h.slice(0,8)
-  localStorage.setItem('cw_emp_history', JSON.stringify(h))
-}
-
-function buildHistory(val) {
-  const h = getEmpHistory().filter(n => !val || n.toLowerCase().includes(val.toLowerCase()))
-  const el = document.getElementById('empHistory')
-  if (!h.length) { el.classList.remove('open'); return }
-  el.innerHTML = h.map(n => `<div class="emp-hist-item" onclick="selectEmp('${n}')"><span class="emp-dot"></span>${n}</div>`).join('')
-  el.classList.add('open')
-}
-window.selectEmp = name => {
-  document.getElementById('empName').value = name
-  document.getElementById('empHistory').classList.remove('open')
-  loadEmpData()
-}
-document.getElementById('empName').addEventListener('input', e => buildHistory(e.target.value))
-document.addEventListener('click', e => { if (!e.target.closest('.emp-selector')) document.getElementById('empHistory').classList.remove('open') })
-document.getElementById('empName').addEventListener('focus', e => buildHistory(e.target.value))
-
-// ─── Workflow Steps ───────────────────────────────────────────────
-document.querySelectorAll('.wf-step').forEach(btn => btn.addEventListener('click', () => {
-  document.querySelectorAll('.wf-step').forEach(b => b.classList.remove('active'))
-  btn.classList.add('active'); selectedStep = btn.dataset.step
-}))
-
-// ─── Session Type ─────────────────────────────────────────────────
-document.querySelectorAll('.type-pill').forEach(btn => btn.addEventListener('click', () => {
-  document.querySelectorAll('.type-pill').forEach(b => b.classList.remove('active','active-prod','active-waste','active-ot'))
-  btn.classList.add('active')
-  selectedType = btn.dataset.type
-  if (selectedType === 'productive') btn.classList.add('active-prod')
-  else if (selectedType === 'waste') btn.classList.add('active-waste')
-  else if (selectedType === 'overtime') btn.classList.add('active-ot')
-  document.getElementById('wasteCatField').style.display = selectedType === 'waste' ? 'flex' : 'none'
-}))
-
-// ─── Machines ─────────────────────────────────────────────────────
-async function loadMachines() {
-  const { data } = await sb.from('machines').select('name,workflow_step').eq('status','active').order('name')
-  const sel = document.getElementById('machineSelect')
-  sel.innerHTML = '<option value="">Select machine…</option>'
-  ;(data || []).forEach(m => {
-    const o = document.createElement('option'); o.value = m.name; o.textContent = `${m.name} (${m.workflow_step||'—'})`; sel.appendChild(o)
+window.pickStep=s=>{const b=document.querySelector("[data-step=\""+s+"\"]");if(b)b.click()}
+function lockSteps(next,doneSt){
+  document.querySelectorAll(".sb2").forEach(b=>{
+    const step=b.dataset.step
+    b.disabled=true
+    b.classList.remove("next-step","done-step")
+    if(doneSt&&doneSt.has(step)){
+      // Completed step
+      b.classList.add("done-step")
+    } else if(step===next){
+      // This is the next step to do
+      b.disabled=false
+      b.classList.add("next-step")
+    }
+    // else: future steps remain greyed out (default style)
   })
 }
-
-// ─── Clock In ─────────────────────────────────────────────────────
-document.getElementById('clockInBtn').addEventListener('click', async () => {
-  const emp = document.getElementById('empName').value.trim()
-  const msg = document.getElementById('inMsg')
-  if (!emp) { showMsg(msg,'error','Enter your name first'); return }
-  if (!selectedStep) { showMsg(msg,'error','Select a workflow step'); return }
-  if (!selectedType) { showMsg(msg,'error','Select a session type'); return }
-
-  const order = document.getElementById('orderNo').value.trim()
-  const machine = document.getElementById('machineSelect').value
-  const desc = document.getElementById('taskDesc').value.trim()
-  const waste = selectedType === 'waste' ? document.getElementById('wasteCat').value : null
-
-  showMsg(msg,'info','Clocking in…')
-  try {
-    const { data, error } = await sb.from('time_sessions').insert([{
-      employee_name: emp, session_type: selectedType, work_type: selectedStep,
-      machine: machine || null, order_no: order || null, task_description: desc || null,
-      waste_category: waste || null, started_at: new Date().toISOString()
-    }]).select().single()
-    if (error) throw error
-    activeSession = data
-    localStorage.setItem('cedarwings_active_session', JSON.stringify(data))
-    localStorage.setItem('cedarwings_logged_employee', emp)
-    saveEmpHistory(emp)
-    showMsg(msg,'ok',`✓ Clocked in at ${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}`)
-    showActiveSession()
-    loadEmpData()
-  } catch (e) { showMsg(msg,'error','Error: '+e.message) }
+document.querySelectorAll(".sb2").forEach(b=>b.addEventListener("click",async()=>{
+  const ord=document.getElementById("ord").value.trim()
+  if(!ord){setSt("Enter order number first","Type the order number above before selecting a step.","err");return}
+  document.querySelectorAll(".sb2,.wb").forEach(x=>x.classList.remove("on"));b.classList.add("on")
+  cfg={session_type:"productive",machine:b.dataset.mach,work_type:b.dataset.step,waste_category:null}
+  document.getElementById("af").style.display="grid"
+  document.getElementById("afT").textContent="Productive"
+  document.getElementById("afM").textContent=b.dataset.mach
+  document.getElementById("afW").textContent=b.dataset.step
+  document.getElementById("afB").textContent=gB()
+  // AUTO CLOCK IN immediately
+  await clockIn()
+}))
+document.querySelectorAll(".wb").forEach(b=>b.addEventListener("click",async()=>{
+  const ord=document.getElementById("ord").value.trim()
+  if(!ord){setSt("Enter order number first","Type the order number above before clocking in.","err");return}
+  document.querySelectorAll(".sb2,.wb").forEach(x=>x.classList.remove("on"));b.classList.add("on")
+  cfg={session_type:"waste",machine:b.dataset.w,work_type:"Waste Time",waste_category:b.dataset.w}
+  document.getElementById("af").style.display="grid"
+  document.getElementById("afT").textContent="Non-Productive"
+  document.getElementById("afM").textContent=b.dataset.w
+  document.getElementById("afW").textContent="Waste Time"
+  document.getElementById("afB").textContent=gB()
+  // AUTO CLOCK IN immediately
+  await clockIn()
+}))
+let pt=null
+document.getElementById("ord").addEventListener("input",()=>{
+  clearTimeout(pt);pt=setTimeout(async()=>{
+    const ord=document.getElementById("ord").value.trim()
+    const r=await renderPipe(ord);if(r)lockSteps(r.next,r.done)
+    cfg=null;document.querySelectorAll(".sb2,.wb").forEach(b=>b.classList.remove("on"));document.getElementById("af").style.display="none"
+  },400)
 })
-
-// ─── Clock Out ────────────────────────────────────────────────────
-document.getElementById('clockOutBtn').addEventListener('click', async () => {
-  if (!activeSession?.id) return
-  const msg = document.getElementById('outMsg')
-  showMsg(msg,'info','Clocking out…')
-  try {
-    const { error } = await sb.from('time_sessions').update({ ended_at: new Date().toISOString() }).eq('id', activeSession.id)
-    if (error) throw error
-    activeSession = null; localStorage.removeItem('cedarwings_active_session')
-    if (timerInterval) { clearInterval(timerInterval); timerInterval = null }
-    document.getElementById('activeSessCard').style.display = 'none'
-    document.getElementById('clockInCard').style.display = 'block'
-    showMsg(document.getElementById('inMsg'),'ok','✓ Clocked out successfully')
-    loadEmpData()
-  } catch (e) { showMsg(msg,'error','Error: '+e.message) }
-})
-
-// ─── Show Active Session UI ────────────────────────────────────────
-function showActiveSession() {
-  if (!activeSession) return
-  const card = document.getElementById('activeSessCard')
-  card.style.display = 'block'
-  document.getElementById('clockInCard').style.display = 'none'
-  document.getElementById('activeMeta').textContent = `${activeSession.employee_name} · ${activeSession.work_type} · ${activeSession.order_no||'No order'} · ${activeSession.machine||'No machine'}`
-  if (timerInterval) clearInterval(timerInterval)
-  timerInterval = setInterval(() => {
-    const elapsed = Math.floor((Date.now() - new Date(activeSession.started_at)) / 1000)
-    const h = String(Math.floor(elapsed/3600)).padStart(2,'0')
-    const m = String(Math.floor(elapsed%3600/60)).padStart(2,'0')
-    const s = String(elapsed%60).padStart(2,'0')
-    document.getElementById('activeTimer').textContent = `${h}:${m}:${s}`
-  }, 1000)
+function setSt(t,d,type){const b=document.getElementById("sbox");b.className="sbox"+(type?" "+type:"");document.getElementById("stT").textContent=t;document.getElementById("stD").textContent=d}
+function updAP(){
+  const s=gS(),c=document.getElementById("asC")
+  if(!s){c.className="as n";document.getElementById("asL").className="asl n";document.getElementById("asL").textContent="Active Session";document.getElementById("asT").textContent="—";document.getElementById("asT").className="ast";document.getElementById("asM").textContent="No session in progress.";return}
+  const w=s.session_type==="waste"
+  c.className="as "+(w?"w":"r");document.getElementById("asL").className="asl "+(w?"w":"r");document.getElementById("asL").textContent=w?"Non-Productive Session":"Productive Session"
+  document.getElementById("asT").textContent=hms(Date.now()-new Date(s.started_at).getTime())
+  document.getElementById("asT").className="ast "+(w?"w":"r")
+  document.getElementById("asM").innerHTML="<strong>"+s.order_no+"</strong> &middot; "+(s.work_type||s.waste_category||"—")+"<br>"+(s.machine||"—")+" &middot; Started: "+fT(s.started_at)
 }
+async function clockIn(){
+  const ord=document.getElementById("ord").value.trim()
+  if(!emp||!ord||!cfg){setSt("Missing info","Enter order number and select a step.","err");return}
+  const now=new Date()
+  try{
+    const ex=gS();if(ex?.id)await sb.from("time_sessions").update({ended_at:now.toISOString()}).eq("id",ex.id)
+    const{data:row,error}=await sb.from("time_sessions").insert([{employee_name:emp,session_type:cfg.session_type,work_type:cfg.work_type,machine:cfg.machine,order_no:ord,batch_id:gB(),task_description:document.getElementById("note").value.trim()||null,waste_category:cfg.waste_category,started_at:now.toISOString(),ended_at:null}]).select().single()
+    if(error)throw error
+    sS({id:row?.id,employee:emp,started_at:now.toISOString(),session_type:cfg.session_type,order_no:ord,machine:cfg.machine,work_type:cfg.work_type,waste_category:cfg.waste_category})
+    setSt("Session started",emp+" · "+ord+" · "+cfg.work_type+" · "+fT(now.toISOString()),"ok")
+    document.getElementById("note").value="";cfg=null;document.querySelectorAll(".sb2,.wb").forEach(b=>{b.classList.remove("on");b.disabled=false});document.getElementById("af").style.display="none"
+    updAP();await loadToday();const r=await renderPipe(ord);if(r)lockSteps(r.next,r.done)
+  }catch(err){setSt("Error",err.message,"err")}
+}
+async function endSession(){
+  const s=gS();if(!s){setSt("No active session","","err");return}
+  try{
+    await sb.from("time_sessions").update({ended_at:new Date().toISOString()}).eq("id",s.id)
+    cS();setSt("Session ended","Successfully clocked out.","ok");updAP();await loadToday()
+    const ord=document.getElementById("ord").value.trim();if(ord){const r=await renderPipe(ord);if(r)lockSteps(r.next,r.done)}
+  }catch(err){setSt("Error",err.message,"err")}
+}
+async function loadToday(){
+  const{data}=await sb.from("time_sessions").select("*").eq("employee_name",emp).gte("started_at",ts().toISOString()).lte("started_at",te().toISOString()).order("started_at",{ascending:true})
+  const recs=data||[]
+  if(!recs.length){document.getElementById("tldiv").innerHTML="<div style=\"color:var(--dim);font-size:13px;text-align:center;padding:20px\">No sessions yet.</div>";["sP","sW"].forEach(i=>document.getElementById(i).textContent="00:00");document.getElementById("sE").textContent="0%";document.getElementById("eff").style.width="0%";document.getElementById("sS").textContent="0 sessions today";document.getElementById("anF").textContent="—";return}
+  let pM=0,wM=0
+  document.getElementById("tldiv").innerHTML=recs.map(r=>{const m=r.ended_at?mins(new Date(r.started_at),new Date(r.ended_at)):0;if(r.session_type==="productive")pM+=m;if(r.session_type==="waste")wM+=m;const live=!r.ended_at;return"<div class=\"tl "+(r.session_type||"")+"\"><div class=\"tlm\"> "+(r.session_type==="waste"?"&#9888; "+(r.waste_category||"Waste"):ICO[r.work_type]||"&#9881;"+" "+(r.work_type||"—"))+" &middot; "+(r.order_no||"—")+(live?" <span style=\"background:#16a34a;color:#fff;padding:1px 7px;border-radius:999px;font-size:10px;font-weight:700;margin-left:4px\">LIVE</span>":"")+"</div><div class=\"tls\">"+fT(r.started_at)+" &rarr; "+fT(r.ended_at)+" &middot; "+(live?"<span style=\"color:#16a34a\">ongoing</span>":m+"min")+"</div></div>"}).join("")
+  const tot=pM+wM,eff=tot>0?Math.round(pM/tot*100):0,bc=eff>=70?"#16a34a":eff>=40?"#d97706":"#dc2626"
+  document.getElementById("sP").textContent=hm(pM);document.getElementById("sW").textContent=hm(wM)
+  document.getElementById("sE").textContent=eff+"%";document.getElementById("sE").style.color=bc
+  document.getElementById("eff").style.width=eff+"%";document.getElementById("eff").style.background=bc
+  document.getElementById("sS").textContent=recs.length+" sessions &middot; "+pM+"min productive"
+  document.getElementById("anF").textContent=fT(recs[0].started_at)
+}
+function tick(){const n=new Date();document.getElementById("clk").textContent=n.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit"});document.getElementById("clkd").textContent=n.toLocaleDateString([],{weekday:"long",year:"numeric",month:"long",day:"numeric"});updAP()}
+document.getElementById("btnCI").addEventListener("click",clockIn)
+document.getElementById("btnEnd").addEventListener("click",endSession)
 
-// ─── Load Employee Data ────────────────────────────────────────────
-window.loadEmpData = async function() {
-  const emp = document.getElementById('empName').value.trim()
-  if (!emp) return
-  localStorage.setItem('cedarwings_logged_employee', emp)
-  document.getElementById('empBadge').style.display = 'block'
-  document.getElementById('empBadgeName').textContent = emp
-
-  const today = new Date(); today.setHours(0,0,0,0)
-  const { data: rows } = await sb.from('time_sessions').select('*')
-    .eq('employee_name', emp).gte('started_at', today.toISOString()).order('started_at', { ascending: false })
-
-  let p = 0, w = 0, o = 0
-  ;(rows||[]).forEach(r => {
-    if (!r.started_at || !r.ended_at) return
-    const m = Math.max(0, Math.round((new Date(r.ended_at)-new Date(r.started_at))/60000))
-    if (r.session_type==='productive') p+=m
-    if (r.session_type==='waste') w+=m
-    if (r.session_type==='overtime') o+=m
-  })
-  const hm = m => `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`
-  const tot = p+w
-  document.getElementById('sumSessions').textContent = (rows||[]).length
-  document.getElementById('sumProd').textContent = hm(p)
-  document.getElementById('sumWaste').textContent = hm(w)
-  document.getElementById('sumOT').textContent = hm(o)
-  document.getElementById('sumEff').textContent = (tot ? Math.round(p/tot*100) : 0) + '%'
-  document.getElementById('summaryEmpLabel').textContent = `Today's breakdown for ${emp}`
-  document.getElementById('empBadgeStats').textContent = `${(rows||[]).length} sessions · ${hm(p)} productive`
-
-  // Table
-  function badge(t) {
-    if (!t) return '<span style="color:var(--dim)">—</span>'
-    const l = t.toLowerCase()
-    if (l==='productive') return '<span class="badge b-gr">Productive</span>'
-    if (l==='waste') return '<span class="badge b-am">Non-Prod</span>'
-    if (l==='overtime') return '<span class="badge b-bl">Overtime</span>'
-    return `<span class="badge b-pu">${t}</span>`
+async function loadEmployeeStep(){
+  if(!emp)return
+  const{data}=await sb.from("employees").select("workflow_step,role").eq("name",emp).limit(1)
+  if(!data||!data.length)return
+  const step=data[0].workflow_step
+  if(step&&step!=="all"&&step!==""){
+    // Employee has an assigned step - restrict their view
+    document.querySelectorAll(".sb2").forEach(b=>{
+      if(b.dataset.step!==step){
+        b.style.display="none" // hide other steps
+      }else{
+        b.style.background="var(--b50)";b.style.borderColor="var(--blue)";b.style.color="var(--blue)"
+        b.innerHTML="<span class=\"si\">"+b.innerHTML.split("</span>")[0].split(">").pop()+"</span>"+step
+      }
+    })
+    // Show a role badge
+    const badge=document.createElement("div")
+    badge.style.cssText="background:var(--b50);border:1.5px solid var(--b100);color:var(--blue);padding:6px 14px;border-radius:999px;font-size:12px;font-weight:700;margin-bottom:10px;display:inline-flex;align-items:center;gap:6px"
+    badge.innerHTML="&#128119; Your role: <strong>"+step+"</strong>"
+    const fg=document.querySelector(".fg")
+    if(fg)fg.parentNode.insertBefore(badge,fg)
   }
-  const fd = v => v ? new Date(v).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—'
-  const dur = r => !r.started_at||!r.ended_at ? '⏳' : hm(Math.max(0,Math.round((new Date(r.ended_at)-new Date(r.started_at))/60000)))
-  document.getElementById('sessListBody').innerHTML = (rows||[]).length
-    ? rows.map(r => `<tr>
-        <td class="mono">${r.order_no||'—'}</td>
-        <td>${r.work_type||'—'}</td>
-        <td class="mono" style="font-size:11px">${r.machine||'—'}</td>
-        <td>${badge(r.session_type)}</td>
-        <td class="mono">${fd(r.started_at)}</td>
-        <td class="mono">${fd(r.ended_at)}</td>
-        <td class="mono">${dur(r)}</td>
-      </tr>`).join('')
-    : '<tr class="empty"><td colspan="7">No sessions today.</td></tr>'
 }
-
-function showMsg(el, type, text) {
-  el.className = 'smsg ' + (type==='ok'?'ok':type==='error'?'err':'info')
-  el.textContent = text
-}
-
-// Init
-loadActiveFromLocal()
-loadMachines()
-const savedEmp = localStorage.getItem('cedarwings_logged_employee')
-if (savedEmp) { document.getElementById('empName').value = savedEmp; loadEmpData() }
-if (activeSession) showActiveSession()
-
-document.getElementById('refreshSummaryBtn').addEventListener('click', loadEmpData)
+initEmp()
+const anc=ensureAnc();document.getElementById("anS").textContent=fT(anc)
+const es=gS();if(es)setSt("Active session detected","Started "+fT(es.started_at)+" &middot; Order: "+(es.order_no||"—"))
+renderPipe("").then(r=>{if(r)lockSteps(r.next,r.done)})
+tick();setInterval(tick,1000);loadToday();setInterval(loadToday,15000)
+// Load employee assigned step
+loadEmployeeStep()
 </script>
 </body>
 </html>
