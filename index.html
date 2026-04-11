@@ -99,47 +99,72 @@
   <div class="hint">Default manager PIN is <strong>1234</strong> — change it in Manager → Settings<br>Employee names are saved locally on this device</div>
 </div>
 
-<script>
-const EMP_HISTORY_KEY = 'cw_emp_history'
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { SUPABASE_CONFIG } from './config.js'
+const sb = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey)
+
 const ROLE_KEY = 'cw_role'
 const EMP_KEY = 'cw_current_emp'
-const PIN_KEY = 'cw_manager_pin'
 
-function getSavedEmps(){try{return JSON.parse(localStorage.getItem(EMP_HISTORY_KEY)||'[]')}catch{return[]}}
-function saveEmp(name){const list=getSavedEmps().filter(n=>n!==name);list.unshift(name);localStorage.setItem(EMP_HISTORY_KEY,JSON.stringify(list.slice(0,8)))}
-function getPin(){return localStorage.getItem(PIN_KEY)||'1234'}
-
-// Show saved employee chips
-const saved=getSavedEmps()
-if(saved.length){
-  document.getElementById('savedChipsSection').style.display='block'
-  document.getElementById('empChips').innerHTML=saved.map(n=>`<span class="emp-chip" onclick="pickEmp('${n}')">${n}</span>`).join('')
+// Load employees from Supabase
+async function loadEmployees() {
+  const { data, error } = await sb.from('employees').select('*').eq('is_active', true).eq('role', 'employee').order('name')
+  const section = document.getElementById('savedChipsSection')
+  const chips = document.getElementById('empChips')
+  if (data && data.length) {
+    section.style.display = 'block'
+    chips.innerHTML = data.map(e => `<span class="emp-chip" onclick="pickEmp('${e.name}')">${e.name}</span>`).join('')
+  } else {
+    section.style.display = 'none'
+  }
 }
-window.pickEmp=(n)=>{document.getElementById('empName').value=n}
 
-document.getElementById('empBtn').addEventListener('click',()=>{
-  const name=document.getElementById('empName').value.trim()
-  if(!name){document.getElementById('empError').textContent='Please enter your name';return}
-  saveEmp(name)
-  sessionStorage.setItem(ROLE_KEY,'employee')
-  sessionStorage.setItem(EMP_KEY,name)
-  localStorage.setItem('cedarwings_logged_employee',name)
-  window.location.href='clocking.html'
+window.pickEmp = (n) => { document.getElementById('empName').value = n }
+
+document.getElementById('empBtn').addEventListener('click', async () => {
+  const name = document.getElementById('empName').value.trim()
+  if (!name) { document.getElementById('empError').textContent = 'Please enter your name'; return }
+  // Check if employee exists and is not blocked
+  const { data } = await sb.from('employees').select('is_active,role').eq('name', name).limit(1)
+  if (data && data.length && !data[0].is_active) {
+    document.getElementById('empError').textContent = '🚫 Your account is blocked. Contact your manager.'
+    return
+  }
+  sessionStorage.setItem(ROLE_KEY, 'employee')
+  sessionStorage.setItem(EMP_KEY, name)
+  localStorage.setItem('cedarwings_logged_employee', name)
+  window.location.href = 'clocking.html'
 })
-document.getElementById('mgrBtn').addEventListener('click',()=>{
-  const pin=document.getElementById('managerPin').value
-  if(pin===getPin()){
-    sessionStorage.setItem(ROLE_KEY,'manager')
-    window.location.href='manager.html'
-  }else{
-    document.getElementById('mgrError').textContent='Incorrect PIN'
-    document.getElementById('managerPin').value=''
-    document.getElementById('managerPin').focus()
-    setTimeout(()=>document.getElementById('mgrError').textContent='',2500)
+
+document.getElementById('mgrBtn').addEventListener('click', async () => {
+  const pin = document.getElementById('managerPin').value
+  if (!pin) { document.getElementById('mgrError').textContent = 'Enter PIN'; return }
+  // Check PIN against managers in Supabase
+  const { data } = await sb.from('employees').select('name,pin,is_active').eq('role', 'manager').eq('pin', pin).limit(1)
+  if (data && data.length) {
+    if (!data[0].is_active) { document.getElementById('mgrError').textContent = '🚫 Account blocked'; return }
+    sessionStorage.setItem(ROLE_KEY, 'manager')
+    sessionStorage.setItem('cw_manager_name', data[0].name)
+    window.location.href = 'manager.html'
+  } else {
+    // Fallback to localStorage PIN
+    const localPin = localStorage.getItem('cw_manager_pin') || '1234'
+    if (pin === localPin) {
+      sessionStorage.setItem(ROLE_KEY, 'manager')
+      window.location.href = 'manager.html'
+    } else {
+      document.getElementById('mgrError').textContent = 'Incorrect PIN'
+      document.getElementById('managerPin').value = ''
+      document.getElementById('managerPin').focus()
+      setTimeout(() => document.getElementById('mgrError').textContent = '', 2500)
+    }
   }
 })
-document.getElementById('empName').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('empBtn').click()})
-document.getElementById('managerPin').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('mgrBtn').click()})
+
+document.getElementById('empName').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('empBtn').click() })
+document.getElementById('managerPin').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('mgrBtn').click() })
+loadEmployees()
 </script>
 </body>
 </html>
