@@ -122,7 +122,18 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
 .tl.productive{border-left-color:#16a34a;background:linear-gradient(to right,#f0fdf4,var(--bg))}
 .tl.waste{border-left-color:#d97706;background:linear-gradient(to right,#fffbeb,var(--bg))}
 .tl.paused{border-left-color:#d97706;opacity:.7}
+.tl.machine_running{border-left-color:#3b5fe2;background:linear-gradient(to right,#eef2ff,var(--bg))}
 .tlm{font-size:12px;font-weight:600}.tls{font-size:10px;color:var(--mu);font-family:var(--mono);margin-top:2px}
+/* MACHINE RUNNING BOX */
+.mr-box{background:linear-gradient(135deg,#eef2ff,#e0e7ff);border:1.5px solid var(--b100);border-radius:13px;padding:14px 16px;margin-bottom:14px}
+.mr-title{font-size:12px;font-weight:800;color:var(--blue);margin-bottom:6px}
+.mr-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.mr-info{font-size:12px;color:var(--mu);line-height:1.7}
+.mr-timer{font-family:var(--mono);font-size:22px;font-weight:800;color:var(--blue)}
+.mr-btns{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.mr-resume{background:var(--blue);color:#fff;border:none;padding:8px 16px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--f)}
+.mr-complete{background:#fff;border:2px solid #16a34a;color:#15803d;padding:8px 16px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--f)}
+.mr-complete:hover{background:var(--g50)}
 @media(max-width:1000px){.grid{grid-template-columns:1fr}.sg,.wg{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -194,7 +205,25 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
             </div>
           </div>
           <div class="jb-actions">
-            <button class="jb-pause" id="pauseBtn" onclick="pauseJob()">&#9208; Pause this task</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="jb-pause" onclick="showPauseDialog()">&#9208; Stop working on this task</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MACHINE RUNNING BOX (shown when step is machine_running) -->
+        <div class="mr-box" id="mrBox" style="display:none">
+          <div class="mr-title">&#128260; Machine Running on this Order</div>
+          <div class="mr-row">
+            <div class="mr-info" id="mrInfo">—</div>
+            <div>
+              <div style="font-size:9px;color:var(--mu);margin-bottom:2px">Machine running for</div>
+              <div class="mr-timer" id="mrTimer">00:00:00</div>
+            </div>
+          </div>
+          <div class="mr-btns">
+            <button class="mr-resume" id="mrResumeBtn">&#9654; Resume working on this step</button>
+            <button class="mr-complete" id="mrCompleteBtn">&#10003; Mark Step Complete</button>
           </div>
         </div>
 
@@ -310,53 +339,87 @@ window.changeEmp=()=>{
 }
 
 /* ===================== PIPELINE ===================== */
+let machineRunningData={} // {step: {id,first_started_at,step}}
+
 async function renderPipeline(ord){
   const pipe=document.getElementById("pipe"),pinfo=document.getElementById("pinfo")
+  document.getElementById("mrBox").style.display="none"
+  clearInterval(window.mrTimerInt)
   if(!ord){
     pipe.innerHTML=STEPS.map((s,i)=>(i>0?'<div class="pcon"></div>':'')+`<div class="ps locked"><div class="psc">${ICO[s]||"·"}</div><div class="pslbl">${s}</div></div>`).join("")
     pinfo.textContent="Enter order number to see pipeline"
-    updateStepButtons(null,new Set(),new Set(),null)
+    updateStepButtons(null,new Set(),new Set(),new Set(),null)
     return
   }
-  const{data}=await sb.from("time_sessions").select("work_type,session_type,ended_at,pause_reason").eq("order_no",ord).order("started_at",{ascending:true})
-  const rows=data||[]
-  // Done = productive, ended, NOT paused
-  const done=new Set(rows.filter(r=>r.session_type==="productive"&&r.ended_at&&!r.pause_reason&&STEPS.includes(r.work_type)).map(r=>r.work_type))
-  // Paused = productive, ended, WITH pause_reason
-  const paused=new Set(rows.filter(r=>r.session_type==="productive"&&r.ended_at&&r.pause_reason&&STEPS.includes(r.work_type)).map(r=>r.work_type))
-  // Remove from paused if later done
-  paused.forEach(s=>{if(done.has(s))paused.delete(s)})
+  // Load time_sessions for this order
+  const{data:rows}=await sb.from("time_sessions").select("work_type,session_type,ended_at,pause_reason,started_at").eq("order_no",ord).order("started_at",{ascending:true})
+  // Load step tracking for this order
+  const{data:tracking}=await sb.from("order_step_tracking").select("*").eq("order_no",ord)
+  const trackMap={}; (tracking||[]).forEach(t=>trackMap[t.step]=t)
+
+  const rws=rows||[]
+  const done=new Set((tracking||[]).filter(t=>t.status==="complete").map(t=>t.step))
+  const machineRunning=new Set((tracking||[]).filter(t=>t.status==="machine_running").map(t=>t.step))
+  const inProgress=new Set((tracking||[]).filter(t=>t.status==="in_progress").map(t=>t.step))
+  machineRunningData=trackMap
+
   const lastDone=STEPS.filter(s=>done.has(s)).pop()||null
   const nextIdx=lastDone?STEPS.indexOf(lastDone)+1:0
   const allDone=done.size===STEPS.length
-  const next=allDone?null:(paused.size>0?[...paused][0]:STEPS[nextIdx]||null)
+
+  // Next = machine_running step (must be completed first) OR next undone step
+  const mrStep=STEPS.find(s=>machineRunning.has(s))
+  const next=allDone?null:(mrStep||STEPS[nextIdx]||null)
   const actStep=activeSession?.order===ord?activeSession.step:null
+
   pipe.innerHTML=STEPS.map((s,i)=>{
-    const d=done.has(s),pa=paused.has(s),a=s===actStep
+    const d=done.has(s),mr=machineRunning.has(s),ip=inProgress.has(s),a=s===actStep
     const ldIdx=lastDone?STEPS.indexOf(lastDone):-1
-    const con=i>0?`<div class="pcon${i<=ldIdx+1&&ldIdx>=0?" done":""}"></div>`:""
-    const cls=d?"done":a?"active":pa?"paused":s===next&&!a?"next":"locked"
-    const click=cls==="next"||cls==="paused"?`onclick="window._clockStep('${s}')"`:"" 
-    return con+`<div class="ps ${cls}" ${click}><div class="psc">${ICO[s]||s[0]}</div><div class="pslbl">${s}</div></div>`
+    const con=i>0?`<div class="pcon${d||STEPS.indexOf(s)<=ldIdx?" done":""}"></div>`:""
+    let cls="locked"
+    if(d)cls="done"
+    else if(a)cls="active"
+    else if(mr)cls="paused" // orange = machine running
+    else if(ip&&!a)cls="active"
+    else if(s===next&&!a&&!mr)cls="next"
+    return con+`<div class="ps ${cls}"><div class="psc">${d?"✓":mr?"⚙":a?"▶":ICO[s]||s[0]}</div><div class="pslbl">${s}</div></div>`
   }).join("")
+
+  // Show machine running box if applicable for this order
+  if(mrStep&&trackMap[mrStep]){
+    const t=trackMap[mrStep]
+    const mrBox=document.getElementById("mrBox")
+    document.getElementById("mrInfo").innerHTML=`<strong>${mrStep}</strong> on ${ord}<br>Started: ${fT(t.first_started_at)}`
+    mrBox.style.display="block"
+    clearInterval(window.mrTimerInt)
+    window.mrTimerInt=setInterval(()=>{
+      document.getElementById("mrTimer").textContent=hms(Date.now()-new Date(t.first_started_at).getTime())
+    },1000)
+    document.getElementById("mrResumeBtn").onclick=()=>window._clockStep(mrStep)
+    document.getElementById("mrCompleteBtn").onclick=()=>markStepComplete(mrStep,ord)
+  }
+
   const comp=done.size,tot=STEPS.length
   pinfo.innerHTML=allDone
-    ?`<span style="background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;padding:4px 12px;border-radius:999px;font-weight:700;font-size:11px">&#10003; Order complete — all ${tot} steps done</span>`
-    :`<span style="color:#16a34a;font-weight:700">${comp}/${tot} steps done</span>`+(next?` &middot; <strong>${paused.has(next)?"Resume":"Next"}: ${next}</strong>`:"")+(paused.size?` &middot; <span style='color:#d97706'>${paused.size} paused</span>`:"")
-  updateStepButtons(next,done,paused,actStep)
+    ?`<span style="background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;padding:4px 12px;border-radius:999px;font-weight:700;font-size:11px">&#10003; Order complete</span>`
+    :`<span style="color:#16a34a;font-weight:700">${comp}/${tot} complete</span>`
+    +(mrStep?` &middot; <span style="color:var(--blue);font-weight:700">&#9881; ${mrStep} machine running</span>`:"")
+    +(next&&!mrStep?` &middot; <strong>Next: ${next}</strong>`:"")
+  updateStepButtons(next,done,machineRunning,inProgress,actStep)
 }
 
-function updateStepButtons(next,done,paused,actStep){
+function updateStepButtons(next,done,machineRunning,inProgress,actStep){
   document.querySelectorAll(".sb").forEach(b=>{
     const s=b.dataset.step
-    b.className="sb"
-    b.onclick=null
-    b.style.pointerEvents="none"
+    b.className="sb";b.onclick=null;b.style.pointerEvents="none"
     if(s===actStep){b.classList.add("active")}
     else if(done?.has(s)){b.classList.add("done")}
-    else if(paused?.has(s)){b.classList.add("paused");b.style.pointerEvents="auto";b.onclick=()=>window._clockStep(s)}
+    else if(machineRunning?.has(s)){
+      // Machine running — show as clickable "Resume"
+      b.classList.add("paused");b.style.pointerEvents="auto"
+      b.onclick=()=>window._clockStep(s)
+    }
     else if(next&&s===next&&!actStep){b.classList.add("can");b.style.pointerEvents="auto";b.onclick=()=>window._clockStep(s)}
-    // else: locked (default) - no pointer events, no special class
   })
 }
 
@@ -374,6 +437,13 @@ window._clockStep=async(step)=>{
   const batchId=gB()
   const{data:row,error}=await sb.from("time_sessions").insert([{employee_name:emp,session_type:"productive",work_type:step,machine:document.querySelector(`[data-step="${step}"]`)?.dataset.mach||null,order_no:ord,batch_id:batchId,started_at:now.toISOString(),ended_at:null,pause_reason:null}]).select().single()
   if(error){setSt("Error",error.message,"err");return}
+  // Create or update step tracking (upsert — don't overwrite first_started_at)
+  const{data:existing}=await sb.from("order_step_tracking").select("id,first_started_at").eq("order_no",ord).eq("step",step).limit(1)
+  if(existing&&existing.length){
+    await sb.from("order_step_tracking").update({status:"in_progress",last_resumed_at:now.toISOString()}).eq("id",existing[0].id)
+  }else{
+    await sb.from("order_step_tracking").insert([{order_no:ord,step,status:"in_progress",first_started_at:now.toISOString()}])
+  }
   activeSession={id:row?.id,step,order:ord,type:"productive",startTime:now}
   showJobBox(step,ord,"productive",now)
   startTimer()
@@ -400,20 +470,58 @@ document.querySelectorAll(".wb").forEach(b=>b.addEventListener("click",async()=>
 }))
 
 /* ===================== PAUSE ===================== */
-window.pauseJob=async()=>{
+window.showPauseDialog=()=>{
+  if(!activeSession)return
+  document.getElementById("pauseModalSub").textContent=`Stopping: ${activeSession.step} on order ${activeSession.order}`
+  document.getElementById("pauseModal").style.display="flex"
+}
+
+window.confirmPause=async(reason)=>{
+  document.getElementById("pauseModal").style.display="none"
   if(!activeSession?.id)return
-  const now=new Date()
-  await sb.from("time_sessions").update({ended_at:now.toISOString(),pause_reason:"paused"}).eq("id",activeSession.id)
-  clearInterval(timerInt)
-  setSt("Task paused","Session saved. Enter a new order or resume this task later.","ok")
-  const ord=activeSession.order
-  activeSession=null
+  const now=new Date();const ord=activeSession.order;const step=activeSession.step
+  // Close time session
+  await sb.from("time_sessions").update({ended_at:now.toISOString(),pause_reason:reason}).eq("id",activeSession.id)
+  // Update or create step tracking
+  const{data:existing}=await sb.from("order_step_tracking").select("id").eq("order_no",ord).eq("step",step).limit(1)
+  const newStatus=reason==="machine_running"?"machine_running":"paused"
+  if(existing&&existing.length){
+    await sb.from("order_step_tracking").update({status:newStatus}).eq("id",existing[0].id)
+  }else{
+    await sb.from("order_step_tracking").insert([{order_no:ord,step,status:newStatus,first_started_at:now.toISOString()}])
+  }
+  clearInterval(timerInt);activeSession=null
   document.getElementById("jobBox").style.display="none"
   document.getElementById("alertBanner").classList.remove("on")
-  // Clear order so page is ready for next task
-  document.getElementById("ord").value=""
-  renderPipeline("")
+  if(reason==="machine_running"){
+    setSt("Machine running — you are free to work on another order",`${step} on ${ord} — machine timer running. Tap Resume when done.`,"ok")
+    renderPipeline(ord) // stay on same order to show machine running box
+  }else{
+    setSt("Task paused","Ready for new order.","ok")
+    document.getElementById("ord").value=""
+    renderPipeline("")
+  }
   loadToday()
+}
+
+window.pauseJob=()=>window.showPauseDialog()
+
+// Mark a step as complete (any employee can do this)
+window.markStepComplete=async(step,ord)=>{
+  if(!confirm(`Mark "${step}" as complete for order ${ord}? This will advance the pipeline.`))return
+  const now=new Date()
+  // If there's an active session on this step, close it
+  if(activeSession?.id&&activeSession.step===step&&activeSession.order===ord){
+    await sb.from("time_sessions").update({ended_at:now.toISOString()}).eq("id",activeSession.id)
+    clearInterval(timerInt);activeSession=null
+    document.getElementById("jobBox").style.display="none"
+  }
+  // Update step tracking to complete
+  await sb.from("order_step_tracking").update({status:"complete",completed_at:now.toISOString(),completed_by:emp}).eq("order_no",ord).eq("step",step)
+  setSt(`${step} marked complete!`,`Order ${ord} — pipeline advanced.`,"ok")
+  clearInterval(window.mrTimerInt)
+  document.getElementById("mrBox").style.display="none"
+  renderPipeline(ord);loadToday()
 }
 
 /* ===================== END SESSION ===================== */
@@ -540,5 +648,33 @@ tick();setInterval(tick,1000)
 setInterval(loadToday,15000)
 initEmp()
 </script>
+<!-- PAUSE DIALOG MODAL -->
+<div id="pauseModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.7);z-index:600;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:18px;padding:28px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25)">
+    <div style="font-size:18px;font-weight:800;margin-bottom:6px">Stop this task?</div>
+    <div style="font-size:13px;color:#64748b;margin-bottom:22px;line-height:1.6" id="pauseModalSub">Choose how to stop the session.</div>
+    <!-- Option 1: Machine still running -->
+    <div onclick="confirmPause('machine_running')" style="background:#eef2ff;border:2px solid #3b5fe2;border-radius:13px;padding:16px;cursor:pointer;margin-bottom:10px;transition:all .12s" onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#eef2ff'">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:24px">&#9881;</span>
+        <div>
+          <div style="font-size:14px;font-weight:800;color:#1d4ed8">Machine still running</div>
+          <div style="font-size:12px;color:#3b5fe2;margin-top:2px">Machine continues working. My technician time stops.<br>Step stays open — I or someone else can resume later.<br><strong>Machine running time will be tracked.</strong></div>
+        </div>
+      </div>
+    </div>
+    <!-- Option 2: Fully paused -->
+    <div onclick="confirmPause('paused')" style="background:#fffbeb;border:2px solid #d97706;border-radius:13px;padding:16px;cursor:pointer;margin-bottom:20px;transition:all .12s" onmouseover="this.style.background='#fef3c7'" onmouseout="this.style.background='#fffbeb'">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:24px">&#9208;</span>
+        <div>
+          <div style="font-size:14px;font-weight:800;color:#92400e">Task fully paused</div>
+          <div style="font-size:12px;color:#d97706;margin-top:2px">Everything stops. Step is on hold.<br>No machine running time tracked.<br><strong>Resume whenever ready.</strong></div>
+        </div>
+      </div>
+    </div>
+    <button onclick="document.getElementById('pauseModal').style.display='none'" style="width:100%;padding:10px;background:#f1f5f9;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;color:#64748b;font-family:var(--f)">Cancel — keep working</button>
+  </div>
+</div>
 </body>
 </html>
