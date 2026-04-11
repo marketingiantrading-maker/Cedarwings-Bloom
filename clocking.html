@@ -436,9 +436,10 @@ async function renderPipeline(ord){
 
   const lastDone=STEPS.filter(s=>done.has(s)).pop()||null
   const nextIdx=lastDone?STEPS.indexOf(lastDone)+1:0
-  const allDone=done.size===STEPS.length
+  // Order is complete when ALL 6 steps are done
+  const allDone=STEPS.every(s=>done.has(s))
 
-  // Next = machine_running step (must be completed first) OR next undone step
+  // Next = machine_running step OR next undone step — null if all done
   const mrStep=STEPS.find(s=>machineRunning.has(s))
   const next=allDone?null:(mrStep||STEPS[nextIdx]||null)
   const actStep=activeSession?.order===ord?activeSession.step:null
@@ -472,21 +473,22 @@ async function renderPipeline(ord){
 
   const comp=done.size,tot=STEPS.length
   pinfo.innerHTML=allDone
-    ?`<span style="background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;padding:4px 12px;border-radius:999px;font-weight:700;font-size:11px">&#10003; Order complete</span>`
+    ?`<span style="background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;padding:5px 14px;border-radius:999px;font-weight:800;font-size:12px">&#10003; Order complete — no further clocking allowed</span>`
     :`<span style="color:#16a34a;font-weight:700">${comp}/${tot} complete</span>`
     +(mrStep?` &middot; <span style="color:var(--blue);font-weight:700">&#9881; ${mrStep} machine running</span>`:"")
     +(next&&!mrStep?` &middot; <strong>Next: ${next}</strong>`:"")
-  updateStepButtons(next,done,machineRunning,inProgress,actStep)
+  updateStepButtons(next,done,machineRunning,inProgress,actStep,allDone)
 }
 
-function updateStepButtons(next,done,machineRunning,inProgress,actStep){
+function updateStepButtons(next,done,machineRunning,inProgress,actStep,allDone){
   document.querySelectorAll(".sb").forEach(b=>{
     const s=b.dataset.step
     b.className="sb";b.onclick=null;b.style.pointerEvents="none"
+    // If order is fully complete — all buttons locked as done, nothing clickable
+    if(allDone){b.classList.add("done");return}
     if(s===actStep){b.classList.add("active")}
     else if(done?.has(s)){b.classList.add("done")}
     else if(machineRunning?.has(s)){
-      // Machine running — show as clickable "Resume"
       b.classList.add("paused");b.style.pointerEvents="auto"
       b.onclick=()=>window._clockStep(s)
     }
