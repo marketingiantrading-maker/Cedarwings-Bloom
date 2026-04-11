@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cedarwings SAS — Manager Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f0f4f8;--card:#fff;--border:#e2e8f0;
+      --text:#0f172a;--muted:#64748b;--dim:#94a3b8;
+      --blue:#3b5fe2;--blue-50:#eef2ff;--blue-100:#e0e7ff;
+      --green:#16a34a;--green-50:#f0fdf4;--green-100:#dcfce7;
+      --amber:#d97706;--amber-50:#fffbeb;--amber-100:#fef3c7;
+      --red:#dc2626;--red-50:#fef2f2;--red-100:#fee2e2;
+      --purple:#7c3aed;--purple-50:#f5f3ff;
+      --teal:#0d9488;--teal-50:#f0fdfa;
+      --f:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;
+      --shadow:0 1px 3px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.04);
+      --shadow-md:0 4px 16px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.04);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--f);background:var(--bg);color:var(--text);min-height:100vh}
+    /* SIDEBAR */
+    .sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;overflow-y:auto}
+    .sb-brand{display:flex;align-items:center;gap:12px;padding:20px 18px 16px;border-bottom:1px solid var(--border)}
+    .sb-logo{width:38px;height:38px;background:linear-gradient(135deg,var(--blue),#6366f1);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+    .sb-name{font-weight:700;font-size:14px;letter-spacing:-.2px}
+    .role-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;margin-top:3px}
+    .badge-mgr{background:var(--blue-50);color:var(--blue)}
+    .badge-emp{background:var(--green-50);color:var(--green)}
+    .sb-nav{flex:1;padding:10px 10px}
+    .sb-sec{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;padding:14px 8px 6px}
+    .sb-link{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;transition:all .15s}
+    .sb-link:hover{background:var(--bg);color:var(--text)}
+    .sb-link.active{background:var(--blue-50);color:var(--blue);font-weight:600}
+    .sb-link .icon{font-size:16px;width:20px;text-align:center}
+    .sb-footer{padding:12px 10px;border-top:1px solid var(--border)}
+    /* CONTENT */
+    .content{margin-left:240px;min-height:100vh}
+    .topbar{background:var(--card);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between}
+    .topbar-title{font-size:20px;font-weight:700;letter-spacing:-.3px}
+    .topbar-right{display:flex;align-items:center;gap:10px}
+    .page-body{padding:24px 28px 48px}
+    /* BUTTONS */
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;font-size:13px;font-weight:600;border:none;border-radius:9px;cursor:pointer;font-family:var(--f);transition:all .15s;text-decoration:none;white-space:nowrap}
+    .btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:#2e4fc7}
+    .btn-ghost{background:var(--card);border:1px solid var(--border);color:var(--muted)}.btn-ghost:hover{color:var(--text)}
+    .btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#15803d}
+    .live-dot{width:8px;height:8px;background:#16a34a;border-radius:50%;animation:pulse 2s infinite;display:inline-block}
+    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(22,163,74,.4)}60%{box-shadow:0 0 0 5px rgba(22,163,74,0)}}
+    /* KPI GRID */
+    .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+    .kpi{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:20px;position:relative;overflow:hidden;transition:box-shadow .2s}
+    .kpi:hover{box-shadow:var(--shadow-md)}
+    .kpi-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px}
+    .kpi-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+    .kpi-value{font-size:32px;font-weight:700;font-family:var(--mono);letter-spacing:-1px;line-height:1}
+    .kpi-sub{font-size:12px;color:var(--dim);margin-top:8px}
+    /* SECTION HEADER */
+    .sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+    .sec-title{font-size:16px;font-weight:700}
+    .sec-sub{font-size:12px;color:var(--muted);margin-top:3px}
+    /* CARD */
+    .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:22px}
+    /* CHARTS */
+    .chart-row{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin-bottom:24px}
+    /* TABLE */
+    .table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
+    table{width:100%;border-collapse:collapse}
+    thead th{padding:10px 14px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;background:#f8fafc;border-bottom:1px solid var(--border);white-space:nowrap}
+    tbody td{padding:12px 14px;font-size:13px;border-bottom:1px solid var(--border)}
+    tbody tr:last-child td{border-bottom:none}
+    tbody tr:hover{background:#f8fafc}
+    .mono{font-family:var(--mono);font-size:12px}
+    /* STATUS BADGES */
+    .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap}
+    .b-green{background:var(--green-100);color:#15803d}
+    .b-amber{background:var(--amber-100);color:#92400e}
+    .b-red{background:var(--red-100);color:#991b1b}
+    .b-blue{background:var(--blue-100);color:#1e40af}
+    .b-purple{background:var(--purple-50);color:#5b21b6}
+    .b-gray{background:#f1f5f9;color:var(--muted)}
+    /* GRID */
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+    /* ALERTS */
+    .alert-item{display:flex;align-items:flex-start;gap:12px;padding:14px;border-radius:12px;margin-bottom:8px}
+    .alert-item.warn{background:var(--amber-50);border:1px solid var(--amber-100)}
+    .alert-item.danger{background:var(--red-50);border:1px solid var(--red-100)}
+    .alert-item.info{background:var(--blue-50);border:1px solid var(--blue-100)}
+    .alert-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+    .alert-title{font-size:13px;font-weight:600}
+    .alert-desc{font-size:12px;color:var(--muted);margin-top:2px}
+    /* ACTIVE SESSIONS */
+    .session-item{display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;background:var(--bg);margin-bottom:8px;border:1px solid var(--border)}
+    .session-emp{font-weight:600;font-size:14px}
+    .session-meta{font-size:12px;color:var(--muted);margin-top:2px}
+    /* DATE DISPLAY */
+    .date-badge{font-family:var(--mono);font-size:12px;color:var(--muted);background:var(--bg);padding:6px 12px;border-radius:8px;border:1px solid var(--border)}
+    /* FILTER TABS */
+    .filter-tabs{display:flex;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:3px;gap:2px}
+    .filter-tab{padding:6px 14px;font-size:12px;font-weight:600;border:none;background:transparent;color:var(--muted);border-radius:7px;cursor:pointer;font-family:var(--f);transition:all .15s}
+    .filter-tab.active{background:var(--card);color:var(--blue);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+    /* EFF BAR */
+    .eff-wrap{display:flex;align-items:center;gap:8px}
+    .eff-bg{flex:1;height:6px;background:var(--bg);border-radius:999px;overflow:hidden;border:1px solid var(--border)}
+    .eff-fill{height:100%;border-radius:999px}
+    .eff-pct{font-size:11px;font-family:var(--mono);color:var(--muted);min-width:34px}
+    .empty td{color:var(--dim)!important;text-align:center;padding:28px!important}
+    @media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(3,1fr)}.chart-row,.two-col{grid-template-columns:1fr}.sidebar{display:none}.content{margin-left:0}}
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo">⚙</div>
+    <div>
+      <div class="sb-name">Cedarwings SAS</div>
+      <div class="role-badge badge-mgr">Manager</div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-sec">Operations</div>
+    <a href="manager.html" class="sb-link active"><span class="icon">📊</span>Dashboard</a>
+    <a href="production.html" class="sb-link"><span class="icon">🏭</span>Production</a>
+    <a href="machines.html" class="sb-link"><span class="icon">⚙</span>Machines</a>
+    <div class="sb-sec">Resources</div>
+    <a href="inventory.html" class="sb-link"><span class="icon">📦</span>Inventory</a>
+    <a href="time_report.html" class="sb-link"><span class="icon">📈</span>Time Report</a>
+    <div class="sb-sec">Terminal</div>
+    <a href="clocking.html" class="sb-link"><span class="icon">⏱</span>Clocking Terminal</a>
+  </nav>
+  <div class="sb-footer">
+    <a href="index.html" class="sb-link"><span class="icon">←</span>Switch Role</a>
+  </div>
+</aside>
+
+<div class="content">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Operations Dashboard</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:3px" id="dateDisplay">Loading…</div>
+    </div>
+    <div class="topbar-right">
+      <span class="live-dot"></span>
+      <span style="font-size:12px;color:var(--muted)">Live</span>
+      <div class="filter-tabs">
+        <button class="filter-tab active" data-range="today">Today</button>
+        <button class="filter-tab" data-range="week">This Week</button>
+        <button class="filter-tab" data-range="month">This Month</button>
+      </div>
+      <button class="btn btn-primary" id="refreshBtn">↻ Refresh</button>
+    </div>
+  </div>
+
+  <div class="page-body">
+    <!-- KPI Row -->
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-icon" style="background:#eff6ff">⏱</div><div class="kpi-label">Sessions</div><div class="kpi-value" id="kpiSessions">—</div><div class="kpi-sub" id="kpiSessionsSub">—</div></div>
+      <div class="kpi"><div class="kpi-icon" style="background:#f0fdf4">✅</div><div class="kpi-label">Productive Hrs</div><div class="kpi-value" id="kpiProductive">—</div><div class="kpi-sub" id="kpiProductiveSub">—</div></div>
+      <div class="kpi"><div class="kpi-icon" style="background:#fff7ed">⚙</div><div class="kpi-label">Aligners Today</div><div class="kpi-value" id="kpiAligners">—</div><div class="kpi-sub">Produced (manual entry)</div></div>
+      <div class="kpi"><div class="kpi-icon" style="background:#f5f3ff">📁</div><div class="kpi-label">Cases Today</div><div class="kpi-value" id="kpiCases">—</div><div class="kpi-sub">Completed cases</div></div>
+      <div class="kpi"><div class="kpi-icon" style="background:#fef2f2">⚠</div><div class="kpi-label">Low Stock Alerts</div><div class="kpi-value" id="kpiLowStock">—</div><div class="kpi-sub">Items below minimum</div></div>
+      <div class="kpi"><div class="kpi-icon" style="background:#fef3c7">📋</div><div class="kpi-label">Open Requisitions</div><div class="kpi-value" id="kpiReqs">—</div><div class="kpi-sub">Pending / Approved</div></div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="chart-row">
+      <div class="card">
+        <div class="sec-hdr"><div><div class="sec-title">Employee Productivity</div><div class="sec-sub">Productive vs non-productive minutes</div></div></div>
+        <canvas id="empChart" height="230"></canvas>
+      </div>
+      <div class="card">
+        <div class="sec-hdr"><div><div class="sec-title">Session Types</div><div class="sec-sub">Distribution by type</div></div></div>
+        <canvas id="typeChart" height="230"></canvas>
+      </div>
+    </div>
+
+    <!-- Active + Alerts Row -->
+    <div class="two-col">
+      <div class="card">
+        <div class="sec-hdr">
+          <div><div class="sec-title">🟢 Active Sessions</div><div class="sec-sub">Employees currently working</div></div>
+          <span class="badge b-green" id="activeCount">0 active</span>
+        </div>
+        <div id="activeList"><div style="color:var(--dim);font-size:13px">No active sessions.</div></div>
+      </div>
+      <div class="card">
+        <div class="sec-hdr"><div><div class="sec-title">⚠ Alerts</div><div class="sec-sub">Low stock & near expiry</div></div></div>
+        <div id="alertsList"><div style="color:var(--dim);font-size:13px">Loading…</div></div>
+      </div>
+    </div>
+
+    <!-- Production + Employees -->
+    <div class="two-col">
+      <div class="card">
+        <div class="sec-hdr">
+          <div><div class="sec-title">Recent Production</div><div class="sec-sub">Aligners & cases recorded</div></div>
+          <a href="production.html" class="btn btn-ghost" style="font-size:12px">View All →</a>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Order</th><th>Aligners</th><th>Cases</th><th>Employee</th><th>Date</th></tr></thead>
+            <tbody id="productionBody"><tr class="empty"><td colspan="5">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="sec-hdr"><div><div class="sec-title">Employee Summary</div><div class="sec-sub">Efficiency for selected period</div></div></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Employee</th><th>Sessions</th><th>Efficiency</th><th>Status</th></tr></thead>
+            <tbody id="empSummaryBody"><tr class="empty"><td colspan="4">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { SUPABASE_CONFIG } from './config.js'
+const sb = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey)
+let range='today', charts={}
+
+function getRange(){
+  const n=new Date();let s,e
+  if(range==='today'){s=new Date(n);s.setHours(0,0,0,0);e=new Date(n);e.setHours(23,59,59,999)}
+  else if(range==='week'){const d=n.getDay(),diff=d===0?-6:1-d;s=new Date(n);s.setDate(n.getDate()+diff);s.setHours(0,0,0,0);e=new Date(n);e.setHours(23,59,59,999)}
+  else{s=new Date(n.getFullYear(),n.getMonth(),1);e=new Date(n);e.setHours(23,59,59,999)}
+  return{s,e}
+}
+const mins=(a,b)=>Math.max(0,Math.round((b-a)/60000))
+const hm=m=>`${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`
+const dur=r=>!r.started_at||!r.ended_at?0:mins(new Date(r.started_at),new Date(r.ended_at))
+const fdt=v=>v?new Date(v).toLocaleDateString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'—'
+function badge(type){
+  const l=(type||'').toLowerCase()
+  if(l==='productive'||l==='active'||l==='fulfilled')return'<span class="badge b-green">'+type+'</span>'
+  if(l==='waste')return'<span class="badge b-amber">Non-Productive</span>'
+  if(l==='overtime')return'<span class="badge b-purple">Overtime</span>'
+  if(l==='closed')return'<span class="badge b-gray">Closed</span>'
+  return'<span class="badge b-gray">'+type+'</span>'
+}
+function chOpts(){return{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#64748b',font:{family:"'DM Sans'",size:12}}}},scales:{x:{ticks:{color:'#94a3b8'},grid:{color:'#f1f5f9'}},y:{ticks:{color:'#94a3b8'},grid:{color:'#f1f5f9'}}}}}
+function mkOrUp(key,el,type,data,opts){if(charts[key])charts[key].destroy();charts[key]=new Chart(document.getElementById(el),{type,data,options:opts})}
+
+document.getElementById('dateDisplay').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})
+
+async function load(){
+  const{s,e}=getRange()
+  const[sessRes,prodRes,lotsRes,reqRes]=await Promise.all([
+    sb.from('time_sessions').select('*').gte('started_at',s.toISOString()).lte('started_at',e.toISOString()).order('started_at',{ascending:false}).limit(500),
+    sb.from('production_records').select('*').gte('created_at',s.toISOString()).lte('created_at',e.toISOString()).order('created_at',{ascending:false}).limit(20),
+    sb.from('inventory_lots_enriched_view').select('*'),
+    sb.from('inventory_requisitions').select('*').in('status',['pending','approved'])
+  ])
+  const rows=sessRes.data||[], prods=prodRes.data||[], lots=lotsRes.data||[], reqs=reqRes.data||[]
+  const active=rows.filter(r=>!r.ended_at)
+  let pMin=0,wMin=0,oMin=0
+  const byEmp=new Map()
+  rows.forEach(r=>{
+    const m=dur(r),t=r.session_type||''
+    if(t==='productive')pMin+=m;if(t==='waste')wMin+=m;if(t==='overtime')oMin+=m
+    const k=r.employee_name||'Unknown'
+    if(!byEmp.has(k))byEmp.set(k,{name:k,sessions:0,p:0,w:0,status:'Closed',latestStart:null,latestEnded:true})
+    const it=byEmp.get(k);it.sessions++
+    if(t==='productive')it.p+=m;if(t==='waste')it.w+=m
+    const rs=r.started_at?new Date(r.started_at):null
+    if(rs&&(!it.latestStart||rs>it.latestStart)){it.latestStart=rs;it.status=r.ended_at?'Closed':'Active';it.latestEnded=!!r.ended_at}
+  })
+  // KPIs
+  const totAligners=prods.reduce((a,r)=>a+(r.aligners_count||0),0)
+  const totCases=prods.reduce((a,r)=>a+(r.cases_count||0),0)
+  const lowStock=lots.filter(r=>{const qty=Number(r.available_qty||0),min=Number(r.min_qty||r.min_stock||0);return min>0&&qty<=min}).length
+  document.getElementById('kpiSessions').textContent=rows.length
+  document.getElementById('kpiSessionsSub').textContent=`${active.length} currently open`
+  document.getElementById('kpiProductive').textContent=hm(pMin)
+  document.getElementById('kpiProductiveSub').textContent=(pMin+wMin)>0?`${Math.round(pMin/(pMin+wMin)*100)}% efficiency`:'No sessions'
+  document.getElementById('kpiAligners').textContent=totAligners
+  document.getElementById('kpiCases').textContent=totCases
+  document.getElementById('kpiLowStock').textContent=lowStock
+  document.getElementById('kpiReqs').textContent=reqs.length
+  // Charts
+  const empArr=[...byEmp.values()].sort((a,b)=>b.p-a.p).slice(0,8)
+  mkOrUp('emp','empChart','bar',{
+    labels:empArr.map(e=>e.name),
+    datasets:[
+      {label:'Productive (min)',data:empArr.map(e=>e.p),backgroundColor:'rgba(22,163,74,.7)',borderColor:'#16a34a',borderWidth:1.5},
+      {label:'Non-Productive (min)',data:empArr.map(e=>e.w),backgroundColor:'rgba(217,119,6,.6)',borderColor:'#d97706',borderWidth:1.5}
+    ]
+  },chOpts())
+  const co={...chOpts()};delete co.scales
+  mkOrUp('type','typeChart','doughnut',{
+    labels:['Productive','Non-Productive','Overtime'],
+    datasets:[{data:[pMin,wMin,oMin],backgroundColor:['rgba(22,163,74,.8)','rgba(217,119,6,.8)','rgba(124,58,237,.8)'],borderColor:['#16a34a','#d97706','#7c3aed'],borderWidth:2}]
+  },{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#64748b',font:{family:"'DM Sans'",size:12}}}}})
+  // Active sessions
+  document.getElementById('activeCount').textContent=`${active.length} active`
+  document.getElementById('activeList').innerHTML=active.length?active.map(r=>`<div class="session-item">
+    <div class="live-dot"></div>
+    <div>
+      <div class="session-emp">${r.employee_name||'—'}</div>
+      <div class="session-meta">${r.work_type||r.session_type||'—'} · ${r.machine||'—'} · Order: ${r.order_no||'—'}</div>
+    </div>
+    <div style="margin-left:auto">${badge(r.session_type)}</div>
+  </div>`)
+  .join(''):`<div style="color:var(--dim);font-size:13px;text-align:center;padding:12px">No active sessions right now.</div>`
+  // Alerts
+  const alerts=[]
+  lots.forEach(r=>{
+    const qty=Number(r.available_qty||0),min=Number(r.min_qty||r.min_stock||0)
+    const d=r.expiry_date?Math.round((new Date(r.expiry_date)-new Date())/86400000):null
+    if(min>0&&qty<=0)alerts.push({type:'danger',icon:'🚫',title:`Out of stock: ${r.item_name}`,desc:`Available: 0 · Min required: ${min}`})
+    else if(min>0&&qty<=min)alerts.push({type:'warn',icon:'⚠',title:`Low stock: ${r.item_name}`,desc:`Available: ${qty} · Min: ${min}`})
+    if(d!==null&&d<=30&&d>=0)alerts.push({type:'warn',icon:'⏰',title:`Expiring soon: ${r.item_name}`,desc:`Lot ${r.lot_no||'—'} · Expires in ${d} day(s)`})
+    if(d!==null&&d<0)alerts.push({type:'danger',icon:'⚠',title:`Expired: ${r.item_name}`,desc:`Lot ${r.lot_no||'—'} expired ${Math.abs(d)} day(s) ago`})
+  })
+  document.getElementById('alertsList').innerHTML=alerts.slice(0,6).length?alerts.slice(0,6).map(a=>`<div class="alert-item ${a.type}">
+    <div class="alert-icon">${a.icon}</div>
+    <div><div class="alert-title">${a.title}</div><div class="alert-desc">${a.desc}</div></div>
+  </div>`).join(''):`<div style="color:var(--dim);font-size:13px;text-align:center;padding:12px">✅ No alerts — everything looks good!</div>`
+  // Production
+  document.getElementById('productionBody').innerHTML=prods.length?prods.slice(0,8).map(r=>`<tr>
+    <td class="mono">${r.order_no||'—'}</td>
+    <td class="mono" style="font-weight:700;color:#d97706">${r.aligners_count||0}</td>
+    <td class="mono" style="font-weight:700;color:#7c3aed">${r.cases_count||0}</td>
+    <td>${r.employee_name||'—'}</td>
+    <td class="mono" style="font-size:11px;color:var(--muted)">${fdt(r.created_at)}</td>
+  </tr>`).join(''):`<tr class="empty"><td colspan="5">No production records for this period.</td></tr>`
+  // Emp summary
+  document.getElementById('empSummaryBody').innerHTML=[...byEmp.values()].map(e=>{
+    const tot=e.p+e.w,pct=tot>0?Math.round(e.p/tot*100):0,bc=pct>=70?'#16a34a':pct>=40?'#d97706':'#dc2626'
+    return`<tr>
+      <td><strong>${e.name}</strong></td>
+      <td class="mono">${e.sessions}</td>
+      <td><div class="eff-wrap"><div class="eff-bg"><div class="eff-fill" style="width:${pct}%;background:${bc}"></div></div><span class="eff-pct" style="color:${bc}">${pct}%</span></div></td>
+      <td>${e.status==='Active'?'<span class="badge b-green">Active</span>':'<span class="badge b-gray">Closed</span>'}</td>
+    </tr>`
+  }).join('')||'<tr class="empty"><td colspan="4">No sessions.</td></tr>'
+}
+document.querySelectorAll('.filter-tab').forEach(btn=>btn.addEventListener('click',()=>{
+  document.querySelectorAll('.filter-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');range=btn.dataset.range;load()
+}))
+document.getElementById('refreshBtn').addEventListener('click',load)
+load();setInterval(load,30000)
+</script>
+</body>
+</html>

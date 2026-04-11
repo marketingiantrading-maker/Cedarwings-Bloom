@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Cedarwings — Clocking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --page:#F4F7FE;--surface:#FFFFFF;--border:#E4ECF7;--border2:#CDD8EE;
+  --text:#0F172A;--muted:#64748B;--dim:#94A3B8;
+  --indigo:#4F46E5;--indigo-h:#4338CA;--indigo-l:#EEF2FF;
+  --green:#10B981;--green-l:#D1FAE5;--green-t:#064E3B;
+  --amber:#F59E0B;--amber-l:#FEF3C7;--amber-t:#78350F;
+  --red:#EF4444;--red-l:#FEE2E2;--red-t:#7F1D1D;
+  --blue:#3B82F6;--blue-l:#DBEAFE;--blue-t:#1E3A8A;
+  --purple:#8B5CF6;--purple-l:#EDE9FE;--purple-t:#4C1D95;
+  --sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --sh-md:0 4px 16px rgba(0,0,0,.08);--sh-lg:0 12px 32px rgba(0,0,0,.1);
+  --r:14px;--font:'Outfit',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+*{font-family:var(--font);-webkit-font-smoothing:antialiased}
+body{background:var(--page);color:var(--text);min-height:100vh;font-size:14px}
+/* NAV */
+.navbar{background:var(--surface);border-bottom:1.5px solid var(--border);position:sticky;top:0;z-index:300;height:60px;display:flex;align-items:center;padding:0 28px;box-shadow:var(--sh)}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;margin-right:36px}
+.brand-logo{width:34px;height:34px;background:linear-gradient(135deg,#4F46E5,#818CF8);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:#fff}
+.brand-name{font-weight:800;font-size:15px}.brand-sub{font-size:10px;color:var(--muted);font-weight:600}
+.nav-links{display:flex;gap:2px}
+.nl{text-decoration:none;color:var(--muted);font-size:13px;font-weight:600;padding:7px 14px;border-radius:10px;transition:all .15s}
+.nl:hover{color:var(--text);background:var(--page)}.nl.on{color:var(--indigo);background:var(--indigo-l)}
+.nav-r{display:flex;align-items:center;gap:8px;margin-left:auto}
+/* HERO */
+.hero{background:linear-gradient(135deg,#7C3AED 0%,#8B5CF6 50%,#A78BFA 100%);padding:28px 28px 0;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;width:300px;height:300px;top:-80px;right:-60px;border-radius:50%;background:rgba(255,255,255,.08)}
+.hero-inner{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;padding-bottom:24px}
+.hero-title{font-size:28px;font-weight:800;color:#fff;letter-spacing:-.6px;margin-bottom:6px}
+.hero-sub{font-size:13px;color:rgba(255,255,255,.75)}
+.clock-display{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.clock-time{font-size:36px;font-weight:800;color:#fff;font-family:var(--mono);letter-spacing:-1px}
+.clock-date{font-size:13px;color:rgba(255,255,255,.7);font-family:var(--mono)}
+/* LAYOUT */
+.page{padding:28px 28px 60px;max-width:1440px;margin:0 auto}
+/* CARDS */
+.card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:24px;box-shadow:var(--sh)}
+.card-title{font-size:16px;font-weight:700;margin-bottom:4px}
+.card-sub{font-size:12px;color:var(--muted);margin-bottom:18px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+/* EMPLOYEE SELECTOR */
+.emp-selector{position:relative}
+.emp-input-row{display:flex;gap:8px;margin-bottom:8px}
+.emp-history{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;box-shadow:var(--sh-lg);z-index:100;display:none;max-height:200px;overflow-y:auto}
+.emp-history.open{display:block}
+.emp-hist-item{padding:10px 14px;font-size:13px;cursor:pointer;transition:background .12s;display:flex;align-items:center;gap:8px;font-weight:600}
+.emp-hist-item:hover{background:var(--page)}
+.emp-hist-item .emp-dot{width:8px;height:8px;border-radius:50%;background:var(--purple);flex-shrink:0}
+/* WORKFLOW STEPS */
+.workflow{display:flex;gap:0;flex-wrap:wrap;background:var(--page);border-radius:var(--r);padding:6px;border:1.5px solid var(--border);margin-bottom:4px}
+.wf-step{flex:1;min-width:100px;text-align:center;padding:10px 8px;border-radius:10px;cursor:pointer;border:none;background:transparent;font-size:12px;font-weight:700;color:var(--muted);font-family:var(--font);transition:all .15s;position:relative}
+.wf-step:hover{color:var(--text);background:var(--surface)}
+.wf-step.active{background:var(--surface);color:var(--purple);box-shadow:var(--sh-md);border-radius:10px}
+.wf-step .step-icon{font-size:18px;display:block;margin-bottom:4px}
+.wf-step .step-name{font-size:11px;display:block;white-space:nowrap}
+/* FORM */
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.field label{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.inp{width:100%;padding:10px 13px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-weight:500;outline:none;transition:all .15s}
+.inp:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(139,92,246,.1)}
+.inp::placeholder{color:var(--dim);font-weight:400}
+.type-pills{display:flex;gap:8px;flex-wrap:wrap}
+.type-pill{padding:8px 16px;border:1.5px solid var(--border2);border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;background:transparent;color:var(--muted);font-family:var(--font);transition:all .15s}
+.type-pill:hover{border-color:var(--purple);color:var(--purple)}
+.type-pill.active{background:var(--purple);color:#fff;border-color:var(--purple);box-shadow:0 2px 8px rgba(139,92,246,.3)}
+.type-pill.active-prod{background:var(--green);border-color:var(--green);color:#fff;box-shadow:0 2px 8px rgba(16,185,129,.3)}
+.type-pill.active-waste{background:var(--amber);border-color:var(--amber);color:#fff;box-shadow:0 2px 8px rgba(245,158,11,.3)}
+.type-pill.active-ot{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(59,130,246,.3)}
+/* ACTIVE SESSION */
+.active-sess{background:linear-gradient(135deg,var(--green-l),var(--indigo-l));border:2px solid #A7F3D0;border-radius:var(--r);padding:22px}
+.active-title{font-size:14px;font-weight:800;color:var(--green-t);margin-bottom:6px}
+.active-timer{font-size:48px;font-weight:900;font-family:var(--mono);color:var(--text);letter-spacing:-2px;line-height:1;margin-bottom:8px}
+.active-meta{font-size:12px;color:var(--muted);font-family:var(--mono)}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;font-size:14px;font-weight:800;border:none;border-radius:var(--r);cursor:pointer;font-family:var(--font);transition:all .15s;white-space:nowrap}
+.btn-clock-in{background:var(--green);color:#fff;width:100%;font-size:16px;padding:16px;box-shadow:0 4px 16px rgba(16,185,129,.3)}.btn-clock-in:hover{background:#059669;transform:translateY(-1px)}
+.btn-clock-out{background:var(--red);color:#fff;width:100%;font-size:16px;padding:16px;box-shadow:0 4px 16px rgba(239,68,68,.3)}.btn-clock-out:hover{background:#DC2626;transform:translateY(-1px)}
+.btn-ghost{background:transparent;border:1.5px solid var(--border2);color:var(--muted);padding:8px 16px;font-size:13px;border-radius:10px}.btn-ghost:hover{border-color:var(--purple);color:var(--purple)}
+.btn-ind{background:var(--indigo);color:#fff;padding:8px 16px;font-size:13px;border-radius:10px}.btn-ind:hover{background:var(--indigo-h)}
+/* STATUS MSG */
+.smsg{font-size:13px;font-weight:700;display:none;padding:10px 14px;border-radius:10px;margin-top:12px}
+.smsg.ok{background:var(--green-l);color:var(--green-t);display:block}.smsg.err{background:var(--red-l);color:var(--red-t);display:block}.smsg.info{background:var(--indigo-l);color:var(--indigo);display:block}
+/* DAY SUMMARY */
+.sum-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1.5px solid var(--border)}
+.sum-row:last-child{border-bottom:none}
+.sum-label{font-size:12px;color:var(--muted);font-weight:600}
+.sum-val{font-size:15px;font-weight:800;font-family:var(--mono)}
+/* TABLE */
+.tw{overflow-x:auto;border-radius:12px;border:1.5px solid var(--border);margin-top:16px}
+table{width:100%;border-collapse:collapse;min-width:600px}
+thead th{padding:9px 12px;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;background:#F8FAFF;border-bottom:1.5px solid var(--border);white-space:nowrap;text-align:left}
+tbody td{padding:11px 12px;font-size:13px;border-bottom:1.5px solid var(--border);font-weight:500}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#FAFBFF}
+.mono{font-family:var(--mono);font-size:12px}
+.badge{display:inline-flex;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--mono)}
+.b-gr{background:var(--green-l);color:var(--green-t)}.b-am{background:var(--amber-l);color:var(--amber-t)}.b-bl{background:var(--blue-l);color:var(--blue-t)}.b-pu{background:var(--purple-l);color:var(--purple-t)}.b-rd{background:var(--red-l);color:var(--red-t)}
+.empty td{text-align:center;color:var(--dim)!important;padding:28px!important;font-style:italic}
+/* SECTION */
+.section-title{font-size:17px;font-weight:700;margin-bottom:14px}
+@media(max-width:900px){.grid-2{grid-template-columns:1fr}.workflow{flex-wrap:wrap}.wf-step{min-width:80px}}
+@media(max-width:768px){.page{padding:16px}.navbar{padding:0 16px}.nav-links{display:none}}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a class="brand" href="index18.html">
+    <div class="brand-logo">C</div>
+    <div><div class="brand-name">Cedarwings SAS</div><div class="brand-sub">Operations Platform</div></div>
+  </a>
+  <div class="nav-links">
+    <a href="index18.html" class="nl">📊 Dashboard</a>
+    <a href="clocking.html" class="nl on">⏱ Clocking</a>
+    <a href="inventory.html" class="nl">📦 Inventory</a>
+    <a href="machines.html" class="nl">⚙ Machines</a>
+  </div>
+  <div class="nav-r">
+    <button class="btn-ghost" id="refreshSummaryBtn" style="cursor:pointer">↻ Refresh</button>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div>
+      <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Employee Terminal</div>
+      <div class="hero-title">⏱ Clocking</div>
+      <div class="hero-sub">Clock in and out · Workflow step tracking · Day summary</div>
+    </div>
+    <div class="clock-display">
+      <div class="clock-time" id="clockTime">00:00:00</div>
+      <div class="clock-date" id="clockDate">—</div>
+    </div>
+  </div>
+</div>
+
+<main class="page">
+
+  <div class="grid-2">
+
+    <!-- LEFT: CLOCKING FORM -->
+    <div>
+      <!-- EMPLOYEE SELECTOR -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">👤 Employee</div>
+        <div class="card-sub">Select your name or type to search</div>
+        <div class="emp-selector">
+          <div class="emp-input-row">
+            <input class="inp" id="empName" placeholder="Your name…" autocomplete="off" style="flex:1"/>
+            <button class="btn-ind" id="loadEmpBtn" onclick="loadEmpData()">Load ↗</button>
+          </div>
+          <div class="emp-history" id="empHistory"></div>
+        </div>
+        <div id="empBadge" style="display:none;margin-top:10px;padding:10px 14px;background:var(--purple-l);border-radius:10px;font-size:13px;font-weight:700;color:var(--purple-t)">
+          👤 <span id="empBadgeName">—</span> &nbsp;·&nbsp; <span id="empBadgeStats" style="font-weight:500;color:var(--muted)">—</span>
+        </div>
+      </div>
+
+      <!-- ACTIVE SESSION DISPLAY -->
+      <div class="active-sess" id="activeSessCard" style="display:none;margin-bottom:16px">
+        <div class="active-title">🟢 SESSION ACTIVE</div>
+        <div class="active-timer" id="activeTimer">00:00:00</div>
+        <div class="active-meta" id="activeMeta">—</div>
+        <div style="margin-top:12px">
+          <button class="btn btn-clock-out" id="clockOutBtn">⏹ Clock Out</button>
+        </div>
+        <div class="smsg" id="outMsg"></div>
+      </div>
+
+      <!-- CLOCK IN FORM -->
+      <div class="card" id="clockInCard">
+        <div class="card-title">🕐 Clock In</div>
+        <div class="card-sub">Select your workflow step and fill in the details below</div>
+
+        <!-- WORKFLOW PIPELINE -->
+        <div style="margin-bottom:16px">
+          <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Workflow Step</div>
+          <div class="workflow" id="workflowSteps">
+            <button class="wf-step" data-step="Printing"><span class="step-icon">🖨</span><span class="step-name">Printing</span></button>
+            <button class="wf-step" data-step="Cleaning"><span class="step-icon">🫧</span><span class="step-name">Cleaning</span></button>
+            <button class="wf-step" data-step="Thermoforming"><span class="step-icon">♨</span><span class="step-name">Thermoform</span></button>
+            <button class="wf-step" data-step="Line Cut"><span class="step-icon">✂</span><span class="step-name">Line Cut</span></button>
+            <button class="wf-step" data-step="Laser Marking"><span class="step-icon">🔆</span><span class="step-name">Laser Mark</span></button>
+            <button class="wf-step" data-step="Packaging"><span class="step-icon">📦</span><span class="step-name">Packaging</span></button>
+          </div>
+        </div>
+
+        <!-- SESSION TYPE -->
+        <div class="field">
+          <label>Session Type</label>
+          <div class="type-pills" id="typePills">
+            <button class="type-pill" data-type="productive">✅ Productive</button>
+            <button class="type-pill" data-type="waste">⚠ Non-Productive</button>
+            <button class="type-pill" data-type="overtime">🌙 Overtime</button>
+          </div>
+        </div>
+
+        <!-- WASTE CATEGORY (shown if waste) -->
+        <div class="field" id="wasteCatField" style="display:none">
+          <label>Waste / Issue Category</label>
+          <select class="inp" id="wasteCat">
+            <option value="">Select reason…</option>
+            <option>Machine breakdown</option>
+            <option>Material shortage</option>
+            <option>Quality issue</option>
+            <option>Power outage</option>
+            <option>Training</option>
+            <option>Meeting</option>
+            <option>Cleaning/Setup</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Order Number</label>
+          <input class="inp" id="orderNo" placeholder="e.g. ORD-1048"/>
+        </div>
+
+        <div class="field">
+          <label>Machine</label>
+          <select class="inp" id="machineSelect">
+            <option value="">Select machine…</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Task Description (optional)</label>
+          <input class="inp" id="taskDesc" placeholder="Brief description of the task"/>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button class="btn btn-clock-in" id="clockInBtn">▶ Clock In</button>
+          <div class="smsg" id="inMsg"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: SUMMARY -->
+    <div>
+
+      <!-- DAY SUMMARY -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">📊 Today's Summary</div>
+        <div class="card-sub" id="summaryEmpLabel">No employee selected</div>
+        <div class="sum-row"><span class="sum-label">Total Sessions</span><span class="sum-val" id="sumSessions" style="color:var(--purple)">—</span></div>
+        <div class="sum-row"><span class="sum-label">Productive Time</span><span class="sum-val" id="sumProd" style="color:var(--green)">—</span></div>
+        <div class="sum-row"><span class="sum-label">Non-Productive</span><span class="sum-val" id="sumWaste" style="color:var(--amber)">—</span></div>
+        <div class="sum-row"><span class="sum-label">Overtime</span><span class="sum-val" id="sumOT" style="color:var(--blue)">—</span></div>
+        <div class="sum-row" style="border-bottom:none">
+          <span class="sum-label" style="font-weight:800;color:var(--text)">Efficiency</span>
+          <span class="sum-val" id="sumEff" style="color:var(--indigo)">—%</span>
+        </div>
+      </div>
+
+      <!-- SESSION LIST -->
+      <div class="card">
+        <div class="section-title">Today's Sessions</div>
+        <div class="tw">
+          <table>
+            <thead><tr><th>Order</th><th>Step</th><th>Machine</th><th>Type</th><th>Start</th><th>End</th><th>Duration</th></tr></thead>
+            <tbody id="sessListBody"><tr class="empty"><td colspan="7">No sessions today. Clock in above.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </div><!-- /grid-2 -->
+
+</main>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { SUPABASE_CONFIG } from './config.js'
+const sb = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey)
+
+// ─── Clock ────────────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date()
+  document.getElementById('clockTime').textContent = now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'})
+  document.getElementById('clockDate').textContent = now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})
+}
+updateClock(); setInterval(updateClock, 1000)
+
+// ─── State ────────────────────────────────────────────────────────
+let selectedStep = '', selectedType = '', activeSession = null, timerInterval = null
+
+// Load active session from localStorage
+function loadActiveFromLocal() {
+  const s = localStorage.getItem('cedarwings_active_session')
+  if (s) try { activeSession = JSON.parse(s) } catch {}
+}
+
+// ─── Employee ─────────────────────────────────────────────────────
+function getEmpHistory() { try { return JSON.parse(localStorage.getItem('cw_emp_history') || '[]') } catch { return [] } }
+function saveEmpHistory(name) {
+  let h = getEmpHistory().filter(n => n !== name)
+  h.unshift(name); h = h.slice(0,8)
+  localStorage.setItem('cw_emp_history', JSON.stringify(h))
+}
+
+function buildHistory(val) {
+  const h = getEmpHistory().filter(n => !val || n.toLowerCase().includes(val.toLowerCase()))
+  const el = document.getElementById('empHistory')
+  if (!h.length) { el.classList.remove('open'); return }
+  el.innerHTML = h.map(n => `<div class="emp-hist-item" onclick="selectEmp('${n}')"><span class="emp-dot"></span>${n}</div>`).join('')
+  el.classList.add('open')
+}
+window.selectEmp = name => {
+  document.getElementById('empName').value = name
+  document.getElementById('empHistory').classList.remove('open')
+  loadEmpData()
+}
+document.getElementById('empName').addEventListener('input', e => buildHistory(e.target.value))
+document.addEventListener('click', e => { if (!e.target.closest('.emp-selector')) document.getElementById('empHistory').classList.remove('open') })
+document.getElementById('empName').addEventListener('focus', e => buildHistory(e.target.value))
+
+// ─── Workflow Steps ───────────────────────────────────────────────
+document.querySelectorAll('.wf-step').forEach(btn => btn.addEventListener('click', () => {
+  document.querySelectorAll('.wf-step').forEach(b => b.classList.remove('active'))
+  btn.classList.add('active'); selectedStep = btn.dataset.step
+}))
+
+// ─── Session Type ─────────────────────────────────────────────────
+document.querySelectorAll('.type-pill').forEach(btn => btn.addEventListener('click', () => {
+  document.querySelectorAll('.type-pill').forEach(b => b.classList.remove('active','active-prod','active-waste','active-ot'))
+  btn.classList.add('active')
+  selectedType = btn.dataset.type
+  if (selectedType === 'productive') btn.classList.add('active-prod')
+  else if (selectedType === 'waste') btn.classList.add('active-waste')
+  else if (selectedType === 'overtime') btn.classList.add('active-ot')
+  document.getElementById('wasteCatField').style.display = selectedType === 'waste' ? 'flex' : 'none'
+}))
+
+// ─── Machines ─────────────────────────────────────────────────────
+async function loadMachines() {
+  const { data } = await sb.from('machines').select('name,workflow_step').eq('status','active').order('name')
+  const sel = document.getElementById('machineSelect')
+  sel.innerHTML = '<option value="">Select machine…</option>'
+  ;(data || []).forEach(m => {
+    const o = document.createElement('option'); o.value = m.name; o.textContent = `${m.name} (${m.workflow_step||'—'})`; sel.appendChild(o)
+  })
+}
+
+// ─── Clock In ─────────────────────────────────────────────────────
+document.getElementById('clockInBtn').addEventListener('click', async () => {
+  const emp = document.getElementById('empName').value.trim()
+  const msg = document.getElementById('inMsg')
+  if (!emp) { showMsg(msg,'error','Enter your name first'); return }
+  if (!selectedStep) { showMsg(msg,'error','Select a workflow step'); return }
+  if (!selectedType) { showMsg(msg,'error','Select a session type'); return }
+
+  const order = document.getElementById('orderNo').value.trim()
+  const machine = document.getElementById('machineSelect').value
+  const desc = document.getElementById('taskDesc').value.trim()
+  const waste = selectedType === 'waste' ? document.getElementById('wasteCat').value : null
+
+  showMsg(msg,'info','Clocking in…')
+  try {
+    const { data, error } = await sb.from('time_sessions').insert([{
+      employee_name: emp, session_type: selectedType, work_type: selectedStep,
+      machine: machine || null, order_no: order || null, task_description: desc || null,
+      waste_category: waste || null, started_at: new Date().toISOString()
+    }]).select().single()
+    if (error) throw error
+    activeSession = data
+    localStorage.setItem('cedarwings_active_session', JSON.stringify(data))
+    localStorage.setItem('cedarwings_logged_employee', emp)
+    saveEmpHistory(emp)
+    showMsg(msg,'ok',`✓ Clocked in at ${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}`)
+    showActiveSession()
+    loadEmpData()
+  } catch (e) { showMsg(msg,'error','Error: '+e.message) }
+})
+
+// ─── Clock Out ────────────────────────────────────────────────────
+document.getElementById('clockOutBtn').addEventListener('click', async () => {
+  if (!activeSession?.id) return
+  const msg = document.getElementById('outMsg')
+  showMsg(msg,'info','Clocking out…')
+  try {
+    const { error } = await sb.from('time_sessions').update({ ended_at: new Date().toISOString() }).eq('id', activeSession.id)
+    if (error) throw error
+    activeSession = null; localStorage.removeItem('cedarwings_active_session')
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null }
+    document.getElementById('activeSessCard').style.display = 'none'
+    document.getElementById('clockInCard').style.display = 'block'
+    showMsg(document.getElementById('inMsg'),'ok','✓ Clocked out successfully')
+    loadEmpData()
+  } catch (e) { showMsg(msg,'error','Error: '+e.message) }
+})
+
+// ─── Show Active Session UI ────────────────────────────────────────
+function showActiveSession() {
+  if (!activeSession) return
+  const card = document.getElementById('activeSessCard')
+  card.style.display = 'block'
+  document.getElementById('clockInCard').style.display = 'none'
+  document.getElementById('activeMeta').textContent = `${activeSession.employee_name} · ${activeSession.work_type} · ${activeSession.order_no||'No order'} · ${activeSession.machine||'No machine'}`
+  if (timerInterval) clearInterval(timerInterval)
+  timerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - new Date(activeSession.started_at)) / 1000)
+    const h = String(Math.floor(elapsed/3600)).padStart(2,'0')
+    const m = String(Math.floor(elapsed%3600/60)).padStart(2,'0')
+    const s = String(elapsed%60).padStart(2,'0')
+    document.getElementById('activeTimer').textContent = `${h}:${m}:${s}`
+  }, 1000)
+}
+
+// ─── Load Employee Data ────────────────────────────────────────────
+window.loadEmpData = async function() {
+  const emp = document.getElementById('empName').value.trim()
+  if (!emp) return
+  localStorage.setItem('cedarwings_logged_employee', emp)
+  document.getElementById('empBadge').style.display = 'block'
+  document.getElementById('empBadgeName').textContent = emp
+
+  const today = new Date(); today.setHours(0,0,0,0)
+  const { data: rows } = await sb.from('time_sessions').select('*')
+    .eq('employee_name', emp).gte('started_at', today.toISOString()).order('started_at', { ascending: false })
+
+  let p = 0, w = 0, o = 0
+  ;(rows||[]).forEach(r => {
+    if (!r.started_at || !r.ended_at) return
+    const m = Math.max(0, Math.round((new Date(r.ended_at)-new Date(r.started_at))/60000))
+    if (r.session_type==='productive') p+=m
+    if (r.session_type==='waste') w+=m
+    if (r.session_type==='overtime') o+=m
+  })
+  const hm = m => `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`
+  const tot = p+w
+  document.getElementById('sumSessions').textContent = (rows||[]).length
+  document.getElementById('sumProd').textContent = hm(p)
+  document.getElementById('sumWaste').textContent = hm(w)
+  document.getElementById('sumOT').textContent = hm(o)
+  document.getElementById('sumEff').textContent = (tot ? Math.round(p/tot*100) : 0) + '%'
+  document.getElementById('summaryEmpLabel').textContent = `Today's breakdown for ${emp}`
+  document.getElementById('empBadgeStats').textContent = `${(rows||[]).length} sessions · ${hm(p)} productive`
+
+  // Table
+  function badge(t) {
+    if (!t) return '<span style="color:var(--dim)">—</span>'
+    const l = t.toLowerCase()
+    if (l==='productive') return '<span class="badge b-gr">Productive</span>'
+    if (l==='waste') return '<span class="badge b-am">Non-Prod</span>'
+    if (l==='overtime') return '<span class="badge b-bl">Overtime</span>'
+    return `<span class="badge b-pu">${t}</span>`
+  }
+  const fd = v => v ? new Date(v).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—'
+  const dur = r => !r.started_at||!r.ended_at ? '⏳' : hm(Math.max(0,Math.round((new Date(r.ended_at)-new Date(r.started_at))/60000)))
+  document.getElementById('sessListBody').innerHTML = (rows||[]).length
+    ? rows.map(r => `<tr>
+        <td class="mono">${r.order_no||'—'}</td>
+        <td>${r.work_type||'—'}</td>
+        <td class="mono" style="font-size:11px">${r.machine||'—'}</td>
+        <td>${badge(r.session_type)}</td>
+        <td class="mono">${fd(r.started_at)}</td>
+        <td class="mono">${fd(r.ended_at)}</td>
+        <td class="mono">${dur(r)}</td>
+      </tr>`).join('')
+    : '<tr class="empty"><td colspan="7">No sessions today.</td></tr>'
+}
+
+function showMsg(el, type, text) {
+  el.className = 'smsg ' + (type==='ok'?'ok':type==='error'?'err':'info')
+  el.textContent = text
+}
+
+// Init
+loadActiveFromLocal()
+loadMachines()
+const savedEmp = localStorage.getItem('cedarwings_logged_employee')
+if (savedEmp) { document.getElementById('empName').value = savedEmp; loadEmpData() }
+if (activeSession) showActiveSession()
+
+document.getElementById('refreshSummaryBtn').addEventListener('click', loadEmpData)
+</script>
+</body>
+</html>

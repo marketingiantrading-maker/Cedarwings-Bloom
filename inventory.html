@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Cedarwings — Inventory</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --page:#F4F7FE;--surface:#FFFFFF;--border:#E4ECF7;--border2:#CDD8EE;
+  --text:#0F172A;--muted:#64748B;--dim:#94A3B8;
+  --green:#10B981;--green-l:#D1FAE5;--green-t:#064E3B;
+  --indigo:#4F46E5;--indigo-h:#4338CA;--indigo-l:#EEF2FF;
+  --amber:#F59E0B;--amber-l:#FEF3C7;--amber-t:#78350F;
+  --red:#EF4444;--red-l:#FEE2E2;--red-t:#7F1D1D;
+  --blue:#3B82F6;--blue-l:#DBEAFE;--blue-t:#1E3A8A;
+  --purple:#8B5CF6;--purple-l:#EDE9FE;--purple-t:#4C1D95;
+  --cyan:#06B6D4;--cyan-l:#CFFAFE;--cyan-t:#164E63;
+  --sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --sh-md:0 4px 16px rgba(0,0,0,.08);
+  --sh-lg:0 12px 32px rgba(0,0,0,.1);
+  --r:14px;--font:'Outfit',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+*{font-family:var(--font);-webkit-font-smoothing:antialiased}
+body{background:var(--page);color:var(--text);min-height:100vh;font-size:14px}
+/* NAV */
+.navbar{background:var(--surface);border-bottom:1.5px solid var(--border);position:sticky;top:0;z-index:300;height:60px;display:flex;align-items:center;padding:0 28px;gap:0;box-shadow:var(--sh)}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;margin-right:36px}
+.brand-logo{width:34px;height:34px;background:linear-gradient(135deg,#4F46E5,#818CF8);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:#fff}
+.brand-name{font-weight:800;font-size:15px;color:var(--text)}.brand-sub{font-size:10px;color:var(--muted);font-weight:600}
+.nav-links{display:flex;gap:2px}
+.nl{display:flex;align-items:center;gap:6px;text-decoration:none;color:var(--muted);font-size:13px;font-weight:600;padding:7px 14px;border-radius:10px;transition:all .15s}
+.nl:hover{color:var(--text);background:var(--page)}.nl.on{color:var(--indigo);background:var(--indigo-l)}
+.nav-r{display:flex;align-items:center;gap:8px;margin-left:auto}
+/* HERO */
+.hero{background:linear-gradient(135deg,#065F46 0%,#059669 50%,#10B981 100%);padding:28px 28px 0;position:relative;overflow:hidden}
+.hero::before,.hero::after{content:'';position:absolute;border-radius:50%;pointer-events:none}
+.hero::before{width:350px;height:350px;top:-100px;right:-60px;background:rgba(255,255,255,.07)}
+.hero::after{width:180px;height:180px;bottom:-40px;left:80px;background:rgba(255,255,255,.05)}
+.hero-inner{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;padding-bottom:24px}
+.hero-title{font-size:28px;font-weight:800;color:#fff;letter-spacing:-.6px;margin-bottom:6px}
+.hero-sub{font-size:13px;color:rgba(255,255,255,.7)}
+/* LAYOUT */
+.page{padding:28px 28px 60px;max-width:1440px;margin:0 auto}
+/* KPI */
+.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:28px}
+.kc{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:20px 20px 16px;box-shadow:var(--sh);position:relative;overflow:hidden;transition:all .2s;animation:su .35s both}
+.kc:nth-child(2){animation-delay:.06s}.kc:nth-child(3){animation-delay:.12s}.kc:nth-child(4){animation-delay:.18s}.kc:nth-child(5){animation-delay:.24s}.kc:nth-child(6){animation-delay:.30s}
+@keyframes su{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.kc:hover{box-shadow:var(--sh-md);transform:translateY(-2px)}
+.ki{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:12px}
+.ki-gr{background:var(--green-l)}.ki-or{background:var(--amber-l)}.ki-rd{background:var(--red-l)}.ki-pu{background:var(--purple-l)}.ki-in{background:var(--indigo-l)}.ki-cy{background:var(--cyan-l)}
+.kl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.kv{font-size:30px;font-weight:800;font-family:var(--mono);letter-spacing:-1.5px;line-height:1}
+.ks{font-size:11px;color:var(--dim);font-family:var(--mono);margin-top:8px}
+.kb{position:absolute;bottom:0;left:0;right:0;height:3px}
+/* CARDS/SECTIONS */
+.card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:24px;box-shadow:var(--sh)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.ga{grid-column:1/-1}
+.sec{margin-bottom:24px}
+.sh{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:10px;flex-wrap:wrap}
+.st{font-size:17px;font-weight:700}.ss{font-size:12px;color:var(--muted);margin-top:3px}
+/* TABS */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:22px;background:var(--surface);padding:6px;border-radius:var(--r);border:1.5px solid var(--border);box-shadow:var(--sh)}
+.tab{padding:9px 18px;font-size:13px;font-weight:700;background:transparent;border:none;color:var(--muted);border-radius:10px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.tab:hover{color:var(--text);background:var(--page)}
+.tab.on{background:var(--green);color:#fff;box-shadow:0 2px 8px rgba(16,185,129,.3)}
+.tp{display:block}.tp.hi{display:none}
+/* BTNS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;font-size:13px;font-weight:700;border:none;border-radius:10px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-ind{background:var(--indigo);color:#fff}.btn-ind:hover{background:var(--indigo-h)}
+.btn-gr{background:var(--green);color:#fff}.btn-gr:hover{background:#059669}
+.btn-am{background:var(--amber);color:#fff}.btn-am:hover{background:#D97706}
+.btn-rd{background:var(--red);color:#fff}.btn-rd:hover{background:#DC2626}
+.btn-gh{background:transparent;border:1.5px solid var(--border2);color:var(--muted)}.btn-gh:hover{border-color:var(--indigo);color:var(--indigo)}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:9px}
+/* INPUTS */
+.lbl{display:block;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.inp{width:100%;padding:10px 13px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-weight:500;outline:none;transition:all .15s}
+.inp:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(16,185,129,.1)}
+.inp::placeholder{color:var(--dim);font-weight:400}
+.inp-sm{padding:8px 12px;font-size:12px;border-radius:9px}
+/* TABLE */
+.tw{overflow-x:auto;border-radius:12px;border:1.5px solid var(--border)}
+table{width:100%;border-collapse:collapse}
+thead th{padding:10px 13px;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;background:#F8FAFF;border-bottom:1.5px solid var(--border);white-space:nowrap;text-align:left}
+tbody td{padding:12px 13px;font-size:13px;border-bottom:1.5px solid var(--border);font-weight:500}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#FAFBFF}
+.mono{font-family:var(--mono);font-size:12px}
+/* BADGE */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--mono)}
+.b-gr{background:var(--green-l);color:var(--green-t)}.b-am{background:var(--amber-l);color:var(--amber-t)}
+.b-rd{background:var(--red-l);color:var(--red-t)}.b-bl{background:var(--blue-l);color:var(--blue-t)}
+.b-pu{background:var(--purple-l);color:var(--purple-t)}.b-in{background:var(--indigo-l);color:var(--indigo)}
+.b-gy{background:var(--page);color:var(--muted)}
+/* STOCK BAR */
+.sb{display:flex;flex-direction:column;gap:3px}
+.sb-bg{height:6px;background:var(--border);border-radius:99px;overflow:hidden;min-width:80px}
+.sb-fill{height:100%;border-radius:99px}
+/* PARAM CARD */
+.param-card{background:var(--page);border:1.5px solid var(--border);border-radius:var(--r);padding:18px;transition:border-color .15s}
+.param-card:focus-within{border-color:var(--green);background:var(--surface)}
+.param-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px}
+.param-desc{font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.5}
+.param-row{display:flex;align-items:center;gap:8px}
+.param-inp{flex:1;padding:10px;font-size:17px;font-weight:800;font-family:var(--mono);text-align:center;border-radius:10px;border:1.5px solid var(--border);outline:none;transition:all .15s;background:var(--surface)}
+.param-inp:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(16,185,129,.1)}
+.param-unit{font-size:12px;font-weight:700;color:var(--muted);min-width:36px}
+/* LIST ITEMS */
+.item-list{display:flex;flex-direction:column;gap:10px}
+.item-card{background:var(--page);border:1.5px solid var(--border);border-radius:12px;padding:14px}
+.item-title{font-size:13px;font-weight:700;margin-bottom:4px}
+.item-meta{font-size:11px;color:var(--muted);font-family:var(--mono)}
+/* EMPTY */
+.empty td{text-align:center;color:var(--dim)!important;padding:30px!important;font-style:italic}
+/* STATUS */
+.smsg{font-size:13px;font-weight:700;display:none}
+/* ALERTS */
+.ab{padding:12px 16px;border-radius:12px;font-size:13px;font-weight:600;border:1.5px solid transparent;margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.ab-w{background:var(--amber-l);border-color:#FDE68A;color:var(--amber-t)}.ab-d{background:var(--red-l);border-color:#FCA5A5;color:var(--red-t)}.ab-s{background:var(--green-l);border-color:#A7F3D0;color:var(--green-t)}
+@media(max-width:1200px){.kpi-row{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:900px){.kpi-row{grid-template-columns:repeat(2,1fr)}.two,.g2,.g3,.g4{grid-template-columns:1fr}}
+@media(max-width:768px){.page{padding:16px}.navbar{padding:0 16px}.nav-links{display:none}}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a class="brand" href="index18.html">
+    <div class="brand-logo">C</div>
+    <div><div class="brand-name">Cedarwings SAS</div><div class="brand-sub">Operations Platform</div></div>
+  </a>
+  <div class="nav-links">
+    <a href="index18.html" class="nl">📊 Dashboard</a>
+    <a href="clocking.html" class="nl">⏱ Clocking</a>
+    <a href="inventory.html" class="nl on">📦 Inventory</a>
+    <a href="machines.html" class="nl">⚙ Machines</a>
+  </div>
+  <div class="nav-r">
+    <button class="btn btn-gh btn-sm" id="refreshBtn">↻ Refresh</button>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-title">📦 Inventory & Procurement</div>
+      <div class="hero-sub">FEFO stock management · Production-linked auto-requisition · Real-time alerts</div>
+    </div>
+  </div>
+</div>
+
+<main class="page">
+
+<div class="kpi-row">
+  <div class="kc"><div class="ki ki-gr">📦</div><div class="kl">Lots in Stock</div><div class="kv" id="kLots">—</div><div class="ks">Active lots</div><div class="kb" style="background:var(--green)"></div></div>
+  <div class="kc"><div class="ki ki-in">💰</div><div class="kl">Total Value</div><div class="kv" id="kVal">—</div><div class="ks">Inventory USD</div><div class="kb" style="background:var(--indigo)"></div></div>
+  <div class="kc"><div class="ki ki-rd">📉</div><div class="kl">Low Stock</div><div class="kv" id="kLow">—</div><div class="ks">Below minimum</div><div class="kb" style="background:var(--red)"></div></div>
+  <div class="kc"><div class="ki ki-or">⏰</div><div class="kl">Near Expiry</div><div class="kv" id="kExp">—</div><div class="ks">≤30 days</div><div class="kb" style="background:var(--amber)"></div></div>
+  <div class="kc"><div class="ki ki-pu">📋</div><div class="kl">Open Requests</div><div class="kv" id="kReqs">—</div><div class="ks">Pending/Approved</div><div class="kb" style="background:var(--purple)"></div></div>
+  <div class="kc"><div class="ki ki-cy">⚡</div><div class="kl">Auto Suggestions</div><div class="kv" id="kAuto">—</div><div class="ks">Need replenishment</div><div class="kb" style="background:var(--cyan)"></div></div>
+</div>
+
+<div class="two">
+  <div class="card"><div style="font-size:15px;font-weight:700;margin-bottom:3px">Value by Category</div><div style="font-size:12px;color:var(--muted);margin-bottom:14px">Inventory distribution</div><canvas id="valChart" height="220"></canvas></div>
+  <div class="card"><div style="font-size:15px;font-weight:700;margin-bottom:3px">Consumption by Category</div><div style="font-size:12px;color:var(--muted);margin-bottom:14px">Historical usage</div><canvas id="conChart" height="220"></canvas></div>
+</div>
+
+<div class="tabs">
+  <button class="tab on" data-tab="stock">📦 Stock Dashboard</button>
+  <button class="tab" data-tab="params">⚙ Production Parameters</button>
+  <button class="tab" data-tab="reorder">📊 Reorder Settings</button>
+  <button class="tab" data-tab="req">📋 Requisitions</button>
+  <button class="tab" data-tab="fefo">🔄 FEFO Consume</button>
+</div>
+
+<!-- STOCK DASHBOARD -->
+<div class="tp" id="tStock">
+  <div class="g2" style="margin-bottom:20px">
+    <div class="card" style="border-left:4px solid var(--red)">
+      <div style="font-size:15px;font-weight:700;color:var(--red-t);margin-bottom:3px">⚠ Alerts</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Items needing attention</div>
+      <div id="alertsList" class="item-list"><div class="item-card" style="color:var(--dim)">Loading…</div></div>
+    </div>
+    <div class="card">
+      <div style="font-size:15px;font-weight:700;margin-bottom:3px">📜 Recent Movements</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Last 8 stock transactions</div>
+      <div id="histList" class="item-list"><div class="item-card" style="color:var(--dim)">Loading…</div></div>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="sh">
+      <div><div class="st">All Inventory Lots</div><div class="ss">FEFO-ordered with expiry tracking</div></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <input class="inp inp-sm" id="invSearch" placeholder="🔍 Search item, lot, supplier…" style="width:240px"/>
+        <select class="inp inp-sm" id="sfilt" style="width:auto">
+          <option value="all">All Status</option>
+          <option value="ok">Available</option>
+          <option value="low">Low Stock</option>
+          <option value="exp">Near Expiry</option>
+          <option value="expired">Expired</option>
+        </select>
+      </div>
+    </div>
+    <div class="tw">
+      <table><thead><tr><th>Item</th><th>Category</th><th>Lot</th><th>Stock Level</th><th>Unit Cost</th><th>Value</th><th>Purchased</th><th>Expiry</th><th>Supplier</th><th>Location</th><th>Status</th></tr></thead>
+      <tbody id="invBody"><tr class="empty"><td colspan="11">Loading…</td></tr></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCTION PARAMETERS -->
+<div class="tp hi" id="tParams">
+  <div class="card">
+    <div style="font-size:20px;font-weight:800;color:var(--green);margin-bottom:6px">⚙ Production ↔ Inventory Parameters</div>
+    <div style="background:linear-gradient(135deg,var(--green-l),var(--indigo-l));border-radius:12px;padding:16px;margin-bottom:22px;font-size:13px;color:var(--muted);line-height:1.7;max-width:780px;border:1.5px solid #A7F3D0">
+      <strong style="color:var(--text)">How it works:</strong> When a production entry is saved from the Dashboard, these parameters determine what inventory requisitions are created automatically.<br>
+      <strong style="color:var(--green-t)">Example:</strong> 100 aligners × <em>0.01 L/aligner</em> = <strong style="color:var(--text)">1 litre Resin requisitioned.</strong>  
+      &nbsp;|&nbsp; 5 cases × <em>2 boxes/case</em> = <strong style="color:var(--text)">10 Packaging Boxes requisitioned.</strong>
+    </div>
+    <div id="paramGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px">
+      <div style="grid-column:1/-1;text-align:center;color:var(--dim);padding:20px">Loading parameters…</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-gr" id="saveParamsBtn">✓ Save All Parameters</button>
+      <span class="smsg" id="paramMsg"></span>
+    </div>
+
+    <div style="border-top:1.5px solid var(--border);margin-top:24px;padding-top:22px">
+      <div style="font-size:15px;font-weight:700;margin-bottom:14px">+ Add Custom Parameter</div>
+      <div class="g4" style="margin-bottom:12px">
+        <div><label class="lbl">Key (no spaces)</label><input class="inp" id="npKey" placeholder="my_parameter"/></div>
+        <div><label class="lbl">Display Label</label><input class="inp" id="npLabel" placeholder="My Parameter"/></div>
+        <div><label class="lbl">Value</label><input class="inp" type="number" step="0.0001" id="npVal" placeholder="0"/></div>
+        <div><label class="lbl">Unit</label><input class="inp" id="npUnit" placeholder="e.g. L, pcs, m"/></div>
+        <div class="ga"><label class="lbl">Description</label><input class="inp" id="npDesc" placeholder="What does this parameter control?"/></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="btn btn-ind btn-sm" id="addParamBtn">+ Add Parameter</button>
+        <span class="smsg" id="addMsg"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REORDER SETTINGS -->
+<div class="tp hi" id="tReorder">
+  <div class="card" style="margin-bottom:16px">
+    <div style="font-size:15px;font-weight:700;margin-bottom:3px">Configure Reorder Settings</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px">Set min/max quantities per item for auto-requisition triggers</div>
+    <div class="g3" style="margin-bottom:14px">
+      <div><label class="lbl">Item Name *</label><input class="inp" id="sItem" placeholder="Exact item name"/></div>
+      <div><label class="lbl">Category</label><input class="inp" id="sCat" placeholder="Raw Materials"/></div>
+      <div><label class="lbl">Preferred Supplier</label><input class="inp" id="sSupp" placeholder="Supplier name"/></div>
+      <div><label class="lbl">Min Qty</label><input class="inp" type="number" id="sMin" step="0.01" placeholder="0"/></div>
+      <div><label class="lbl">Max Qty</label><input class="inp" type="number" id="sMax" step="0.01" placeholder="0"/></div>
+      <div><label class="lbl">Monthly Consumption</label><input class="inp" type="number" id="sMon" step="0.01" placeholder="0"/></div>
+      <div><label class="lbl">Lead Time (days)</label><input class="inp" type="number" id="sLead" placeholder="0"/></div>
+      <div><label class="lbl">Auto Requisition</label><select class="inp" id="sAuto"><option value="true">Enabled ✓</option><option value="false">Disabled</option></select></div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-gr" id="saveSettBtn">✓ Save Settings</button>
+      <button class="btn btn-ind" id="runAutoBtn">⚡ Run Auto Requisition</button>
+    </div>
+  </div>
+  <div class="tw"><table><thead><tr><th>Item</th><th>Current Qty</th><th>Min</th><th>Max</th><th>Monthly</th><th>Lead</th><th>Recommended Order</th><th>Auto Req</th></tr></thead>
+  <tbody id="reorderBody"><tr class="empty"><td colspan="8">Loading…</td></tr></tbody></table></div>
+</div>
+
+<!-- REQUISITIONS -->
+<div class="tp hi" id="tReq">
+  <div class="g2">
+    <div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:14px">Requisition Queue</div>
+      <div id="reqList" class="item-list"><div class="item-card" style="color:var(--dim)">Loading…</div></div>
+    </div>
+    <div class="card">
+      <div style="font-size:15px;font-weight:700;margin-bottom:3px">Approve / Fulfill / Reject</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px">Enter the requisition ID from the list and take action</div>
+      <div style="display:grid;gap:12px;margin-bottom:14px">
+        <div><label class="lbl">Requisition ID</label><input class="inp" id="raId" placeholder="Paste UUID from list"/></div>
+        <div><label class="lbl">Manager Name</label><input class="inp" id="raActor" placeholder="Your name"/></div>
+        <div><label class="lbl">Note (optional)</label><textarea class="inp" id="raNote" placeholder="Reason or note" style="min-height:72px;resize:vertical"></textarea></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-gr" id="approveBtn">✓ Approve</button>
+        <button class="btn btn-am" id="fulfillBtn">📦 Fulfill</button>
+        <button class="btn btn-rd" id="rejectBtn">✗ Reject</button>
+      </div>
+      <div class="smsg" id="raMsg" style="display:block;margin-top:10px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- FEFO CONSUME -->
+<div class="tp hi" id="tFefo">
+  <div class="g2">
+    <div class="card">
+      <div style="font-size:17px;font-weight:800;color:var(--amber-t);margin-bottom:4px">🔄 FEFO Consumption</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:18px;line-height:1.6">First-Expired-First-Out — automatically selects the oldest lot for the item and deducts stock.</div>
+      <div class="g2" style="margin-bottom:14px">
+        <div><label class="lbl">Item Name *</label><input class="inp" id="fItem" placeholder="Exact item name"/></div>
+        <div><label class="lbl">Quantity to Consume *</label><input class="inp" type="number" id="fQty" step="0.01" min="0.01" placeholder="0"/></div>
+        <div><label class="lbl">Production Order</label><input class="inp" id="fOrd" placeholder="ORD-xxxx"/></div>
+        <div><label class="lbl">Production Batch</label><input class="inp" id="fBatch" placeholder="Batch ID"/></div>
+        <div class="ga"><label class="lbl">Note</label><textarea class="inp" id="fNote" placeholder="Optional" style="min-height:64px;resize:vertical"></textarea></div>
+      </div>
+      <button class="btn btn-am" id="fefoBtn" style="width:100%;padding:12px;font-size:14px">⚡ Consume (FEFO)</button>
+    </div>
+    <div class="card">
+      <div style="font-size:15px;font-weight:700;margin-bottom:14px">Consumption Result</div>
+      <div id="fefoResult" class="item-list"><div class="item-card" style="color:var(--dim)">No consumption recorded yet in this session.</div></div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { SUPABASE_CONFIG } from './config.js'
+const sb = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey)
+
+let valChart, conChart, allLots = [], allParams = []
+
+// helpers
+const money = n => Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})
+const fmtDate = v => v ? new Date(v).toLocaleDateString() : '—'
+const daysUntil = d => { if (!d) return null; const a = new Date(), b = new Date(d); a.setHours(0,0,0,0); b.setHours(0,0,0,0); return Math.round((b-a)/86400000) }
+
+function getStatus(r) {
+  const qty = Number(r.available_qty||0), min = Number(r.min_qty||r.min_stock||0), d = daysUntil(r.expiry_date)
+  if (d !== null && d < 0) return 'expired'
+  if (d !== null && d <= 30) return 'exp'
+  if (min > 0 && qty <= min) return 'low'
+  return 'ok'
+}
+function badge(s) {
+  const k = (s||'').toLowerCase()
+  if (k === 'expired') return '<span class="badge b-rd">Expired</span>'
+  if (k === 'exp') return '<span class="badge b-am">Near Expiry</span>'
+  if (k === 'low') return '<span class="badge b-pu">Low Stock</span>'
+  if (k === 'ok' || k === 'available') return '<span class="badge b-gr">OK</span>'
+  if (k === 'pending') return '<span class="badge b-am">Pending</span>'
+  if (k === 'approved') return '<span class="badge b-bl">Approved</span>'
+  if (k === 'fulfilled') return '<span class="badge b-gr">Fulfilled</span>'
+  if (k === 'rejected') return '<span class="badge b-rd">Rejected</span>'
+  if (k === 'urgent') return '<span class="badge b-rd">Urgent</span>'
+  if (k === 'high') return '<span class="badge b-am">High</span>'
+  return `<span class="badge b-gy">${s}</span>`
+}
+function stockBar(r) {
+  const qty = Number(r.available_qty||0), max = Number(r.max_qty||0), min = Number(r.min_qty||r.min_stock||0)
+  const pct = max > 0 ? Math.min(100, Math.round(qty/max*100)) : 0
+  const c = qty <= 0 ? '#EF4444' : qty <= min ? '#F59E0B' : '#10B981'
+  return `<div class="sb"><div style="font-size:14px;font-weight:700;font-family:var(--mono);color:${c}">${qty}</div><div class="sb-bg"><div class="sb-fill" style="width:${pct}%;background:${c}"></div></div><div style="font-size:10px;color:var(--dim);font-family:var(--mono)">${pct}% of max</div></div>`
+}
+const copts = { maintainAspectRatio:false, responsive:true, plugins:{ legend:{ labels:{ color:'#64748B', font:{ family:"'Outfit'", size:11, weight:'600' } } } }, scales:{ x:{ ticks:{color:'#64748B',font:{family:"'Outfit'"}}, grid:{color:'#E4ECF7'} }, y:{ ticks:{color:'#64748B',font:{family:"'Outfit'"}}, grid:{color:'#E4ECF7'} } } }
+
+async function loadAll() {
+  const { data: lots } = await sb.from('inventory_lots_enriched_view').select('*').order('created_at',{ascending:false})
+  allLots = lots || []
+  renderStock(); loadReorder(); loadRequisitions(); loadHistory()
+}
+
+function renderStock() {
+  const q = (document.getElementById('invSearch').value||'').toLowerCase()
+  const sf = document.getElementById('sfilt').value
+  const filt = allLots.filter(r => {
+    const st = getStatus(r)
+    const hay = `${r.item_name||''} ${r.category_name||''} ${r.lot_no||''} ${r.supplier_name||''} ${r.location_name||''}`.toLowerCase()
+    return (!q || hay.includes(q)) && (sf === 'all' || st === sf)
+  })
+  let tv = 0, low = 0, exp = 0
+  const byCat = {}
+  filt.forEach(r => {
+    const val = Number(r.available_qty||0) * Number(r.unit_cost||0)
+    tv += val
+    const cat = r.category_name || 'Other'
+    byCat[cat] = (byCat[cat]||0) + val
+    const st = getStatus(r)
+    if (st === 'low') low++
+    if (st === 'exp' || st === 'expired') exp++
+  })
+  document.getElementById('kLots').textContent = filt.length
+  document.getElementById('kVal').textContent = '$' + money(tv)
+  document.getElementById('kLow').textContent = low
+  document.getElementById('kExp').textContent = exp
+
+  document.getElementById('invBody').innerHTML = filt.length ? filt.map(r => {
+    const st = getStatus(r), val = Number(r.available_qty||0)*Number(r.unit_cost||0), du = daysUntil(r.expiry_date)
+    return `<tr>
+      <td><strong>${r.item_name||'—'}</strong></td>
+      <td style="font-size:12px;color:var(--muted)">${r.category_name||'—'}</td>
+      <td class="mono">${r.lot_no||'—'}</td>
+      <td>${stockBar(r)}</td>
+      <td class="mono">$${money(r.unit_cost)}</td>
+      <td class="mono" style="font-weight:700">$${money(val)}</td>
+      <td class="mono">${fmtDate(r.purchase_date)}</td>
+      <td class="mono">${r.expiry_date ? `${fmtDate(r.expiry_date)}<div style="font-size:10px;color:${du!==null&&du<=30?'#F59E0B':'var(--dim)'}">in ${du}d</div>` : '—'}</td>
+      <td style="font-size:12px">${r.supplier_name||'—'}</td>
+      <td style="font-size:12px">${r.location_name||'—'}</td>
+      <td>${badge(st)}</td>
+    </tr>`
+  }).join('') : '<tr class="empty"><td colspan="11">No lots match your filter.</td></tr>'
+
+  // Alerts
+  const alerts = filt.filter(r => ['low','exp','expired'].includes(getStatus(r))).slice(0,5)
+  document.getElementById('alertsList').innerHTML = alerts.length
+    ? alerts.map(r => { const st = getStatus(r), extra = st==='low' ? `Qty ${r.available_qty} ≤ min ${r.min_qty||0}` : `${daysUntil(r.expiry_date)}d to expiry`; return `<div class="item-card"><div class="item-title">${r.item_name}</div><div class="item-meta">${r.lot_no||'—'} · ${r.location_name||'—'}</div><div style="margin-top:8px;display:flex;gap:6px;align-items:center">${badge(st)}<span style="font-size:11px;color:var(--muted)">${extra}</span></div></div>` }).join('')
+    : '<div class="item-card" style="color:var(--green-t);border-color:#A7F3D0;background:var(--green-l)">✓ All stock levels are OK.</div>'
+
+  // Charts
+  const catLabels = Object.keys(byCat), catVals = Object.values(byCat)
+  const colors = ['#D1FAE5','#DBEAFE','#FEF3C7','#EDE9FE','#CFFAFE','#FEE2E2']
+  const borderColors = ['#10B981','#3B82F6','#F59E0B','#8B5CF6','#06B6D4','#EF4444']
+  if (valChart) valChart.destroy()
+  valChart = new Chart(document.getElementById('valChart'), { type:'doughnut', data:{ labels:catLabels, datasets:[{ data:catVals, backgroundColor:colors.slice(0,catLabels.length), borderColor:borderColors.slice(0,catLabels.length), borderWidth:2 }] }, options:{ ...copts, scales:{} } })
+}
+
+async function loadHistory() {
+  const { data } = await sb.from('inventory_stock_history').select('action_type,quantity,reference_no,note,created_at').order('created_at',{ascending:false}).limit(8)
+  const con = {}
+  const { data: uRows } = await sb.from('inventory_stock_history_usage_view').select('*')
+  ;(uRows||[]).forEach(r => { const c = r.category_name||'Other'; con[c] = (con[c]||0) + Number(r.quantity||0) })
+  if (conChart) conChart.destroy()
+  const cl = Object.keys(con); const cv = Object.values(con)
+  conChart = new Chart(document.getElementById('conChart'), { type:'bar', data:{ labels:cl, datasets:[{ label:'Qty Used', data:cv, backgroundColor:'#D1FAE5', borderColor:'#10B981', borderWidth:1.5 }] }, options:copts })
+  document.getElementById('histList').innerHTML = (data||[]).length ? data.map(h => `<div class="item-card"><div class="item-title">${h.action_type}</div><div class="item-meta">${fmtDate(h.created_at)} · Qty ${h.quantity} · Ref ${h.reference_no||'—'}</div>${h.note ? `<div style="font-size:11px;color:var(--dim);margin-top:3px">${h.note}</div>` : ''}</div>`).join('') : '<div class="item-card" style="color:var(--dim)">No history yet.</div>'
+}
+
+// ── PARAMS ─────────────────────────────────────────────────────────
+async function loadParams() {
+  const { data } = await sb.from('production_parameters').select('*').order('id')
+  allParams = data || []
+  document.getElementById('paramGrid').innerHTML = allParams.length
+    ? allParams.map(p => `<div class="param-card"><div class="param-name">${p.label}</div><div class="param-desc">${p.description||''} <span style="color:var(--indigo);font-weight:700;font-family:var(--mono)">[${p.key}]</span></div><div class="param-row"><input class="param-inp" type="number" step="0.0001" data-id="${p.id}" data-key="${p.key}" value="${p.value}"/><span class="param-unit">${p.unit||''}</span></div></div>`).join('')
+    : '<div style="grid-column:1/-1;text-align:center;color:var(--dim);padding:24px">No parameters. Run setup_new_tables.sql in Supabase first.</div>'
+}
+document.getElementById('saveParamsBtn').addEventListener('click', async () => {
+  const m = document.getElementById('paramMsg')
+  m.style.display='inline'; m.style.color='var(--amber-t)'; m.textContent='Saving…'
+  try {
+    for (const inp of document.querySelectorAll('.param-inp')) {
+      await sb.from('production_parameters').update({ value: Number(inp.value), updated_at: new Date().toISOString() }).eq('id', inp.dataset.id)
+    }
+    m.style.color = 'var(--green-t)'; m.textContent = '✓ All parameters saved successfully!'
+    await loadParams()
+  } catch (e) { m.style.color='var(--red-t)'; m.textContent='Error: '+e.message }
+})
+document.getElementById('addParamBtn').addEventListener('click', async () => {
+  const key = document.getElementById('npKey').value.trim(), label = document.getElementById('npLabel').value.trim()
+  const m = document.getElementById('addMsg')
+  if (!key || !label) { m.style.display='inline'; m.style.color='var(--red-t)'; m.textContent='Key and label are required'; return }
+  m.style.display='inline'; m.style.color='var(--amber-t)'; m.textContent='Adding…'
+  const { error } = await sb.from('production_parameters').insert([{ key, label, value: Number(document.getElementById('npVal').value||0), unit: document.getElementById('npUnit').value.trim()||null, description: document.getElementById('npDesc').value.trim()||null }])
+  if (error) { m.style.color='var(--red-t)'; m.textContent='Error: '+error.message; return }
+  m.style.color='var(--green-t)'; m.textContent='✓ Parameter added!'
+  ;['npKey','npLabel','npVal','npUnit','npDesc'].forEach(id => { const el = document.getElementById(id); if (el) el.value = id === 'npVal' ? '0' : '' })
+  await loadParams()
+})
+
+// ── REORDER ─────────────────────────────────────────────────────────
+async function loadReorder() {
+  const { data } = await sb.from('inventory_reorder_dashboard_view').select('*').order('item_name')
+  const auto = (data||[]).filter(r => Number(r.recommended_requisition_qty||0) > 0).length
+  document.getElementById('kAuto').textContent = auto
+  document.getElementById('reorderBody').innerHTML = (data||[]).length ? data.map(r => {
+    const max = Number(r.max_qty||0), cur = Number(r.current_qty||0), min = Number(r.min_qty||0)
+    const pct = max > 0 ? Math.min(100, Math.round(cur/max*100)) : 0
+    const c = pct <= 20 ? '#EF4444' : pct <= 50 ? '#F59E0B' : '#10B981'
+    return `<tr>
+      <td><strong>${r.item_name}</strong></td>
+      <td><div style="display:flex;align-items:center;gap:8px"><span class="mono" style="color:${c};font-weight:700;min-width:36px">${cur}</span><div style="flex:1;height:5px;background:var(--border);border-radius:99px;min-width:70px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${c};border-radius:99px"></div></div></div></td>
+      <td class="mono">${min}</td><td class="mono">${max}</td><td class="mono">${r.monthly_consumption||0}</td>
+      <td class="mono">${r.lead_time_days||0}d</td>
+      <td class="mono" style="color:${Number(r.recommended_requisition_qty||0)>0?'#F59E0B':'var(--dim)'};font-weight:700">${r.recommended_requisition_qty??0}</td>
+      <td>${r.auto_requisition_enabled ? '<span class="badge b-gr">On</span>' : '<span class="badge b-rd">Off</span>'}</td>
+    </tr>`
+  }).join('') : '<tr class="empty"><td colspan="8">No reorder settings configured yet.</td></tr>'
+}
+async function ensureItem(name, cat, suppName, settings) {
+  let sid = null
+  if (suppName) {
+    const { data: se } = await sb.from('inventory_suppliers').select('id').eq('name', suppName).limit(1)
+    if (se?.length) sid = se[0].id
+    else { const { data: sn } = await sb.from('inventory_suppliers').insert([{name:suppName}]).select().single(); sid = sn?.id || null }
+  }
+  const upd = { category_name:cat||null, preferred_supplier_id:sid, min_qty:settings.min, max_qty:settings.max, monthly_consumption:settings.mon, lead_time_days:settings.lead, auto_requisition_enabled:settings.auto }
+  const { data: ex } = await sb.from('inventory_items').select('id').eq('name',name).limit(1)
+  if (ex?.length) { await sb.from('inventory_items').update(upd).eq('id',ex[0].id); return }
+  await sb.from('inventory_items').insert([{name,...upd}])
+}
+document.getElementById('saveSettBtn').addEventListener('click', async () => {
+  const n = document.getElementById('sItem').value.trim()
+  if (!n) { alert('Item name required'); return }
+  try {
+    await ensureItem(n, document.getElementById('sCat').value.trim(), document.getElementById('sSupp').value.trim(), { min:Number(document.getElementById('sMin').value||0), max:Number(document.getElementById('sMax').value||0), mon:Number(document.getElementById('sMon').value||0), lead:Number(document.getElementById('sLead').value||0), auto:document.getElementById('sAuto').value==='true' })
+    alert('✓ Settings saved for ' + n)
+    loadReorder()
+  } catch (e) { alert('Error: '+e.message) }
+})
+document.getElementById('runAutoBtn').addEventListener('click', async () => {
+  const { error } = await sb.rpc('generate_auto_requisitions')
+  if (error) { alert('Error: '+error.message); return }
+  alert('✓ Auto requisitions generated'); await loadRequisitions()
+})
+
+// ── REQUISITIONS ─────────────────────────────────────────────────
+async function loadRequisitions() {
+  const { data } = await sb.from('inventory_requisitions').select('*').order('created_at',{ascending:false}).limit(15)
+  const open = (data||[]).filter(r => ['pending','approved'].includes(r.status)).length
+  document.getElementById('kReqs').textContent = open
+  document.getElementById('reqList').innerHTML = (data||[]).length ? data.map(r => `<div class="item-card">
+    <div class="item-title">${r.item_name} <span style="font-weight:500;font-size:12px;color:var(--muted)">× ${r.quantity_requested}</span></div>
+    <div class="item-meta">${r.requester_name||'—'} · ${r.department||'—'} · ${new Date(r.created_at).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
+    <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">${badge(r.status)} ${badge(r.priority)} <span style="font-size:10px;padding:2px 8px;background:${r.generated_by==='auto'?'var(--indigo-l)':'var(--green-l)'};border-radius:99px;color:${r.generated_by==='auto'?'var(--indigo)':'var(--green-t)'};font-weight:700">via ${r.generated_by}</span></div>
+    ${r.note ? `<div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5">${r.note}</div>` : ''}
+    <div class="item-meta" style="margin-top:8px;word-break:break-all">ID: ${r.id}</div>
+  </div>`).join('') : '<div class="item-card" style="color:var(--dim)">No requisitions found.</div>'
+}
+async function actReq(status) {
+  const id = document.getElementById('raId').value.trim()
+  const m = document.getElementById('raMsg')
+  if (!id) { m.style.display='block'; m.style.color='var(--red-t)'; m.textContent='Requisition ID required'; return }
+  const actor = document.getElementById('raActor').value.trim()
+  const upd = { status, note: document.getElementById('raNote').value.trim()||null }
+  if (status === 'approved') { upd.approved_by = actor||null; upd.approved_at = new Date().toISOString() }
+  if (status === 'fulfilled') upd.fulfilled_at = new Date().toISOString()
+  m.style.display='block'; m.style.color='var(--amber-t)'; m.textContent='Updating…'
+  const { error } = await sb.from('inventory_requisitions').update(upd).eq('id', id)
+  if (error) { m.style.color='var(--red-t)'; m.textContent='Error: '+error.message; return }
+  m.style.color='var(--green-t)'; m.textContent=`✓ Requisition ${status}`
+  await loadRequisitions()
+}
+document.getElementById('approveBtn').addEventListener('click', () => actReq('approved'))
+document.getElementById('fulfillBtn').addEventListener('click', () => actReq('fulfilled'))
+document.getElementById('rejectBtn').addEventListener('click', () => actReq('rejected'))
+
+// ── FEFO ─────────────────────────────────────────────────────────
+document.getElementById('fefoBtn').addEventListener('click', async () => {
+  const iname = document.getElementById('fItem').value.trim(), qty = Number(document.getElementById('fQty').value||0)
+  const res = document.getElementById('fefoResult')
+  if (!iname || qty <= 0) { res.innerHTML='<div class="item-card" style="color:var(--red-t)">Item name and quantity > 0 required.</div>'; return }
+  try {
+    const { data: item } = await sb.from('inventory_items').select('id').eq('name',iname).single()
+    if (!item) throw new Error('Item "'+iname+'" not found in inventory_items')
+    const { data: fefo } = await sb.rpc('get_fefo_lot', { p_item_id: item.id })
+    const lot = Array.isArray(fefo) ? fefo[0] : fefo
+    if (!lot || !lot.lot_id) throw new Error('No available lot found for this item')
+    if (Number(lot.available_qty||0) < qty) throw new Error(`Insufficient: available ${lot.available_qty}, requested ${qty}`)
+    await sb.from('inventory_lots').update({ available_qty: Number(lot.available_qty)-qty }).eq('id', lot.lot_id)
+    const ord = document.getElementById('fOrd').value.trim(), batch = document.getElementById('fBatch').value.trim()
+    await sb.from('inventory_stock_history').insert([{ lot_id:lot.lot_id, action_type:'usage', quantity:qty, unit_cost:lot.unit_cost||0, reference_no:ord||batch||lot.lot_no, production_order_no:ord||null, production_batch_id:batch||null, note:document.getElementById('fNote').value.trim()||'FEFO consumption' }])
+    await sb.from('inventory_batch_consumption').insert([{ lot_id:lot.lot_id, production_order_no:ord||null, production_batch_id:batch||null, consumed_qty:qty, note:'FEFO consumption' }])
+    res.innerHTML=`<div class="item-card" style="border-color:#A7F3D0;background:var(--green-l)"><div class="item-title" style="color:var(--green-t)">✓ FEFO Consumption Recorded</div><div class="item-meta">Lot: ${lot.lot_no||'—'} · Expiry: ${lot.expiry_date||'none'} · Consumed: ${qty}</div><div class="item-meta">Order: ${ord||'—'} · Batch: ${batch||'—'}</div></div>`
+    await loadAll()
+  } catch (e) { res.innerHTML=`<div class="item-card" style="color:var(--red-t)">Error: ${e.message}</div>` }
+})
+
+// ── TABS ─────────────────────────────────────────────────────────
+const tabMap = {stock:'tStock', params:'tParams', reorder:'tReorder', req:'tReq', fefo:'tFefo'}
+document.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'))
+  btn.classList.add('on')
+  Object.values(tabMap).forEach(id => document.getElementById(id).classList.add('hi'))
+  document.getElementById(tabMap[btn.dataset.tab]).classList.remove('hi')
+}))
+document.getElementById('invSearch').addEventListener('input', renderStock)
+document.getElementById('sfilt').addEventListener('change', renderStock)
+document.getElementById('refreshBtn').addEventListener('click', () => { loadAll(); loadParams() })
+
+loadAll(); loadParams()
+setInterval(loadAll, 30000)
+</script>
+</body>
+</html>

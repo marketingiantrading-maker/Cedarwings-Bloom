@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cedarwings SAS — Sign In</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f0f4f8;--card:#fff;--border:#e2e8f0;
+      --text:#0f172a;--muted:#64748b;--dim:#94a3b8;
+      --blue:#3b5fe2;--blue-50:#eef2ff;--blue-100:#e0e7ff;
+      --green:#16a34a;--green-50:#f0fdf4;
+      --amber:#d97706;--red:#dc2626;
+      --f:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;
+      --shadow:0 1px 3px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.04);
+      --shadow-lg:0 8px 32px rgba(0,0,0,.1),0 0 0 1px rgba(0,0,0,.04);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--f);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+    .page{width:100%;max-width:980px}
+    /* BRAND */
+    .brand{text-align:center;margin-bottom:48px}
+    .brand-icon{width:64px;height:64px;background:linear-gradient(135deg,var(--blue),#6366f1);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 16px;box-shadow:0 8px 24px rgba(59,95,226,.3)}
+    .brand-name{font-size:28px;font-weight:700;letter-spacing:-.5px}
+    .brand-sub{color:var(--muted);font-size:15px;margin-top:6px}
+    /* ROLE CARDS */
+    .role-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+    .role-card{background:var(--card);border-radius:20px;box-shadow:var(--shadow-lg);padding:36px;transition:transform .2s,box-shadow .2s;cursor:default}
+    .role-card:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04)}
+    .role-icon{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:20px}
+    .role-icon.emp{background:#f0fdf4}
+    .role-icon.mgr{background:var(--blue-50)}
+    .role-title{font-size:20px;font-weight:700;margin-bottom:6px}
+    .role-desc{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:24px}
+    /* FORM */
+    .form-group{margin-bottom:14px}
+    label{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+    input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:var(--f);font-size:14px;color:var(--text);background:var(--bg);outline:none;transition:border-color .15s}
+    input:focus{border-color:var(--blue);background:#fff}
+    input.pin{font-family:var(--mono);font-size:22px;letter-spacing:8px;text-align:center}
+    input::placeholder{color:var(--dim)}
+    .btn{width:100%;padding:13px;font-size:14px;font-weight:700;border:none;border-radius:10px;cursor:pointer;font-family:var(--f);transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+    .btn-emp{background:#16a34a;color:#fff}
+    .btn-emp:hover{background:#15803d}
+    .btn-mgr{background:var(--blue);color:#fff}
+    .btn-mgr:hover{background:#2e4fc7}
+    .error-msg{color:var(--red);font-size:13px;text-align:center;margin-top:8px;min-height:18px}
+    /* DIVIDER */
+    .divider{height:1px;background:var(--border);margin:20px 0}
+    .emp-saved{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px;margin-bottom:10px}
+    .emp-chip{background:var(--green-50);border:1px solid #bbf7d0;color:var(--green);padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+    .emp-chip:hover{background:#dcfce7}
+    .emp-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+    /* DEFAULT HINT */
+    .hint{font-size:12px;color:var(--dim);text-align:center;margin-top:48px;line-height:1.7}
+    @media(max-width:640px){.role-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="brand">
+    <div class="brand-icon">⚙</div>
+    <div class="brand-name">Cedarwings SAS</div>
+    <div class="brand-sub">Manufacturing Operations Platform</div>
+  </div>
+  <div class="role-grid">
+    <!-- EMPLOYEE -->
+    <div class="role-card">
+      <div class="role-icon emp">👷</div>
+      <div class="role-title">Employee</div>
+      <div class="role-desc">Clock in, track your sessions, log production steps and waste time.</div>
+      <div class="divider"></div>
+      <div id="savedChipsSection" style="display:none">
+        <div class="emp-saved">Recent employees:</div>
+        <div class="emp-chips" id="empChips"></div>
+      </div>
+      <div class="form-group">
+        <label>Your Name</label>
+        <input id="empName" placeholder="Enter your name…" autocomplete="off"/>
+      </div>
+      <button class="btn btn-emp" id="empBtn">👷 Enter as Employee</button>
+      <div class="error-msg" id="empError"></div>
+    </div>
+    <!-- MANAGER -->
+    <div class="role-card">
+      <div class="role-icon mgr">📊</div>
+      <div class="role-title">Manager</div>
+      <div class="role-desc">View dashboard, manage production, inventory, machines, and time reports.</div>
+      <div class="divider"></div>
+      <div class="form-group">
+        <label>Manager PIN</label>
+        <input id="managerPin" type="password" class="pin" placeholder="····" maxlength="6" autocomplete="off"/>
+      </div>
+      <button class="btn btn-mgr" id="mgrBtn">📊 Enter as Manager</button>
+      <div class="error-msg" id="mgrError"></div>
+    </div>
+  </div>
+  <div class="hint">Default manager PIN is <strong>1234</strong> — change it in Manager → Settings<br>Employee names are saved locally on this device</div>
+</div>
+
+<script>
+const EMP_HISTORY_KEY = 'cw_emp_history'
+const ROLE_KEY = 'cw_role'
+const EMP_KEY = 'cw_current_emp'
+const PIN_KEY = 'cw_manager_pin'
+
+function getSavedEmps(){try{return JSON.parse(localStorage.getItem(EMP_HISTORY_KEY)||'[]')}catch{return[]}}
+function saveEmp(name){const list=getSavedEmps().filter(n=>n!==name);list.unshift(name);localStorage.setItem(EMP_HISTORY_KEY,JSON.stringify(list.slice(0,8)))}
+function getPin(){return localStorage.getItem(PIN_KEY)||'1234'}
+
+// Show saved employee chips
+const saved=getSavedEmps()
+if(saved.length){
+  document.getElementById('savedChipsSection').style.display='block'
+  document.getElementById('empChips').innerHTML=saved.map(n=>`<span class="emp-chip" onclick="pickEmp('${n}')">${n}</span>`).join('')
+}
+window.pickEmp=(n)=>{document.getElementById('empName').value=n}
+
+document.getElementById('empBtn').addEventListener('click',()=>{
+  const name=document.getElementById('empName').value.trim()
+  if(!name){document.getElementById('empError').textContent='Please enter your name';return}
+  saveEmp(name)
+  sessionStorage.setItem(ROLE_KEY,'employee')
+  sessionStorage.setItem(EMP_KEY,name)
+  localStorage.setItem('cedarwings_logged_employee',name)
+  window.location.href='clocking.html'
+})
+document.getElementById('mgrBtn').addEventListener('click',()=>{
+  const pin=document.getElementById('managerPin').value
+  if(pin===getPin()){
+    sessionStorage.setItem(ROLE_KEY,'manager')
+    window.location.href='manager.html'
+  }else{
+    document.getElementById('mgrError').textContent='Incorrect PIN'
+    document.getElementById('managerPin').value=''
+    document.getElementById('managerPin').focus()
+    setTimeout(()=>document.getElementById('mgrError').textContent='',2500)
+  }
+})
+document.getElementById('empName').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('empBtn').click()})
+document.getElementById('managerPin').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('mgrBtn').click()})
+</script>
+</body>
+</html>
