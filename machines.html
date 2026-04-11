@@ -137,11 +137,20 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
         <tbody id="tMaint"><tr><td colspan="7" class="ec">Loading&hellip;</td></tr></tbody>
       </table></div>
     </div>
-    <div class="card">
-      <div style="font-size:15px;font-weight:700;margin-bottom:14px">Today's Sessions by Machine</div>
+    <!-- ORDER STATS BY MACHINE -->
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px">&#128221; Orders by Machine</div>
+      <div style="font-size:12px;color:var(--mu);margin-bottom:14px">Steps completed per machine today — technician time vs machine running time</div>
       <div class="tw"><table>
-        <thead><tr><th>Machine</th><th>Employee</th><th>Order</th><th>Type</th><th>Start</th><th>End</th><th>Duration</th></tr></thead>
-        <tbody id="tSess"><tr><td colspan="7" class="ec">Loading&hellip;</td></tr></tbody>
+        <thead><tr><th>Machine</th><th>Order</th><th>Step</th><th>Status</th><th>First Start</th><th>Completed</th><th>Machine Time</th><th>Technician Time</th><th>By</th></tr></thead>
+        <tbody id="tOrders"><tr><td colspan="9" class="ec">Loading&hellip;</td></tr></tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <div style="font-size:15px;font-weight:700;margin-bottom:14px">&#9201; Today's Sessions by Machine</div>
+      <div class="tw"><table>
+        <thead><tr><th>Machine</th><th>Employee</th><th>Order</th><th>Step</th><th>Type</th><th>Start</th><th>End</th><th>Duration</th><th>Note</th></tr></thead>
+        <tbody id="tSess"><tr><td colspan="9" class="ec">Loading&hellip;</td></tr></tbody>
       </table></div>
     </div>
   </div>
@@ -307,12 +316,46 @@ ${cl.length?cl.map(c=>{const p=c.qty_installed>0?Math.round(c.qty_remaining/c.qt
 <td class="mono" style="font-size:11px">${r.next_maintenance?fD(r.next_maintenance):'—'}</td>
 <td class="mono">${r.cost>0?'$'+Number(r.cost).toFixed(2):'—'}</td>
 <td style="font-size:11px;color:var(--mu)">${r.notes||'—'}</td></tr>`).join(''):`<tr><td colspan="7" class="ec">No maintenance history yet.</td></tr>`
-  document.getElementById('tSess').innerHTML=sess.length?sess.map(s=>{const dm=s.ended_at?mins(new Date(s.started_at),new Date(s.ended_at)):null;const tc=s.session_type==='productive'?'b-g':s.session_type==='waste'?'b-a':'b-gray';return`<tr>
-<td><strong>${s.machine||'—'}</strong></td><td>${s.employee_name||'—'}</td><td class="mono">${s.order_no||'—'}</td>
-<td><span class="bdg ${tc}">${s.session_type||'—'}</span></td>
-<td class="mono" style="font-size:11px">${fdt(s.started_at)}</td>
-<td class="mono" style="font-size:11px">${fdt(s.ended_at)}</td>
-<td class="mono" style="font-weight:700">${dm!==null?dm+'m':'<span style="color:#16a34a">LIVE</span>'}</td></tr>`}).join(''):`<tr><td colspan="7" class="ec">No sessions today.</td></tr>`
+  // Orders by machine — load step tracking
+  const{data:ostData}=await sb.from('order_step_tracking').select('*').order('first_started_at',{ascending:false}).limit(100)
+  const ost=ostData||[]
+  // Technician time per order+step
+  const techMap={}
+  sess.forEach(s=>{if(!s.order_no||!s.work_type||s.session_type!=='productive')return;const k=s.order_no+'||'+s.work_type;if(!techMap[k])techMap[k]=0;techMap[k]+=s.ended_at?mins(new Date(s.started_at),new Date(s.ended_at)):0})
+  document.getElementById('tOrders').innerHTML=ost.length?ost.map(t=>{
+    const machSess=sess.find(s=>s.order_no===t.order_no&&s.work_type===t.step)
+    const mach=machSess?.machine||sess.filter(s=>s.order_no===t.order_no&&s.work_type===t.step).pop()?.machine||'—'
+    const machMins=t.completed_at&&t.first_started_at?mins(new Date(t.first_started_at),new Date(t.completed_at)):null
+    const techMins=techMap[t.order_no+'||'+t.step]||0
+    const stc=t.status==='complete'?'b-g':t.status==='machine_running'?'b-b':t.status==='paused'?'b-a':'b-gray'
+    const statusLabel=t.status==='machine_running'?'&#9881; running':t.status==='in_progress'?'&#9654; active':t.status==='paused'?'&#9208; paused':'&#10003; done'
+    return`<tr>
+      <td><strong>${mach}</strong></td>
+      <td class="mono">${t.order_no}</td>
+      <td>${t.step}</td>
+      <td><span class="bdg ${stc}">${statusLabel}</span></td>
+      <td class="mono" style="font-size:11px">${fdt(t.first_started_at)}</td>
+      <td class="mono" style="font-size:11px">${t.completed_at?fdt(t.completed_at):'<span style="color:#3b5fe2">open</span>'}</td>
+      <td class="mono" style="font-weight:700;color:#3b5fe2">${machMins!==null?machMins+'m':'<span style="color:#3b5fe2;font-size:10px">running…</span>'}</td>
+      <td class="mono" style="font-weight:700;color:#16a34a">${techMins}m</td>
+      <td style="font-size:12px">${t.completed_by||'—'}</td>
+    </tr>`}).join(''):`<tr><td colspan="9" class="ec">No step records yet. Steps appear here as employees clock in via the Clocking Terminal.</td></tr>`
+  // Sessions table
+  document.getElementById('tSess').innerHTML=sess.length?sess.map(s=>{
+    const dm=s.ended_at?mins(new Date(s.started_at),new Date(s.ended_at)):null
+    const tc=s.session_type==='productive'?'b-g':s.session_type==='waste'?'b-a':'b-gray'
+    const pr=s.pause_reason
+    return`<tr>
+      <td><strong>${s.machine||'—'}</strong></td>
+      <td>${s.employee_name||'—'}</td>
+      <td class="mono">${s.order_no||'—'}</td>
+      <td style="font-size:12px">${s.work_type||'—'}</td>
+      <td><span class="bdg ${tc}">${s.session_type||'—'}${pr?` <span style="font-size:9px;opacity:.7">(${pr})</span>`:''}</span></td>
+      <td class="mono" style="font-size:11px">${fdt(s.started_at)}</td>
+      <td class="mono" style="font-size:11px">${fdt(s.ended_at)}</td>
+      <td class="mono" style="font-weight:700">${dm!==null?dm+'m':'<span style="color:#16a34a">LIVE</span>'}</td>
+      <td style="font-size:11px;color:var(--mu)">${s.task_description||'—'}</td>
+    </tr>`}).join(''):`<tr><td colspan="9" class="ec">No sessions today.</td></tr>`
 }
 window.setSt=async(id,st)=>{await sb.from('machines').update({status:st,updated_at:new Date().toISOString()}).eq('id',id);ntf('Status updated');load()}
 window.openEdit=(id)=>{
