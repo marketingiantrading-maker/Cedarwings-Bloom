@@ -126,12 +126,7 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
   </div>
 </header>
 <div class="body">
-  <div class="pcard">
-    <div class="ptit">&#127981; Production Pipeline</div>
-    <div class="psub">Track each order through all 6 production steps. Enter an order number below &mdash; the pipeline shows completed steps and what is next.</div>
-    <div class="pipe" id="pipe"></div>
-    <div class="pinfo" id="pinfo"><span class="pbdg pbgr">Enter order number below to see pipeline status</span></div>
-  </div>
+
   <div class="grid">
     <div>
       <div class="card">
@@ -141,6 +136,12 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
   Tapping a new step <strong>automatically closes the previous session</strong> and starts a new one — no extra buttons needed.
 </div>
         <div class="fg"><lbl>Order Number *</lbl><input class="fi" id="ord" placeholder="e.g. ORD-1048" autocomplete="off"/></div>
+        <!-- PIPELINE — shows right under order number -->
+        <div id="pipeSection" style="background:var(--bg);border-radius:11px;padding:14px;margin-bottom:14px;min-height:80px">
+          <div style="font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Production Pipeline</div>
+          <div class="pipe" id="pipe" style="padding-bottom:2px"></div>
+          <div id="pinfo" style="margin-top:8px"><span style="font-size:11px;color:var(--dim);font-style:italic">Type an order number to see its pipeline</span></div>
+        </div>
         <div class="fg">
           <lbl>&#10003; Tap a step to instantly clock in</lbl>
           <div class="sg">
@@ -200,9 +201,14 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
         <div class="effb"><div class="efff" id="eff" style="width:0%;background:#16a34a"></div></div>
         <div style="font-size:12px;color:var(--mu)" id="sS">0 sessions today</div>
       </div>
-      <div class="card" style="max-height:380px;display:flex;flex-direction:column">
-        <div class="ct" style="margin-bottom:4px">Today's Timeline</div>
-        <div style="font-size:12px;color:var(--mu);margin-bottom:12px">Sessions logged today</div>
+      <div class="card" style="max-height:400px;display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <div class="ct">My Activity Today</div>
+          <span id="tlBadge" style="font-size:10px;font-weight:700;color:var(--mu);background:var(--bg);padding:3px 9px;border-radius:999px;border:1px solid var(--bdr)">0 sessions</span>
+        </div>
+        <div style="font-size:12px;color:var(--mu);margin-bottom:12px">Your sessions so far today</div>
+        <!-- Today's mini pipeline per order -->
+        <div id="todayPipe" style="margin-bottom:12px"></div>
         <div style="overflow-y:auto;flex:1" id="tldiv"><div style="color:var(--dim);font-size:13px;text-align:center;padding:20px">No sessions yet.</div></div>
       </div>
     </div>
@@ -227,9 +233,28 @@ const fT=v=>v?new Date(v).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"
 const gB=()=>"B-"+new Date().toISOString().replace(/[-:TZ.]/g,"").slice(2,14)
 let cfg=null,emp=""
 async function initEmp(){
-  // Always show picker on page load for security
-  // Clear old prompt-based name so picker always appears
-  localStorage.removeItem(EK)
+  // Check if employee just logged in from index.html
+  const fromLogin = sessionStorage.getItem("cw_current_emp")
+  const fromLocal = localStorage.getItem(EK)
+  
+  if(fromLogin){
+    // Came from login page - use that identity directly, no picker needed
+    emp = fromLogin
+    localStorage.setItem(EK, fromLogin)
+    document.getElementById("empNm").textContent = fromLogin
+    document.getElementById("empOverlay").style.display = "none"
+    return
+  }
+  
+  if(fromLocal){
+    // Previously used this device - use stored name, no picker
+    emp = fromLocal
+    document.getElementById("empNm").textContent = fromLocal
+    document.getElementById("empOverlay").style.display = "none"
+    return
+  }
+  
+  // No identity found - show picker
   await showEmpPicker()
 }
 window.changeEmp=async()=>{localStorage.removeItem(EK);emp="";await showEmpPicker()}
@@ -266,7 +291,7 @@ async function showEmpPicker(){
 }
 
 window.pickEmp=name=>{
-  localStorage.setItem(EK,name);localStorage.setItem(EK+'_last',name);emp=name
+  localStorage.setItem(EK,name);localStorage.setItem(EK+'_last',name);sessionStorage.setItem('cw_current_emp',name);emp=name
   document.getElementById("empNm").textContent=name
   document.getElementById("empOverlay").style.display="none"
   loadToday()
@@ -410,6 +435,27 @@ async function loadToday(){
   document.getElementById("eff").style.width=eff+"%";document.getElementById("eff").style.background=bc
   document.getElementById("sS").textContent=recs.length+" sessions &middot; "+pM+"min productive"
   document.getElementById("anF").textContent=fT(recs[0].started_at)
+  document.getElementById("tlBadge").textContent=recs.length+" session"+(recs.length!==1?"s":"")
+  // Build today's pipeline summary per order
+  const byOrd={}
+  recs.forEach(r=>{
+    if(!r.order_no||r.session_type!=="productive")return
+    if(!byOrd[r.order_no])byOrd[r.order_no]=new Set()
+    if(STEPS.includes(r.work_type)&&r.ended_at)byOrd[r.order_no].add(r.work_type)
+  })
+  const ordList=Object.keys(byOrd)
+  const ICO2={Printing:"&#128424;",Cleaning:"&#129529;",Thermoforming:"&#128260;","Line Cut":"&#9986;","Laser Marking":"&#128294;",Packaging:"&#128230;"}
+  document.getElementById("todayPipe").innerHTML=ordList.length?ordList.map(ord=>{
+    const done=byOrd[ord]
+    const dots=STEPS.map(s=>{
+      const d=done.has(s)
+      return`<span title="${s}" style="display:inline-flex;flex-direction:column;align-items:center;gap:2px;cursor:default">
+        <span style="width:26px;height:26px;border-radius:50%;border:2px solid ${d?"#16a34a":"#e2e8f0"};background:${d?"#f0fdf4":"#f8fafc"};display:inline-flex;align-items:center;justify-content:center;font-size:11px">${d?"&#10003;":ICO2[s]||"&#9675;"}</span>
+      </span>`}).join('<span style="flex:1;height:1.5px;background:#e2e8f0;margin-top:-12px;min-width:8px;display:inline-block"></span>')
+    return`<div style="background:var(--bg);border-radius:9px;padding:10px 12px;margin-bottom:7px;border:1px solid var(--bdr)">
+      <div style="font-size:11px;font-weight:700;color:var(--mu);margin-bottom:8px;font-family:var(--mono)">&#128221; ${ord}</div>
+      <div style="display:flex;align-items:center;gap:0">${dots}</div>
+    </div>`}).join(""):`<div style="font-size:11px;color:var(--dim);text-align:center;padding:6px">No productive steps recorded today</div>`
 }
 function tick(){
   const n=new Date()
