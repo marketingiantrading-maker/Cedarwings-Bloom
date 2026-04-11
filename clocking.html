@@ -2,50 +2,38 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Cedarwings - Clocking</title>
+<title>Cedarwings — Clocking Terminal</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
 <style>
-:root{--bg:#f0f4f8;--card:#fff;--bdr:#e2e8f0;--txt:#0f172a;--mu:#64748b;--dim:#94a3b8;--blue:#3b5fe2;--b50:#eef2ff;--b100:#e0e7ff;--green:#16a34a;--g50:#f0fdf4;--g100:#dcfce7;--amber:#d97706;--a50:#fffbeb;--a100:#fef3c7;--red:#dc2626;--r50:#fef2f2;--r100:#fee2e2;--f:"DM Sans",sans-serif;--mono:"JetBrains Mono",monospace;--sh:0 1px 3px rgba(0,0,0,.07),0 0 0 1px rgba(0,0,0,.04)}
+:root{--bg:#f0f4f8;--card:#fff;--bdr:#e2e8f0;--txt:#0f172a;--mu:#64748b;--dim:#94a3b8;--blue:#3b5fe2;--b50:#eef2ff;--b100:#e0e7ff;--green:#16a34a;--g50:#f0fdf4;--g100:#dcfce7;--amber:#d97706;--a50:#fffbeb;--a100:#fef3c7;--red:#dc2626;--r50:#fef2f2;--r100:#fee2e2;--f:"DM Sans",sans-serif;--mono:"JetBrains Mono",monospace;--sh:0 1px 3px rgba(0,0,0,.07),0 0 0 1px rgba(0,0,0,.04);--sh2:0 6px 24px rgba(0,0,0,.09),0 0 0 1px rgba(0,0,0,.04)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh}
+/* TOPBAR */
 .topbar{background:var(--card);border-bottom:1px solid var(--bdr);padding:0 28px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
 .tbl{display:flex;align-items:center;gap:12px}
-.logo{width:34px;height:34px;background:linear-gradient(135deg,#3b5fe2,#6366f1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.tlogo{width:34px;height:34px;background:linear-gradient(135deg,#3b5fe2,#6366f1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
 .tnm{font-weight:800;font-size:15px}.tsep{width:1px;height:20px;background:var(--bdr)}.tpg{font-size:13px;font-weight:600;color:var(--mu)}
 .tbr{display:flex;align-items:center;gap:10px}
 .epill{display:flex;align-items:center;gap:7px;background:var(--g50);border:1.5px solid var(--g100);padding:6px 14px;border-radius:999px;font-size:13px;font-weight:700;color:#15803d;cursor:pointer}
 .epill:hover{background:var(--g100)}
-.ldot{width:8px;height:8px;border-radius:50%;background:#16a34a;animation:pu 2s infinite}
+.ldot{width:8px;height:8px;border-radius:50%;background:#16a34a;animation:pu 2s infinite;display:inline-block}
 @keyframes pu{0%,100%{box-shadow:0 0 0 0 rgba(22,163,74,.4)}60%{box-shadow:0 0 0 6px rgba(22,163,74,0)}}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;font-size:13px;font-weight:600;border:none;border-radius:9px;cursor:pointer;font-family:var(--f)}
-.bg{background:var(--card);border:1px solid var(--bdr);color:var(--mu)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;font-size:13px;font-weight:600;border:none;border-radius:9px;cursor:pointer;font-family:var(--f);transition:all .12s;text-decoration:none}
+.bb{background:var(--blue);color:#fff}.bg-btn{background:var(--card);border:1px solid var(--bdr);color:var(--mu)}
 .bn{background:var(--b50);color:var(--blue);border:1px solid var(--b100)}
+/* ALERT BANNER */
+.alert-banner{position:fixed;top:58px;left:0;right:0;z-index:200;background:linear-gradient(90deg,#dc2626,#b91c1c);color:#fff;padding:12px 24px;display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;box-shadow:0 4px 20px rgba(220,38,38,.35)}
+.alert-banner.on{display:flex}
+.ab-msg{font-size:13px;font-weight:800}.ab-sub{font-size:11px;opacity:.85;margin-top:2px}
+.ab-btns{display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0}
+.ab-btn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--f);border:none}
+.ab-white{background:#fff;color:#dc2626}.ab-ghost{background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);color:#fff}.ab-x{background:rgba(0,0,0,.2);color:#fff;padding:7px 10px}
+/* BODY */
 .body{padding:20px 28px 60px;max-width:1400px;margin:0 auto}
-/* PIPELINE */
-.pcard{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:22px 26px;margin-bottom:20px}
-.ptit{font-size:15px;font-weight:800;margin-bottom:2px}
-.psub{font-size:12px;color:var(--mu);margin-bottom:20px}
-.pipe{display:flex;align-items:center;overflow-x:auto;padding-bottom:4px}
-.ps{display:flex;flex-direction:column;align-items:center;flex-shrink:0;cursor:pointer}
-.psc{width:54px;height:54px;border-radius:50%;border:2.5px solid var(--bdr);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:22px;transition:all .15s;margin-bottom:7px;position:relative;z-index:1}
-.ps.done .psc{border-color:#16a34a;background:var(--g50)}
-.ps.done .psc::after{content:"\2713";position:absolute;bottom:-4px;right:-4px;width:18px;height:18px;background:#16a34a;border-radius:50%;font-size:10px;color:#fff;display:flex;align-items:center;justify-content:center;border:2px solid #fff;font-weight:700}
-.ps.active .psc{border-color:var(--blue);background:var(--b50);box-shadow:0 0 0 5px rgba(59,95,226,.12)}
-.ps.locked .psc{opacity:.3;cursor:not-allowed}
-.ps.ok:hover .psc{border-color:var(--blue);background:var(--b50)}
-.pslbl{font-size:10px;font-weight:600;color:var(--mu);text-align:center;max-width:64px;line-height:1.3}
-.ps.done .pslbl{color:#16a34a;font-weight:700}
-.ps.active .pslbl{color:var(--blue);font-weight:800}
-.pcon{flex:1;height:2.5px;background:var(--bdr);margin-top:-30px;min-width:16px}
-.pcon.done{background:#16a34a}
-.pinfo{display:flex;align-items:center;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--bdr);flex-wrap:wrap}
-.pbdg{padding:4px 12px;border-radius:999px;font-size:11px;font-weight:700;font-family:var(--mono)}
-.pbg{background:var(--g50);color:#15803d;border:1px solid var(--g100)}
-.pbb{background:var(--b50);color:var(--blue);border:1px solid var(--b100)}
-.pba{background:var(--a50);color:#92400e;border:1px solid var(--a100)}
-.pbgr{background:#f1f5f9;color:var(--mu);border:1px solid var(--bdr)}
-/* GRID */
-.grid{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;align-items:start}
+/* EMPLOYEE PICKER OVERLAY */
+
+/* MAIN GRID */
+.grid{display:grid;grid-template-columns:1.3fr 1fr;gap:20px;align-items:start}
 .card{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:22px;margin-bottom:16px}
 .card:last-child{margin-bottom:0}
 .ct{font-size:15px;font-weight:800;margin-bottom:4px}
@@ -54,63 +42,112 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
 .fi{width:100%;padding:11px 14px;border:1.5px solid var(--bdr);border-radius:10px;font-family:var(--f);font-size:14px;color:var(--txt);background:#fff;outline:none;transition:border-color .15s}
 .fi:focus{border-color:var(--blue)}.fi::placeholder{color:var(--dim)}
 .fg{margin-bottom:14px}
-/* BUTTONS */
-.sg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:0}
-.sb2{padding:10px 8px;border-radius:11px;border:1.5px solid var(--bdr);background:#f8fafc;color:#94a3b8;font-size:11px;font-weight:600;cursor:not-allowed;font-family:var(--f);text-align:center;line-height:1.4;transition:all .15s;position:relative}
-.sb2.next-step{background:var(--b50);border:2.5px solid var(--blue);color:#1d4ed8;cursor:pointer;font-weight:800;box-shadow:0 0 0 4px rgba(59,95,226,.12)}
-.sb2.next-step:hover{background:var(--b100);transform:translateY(-1px)}
-.sb2.next-step::after{content:"NEXT";position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-size:8px;font-weight:800;padding:1px 6px;border-radius:999px;white-space:nowrap}
-.sb2.done-step{background:var(--g50);border:1.5px solid var(--g100);color:#bbf7d0;cursor:not-allowed}
-.sb2.on{background:var(--blue);color:#fff;border-color:var(--blue);cursor:pointer;box-shadow:0 4px 14px rgba(59,95,226,.3)}
-.sb2.on::after{display:none}
-
-.sb2 .si{font-size:14px;display:block;margin-bottom:2px}
-.wg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.wb{padding:10px 7px;border-radius:10px;border:1.5px solid var(--a100);background:var(--a50);color:#92400e;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--f);text-align:center;line-height:1.5;transition:all .15s}
+/* PIPELINE */
+.pipe{display:flex;align-items:center;overflow-x:auto;padding-bottom:4px}
+.ps{display:flex;flex-direction:column;align-items:center;flex-shrink:0;position:relative}
+.psc{width:32px;height:32px;border-radius:50%;border:2px solid var(--bdr);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s;margin-bottom:5px;position:relative;z-index:1}
+.ps.done .psc{border-color:#16a34a;background:var(--g50)}
+.ps.done .psc::after{content:"✓";position:absolute;bottom:-4px;right:-4px;width:14px;height:14px;background:#16a34a;border-radius:50%;font-size:8px;color:#fff;display:flex;align-items:center;justify-content:center;border:1.5px solid #fff;font-weight:700}
+.ps.active .psc{border-color:var(--blue);background:var(--b50);box-shadow:0 0 0 4px rgba(59,95,226,.12)}
+.ps.paused .psc{border-color:#d97706;background:var(--a50)}
+.ps.next .psc{border-color:var(--blue);background:var(--b50)}
+.ps.locked .psc{opacity:.3}
+.ps.next::before{content:"NEXT";position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-size:7px;font-weight:800;padding:1px 5px;border-radius:3px;white-space:nowrap}
+.ps.paused::before{content:"PAUSED";position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:#d97706;color:#fff;font-size:7px;font-weight:800;padding:1px 5px;border-radius:3px;white-space:nowrap}
+.pslbl{font-size:9px;font-weight:600;color:var(--mu);text-align:center;max-width:56px;line-height:1.2}
+.ps.done .pslbl{color:#16a34a;font-weight:700}
+.ps.active .pslbl{color:var(--blue);font-weight:800}
+.ps.paused .pslbl{color:#d97706;font-weight:700}
+.ps.next .pslbl{color:var(--blue);font-weight:800}
+.pcon{flex:1;height:2px;background:var(--bdr);margin-top:-18px;min-width:10px}
+.pcon.done{background:#16a34a}
+/* ACTIVE JOB BOX */
+.job-box{border-radius:13px;padding:16px;margin-bottom:14px;border:1.5px solid}
+.job-box.prod{background:linear-gradient(135deg,var(--g50),#ecfdf5);border-color:var(--g100)}
+.job-box.waste{background:linear-gradient(135deg,var(--a50),#fefce8);border-color:var(--a100)}
+.jb-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.jb-badge{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.jb-badge.prod{color:#15803d}.jb-badge.waste{color:#92400e}
+.jb-title{font-size:16px;font-weight:800;margin-bottom:4px}
+.jb-meta{font-size:12px;color:var(--mu);line-height:1.6}
+.jb-timer{font-family:var(--mono);font-size:34px;font-weight:800;line-height:1}
+.jb-timer.prod{color:#15803d}.jb-timer.waste{color:#d97706}
+.jb-actions{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid rgba(0,0,0,.06)}
+.jb-pause{background:#fff;border:1.5px solid var(--g100);color:#15803d;padding:9px 18px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--f)}
+.jb-pause:hover{background:var(--g50)}
+/* STEP GRID */
+.sg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.sb{padding:10px 7px;border-radius:11px;font-size:11px;font-weight:700;cursor:not-allowed;font-family:var(--f);text-align:center;line-height:1.4;transition:all .15s;position:relative;border:1.5px solid var(--bdr);background:#f8fafc;color:var(--dim)}
+.sb .si{font-size:14px;display:block;margin-bottom:3px}
+.sb.can{cursor:pointer;background:var(--b50);border-color:var(--blue);color:#1d4ed8;font-weight:800}
+.sb.can:hover{background:var(--b100);transform:translateY(-1px)}
+.sb.can::after{content:"TAP";position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-size:7px;font-weight:800;padding:1px 5px;border-radius:3px}
+.sb.done{background:var(--g50);border-color:var(--g100);color:#86efac}
+.sb.active{background:var(--b50);border-color:var(--blue);color:var(--blue)}
+.sb.paused{background:var(--a50);border-color:var(--a100);color:#d97706;cursor:pointer}
+.sb.paused::after{content:"RESUME";position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:#d97706;color:#fff;font-size:7px;font-weight:800;padding:1px 5px;border-radius:3px}
+/* WASTE GRID */
+.wg{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.wb{padding:9px 6px;border-radius:10px;border:1.5px solid var(--a100);background:var(--a50);color:#92400e;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--f);text-align:center;line-height:1.5;transition:all .12s}
 .wb:hover{border-color:#d97706;background:var(--a100)}
-.wb.on{background:var(--amber);color:#fff;border-color:var(--amber)}
-.af{background:var(--bg);border-radius:10px;padding:13px;margin-bottom:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.afl{font-size:9px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
-.afv{font-size:12px;font-weight:600;background:var(--card);padding:6px 10px;border-radius:7px;border:1px solid var(--bdr)}
-.btn-ci{background:linear-gradient(135deg,#16a34a,#059669);color:#fff;width:100%;justify-content:center;padding:14px;font-size:15px;font-weight:800;border-radius:12px;box-shadow:0 4px 16px rgba(22,163,74,.3);margin-bottom:10px}
-.btn-en{background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;width:100%;justify-content:center;padding:12px;font-size:13px;font-weight:700;border-radius:11px;margin-bottom:12px}
-.sbox{padding:13px 16px;border-radius:11px;background:var(--bg);border:1.5px solid var(--bdr)}
+/* STATUS BOX */
+.sbox{padding:12px 16px;border-radius:11px;background:var(--bg);border:1.5px solid var(--bdr);margin-top:12px}
 .sbox.ok{background:var(--g50);border-color:var(--g100)}.sbox.err{background:var(--r50);border-color:var(--r100)}
-.st{font-weight:700;margin-bottom:3px}.sd{font-size:12px;color:var(--mu)}
-/* RIGHT */
-.clk{font-family:var(--mono);font-size:50px;font-weight:800;letter-spacing:-2px;text-align:center;line-height:1;padding:14px 0 6px}
+.st{font-weight:700;margin-bottom:3px;font-size:13px}.sd{font-size:12px;color:var(--mu)}
+/* RIGHT PANEL */
+.clk{font-family:var(--mono);font-size:48px;font-weight:800;letter-spacing:-2px;text-align:center;line-height:1;padding:12px 0 5px}
 .clkd{font-size:12px;color:var(--mu);text-align:center;margin-bottom:16px}
-.as{border-radius:12px;padding:16px;margin-bottom:14px}
-.as.r{background:linear-gradient(135deg,var(--g50),#ecfdf5);border:1.5px solid var(--g100)}
-.as.w{background:linear-gradient(135deg,var(--a50),#fefce8);border:1.5px solid var(--a100)}
-.as.n{background:var(--bg);border:1.5px solid var(--bdr)}
-.asl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.asl.r{color:#15803d}.asl.w{color:#92400e}.asl.n{color:var(--dim)}
-.ast{font-family:var(--mono);font-size:36px;font-weight:800;line-height:1}
-.ast.r{color:#15803d}.ast.w{color:#d97706}
-.asm{font-size:12px;color:var(--mu);margin-top:6px;line-height:1.6}
-.anr{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-.anb{background:var(--bg);border-radius:10px;padding:12px;border:1px solid var(--bdr)}
-.anl{font-size:9px;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
-.anv{font-size:20px;font-weight:800;font-family:var(--mono)}
-.sg2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.sb3{border-radius:11px;padding:14px;text-align:center}
-.sb3.g{background:var(--g50);border:1px solid var(--g100)}.sb3.a{background:var(--a50);border:1px solid var(--a100)}
-.sv2{font-size:24px;font-weight:800;font-family:var(--mono);line-height:1}
-.sl{font-size:9px;color:var(--mu);margin-top:5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
-.effb{height:8px;background:var(--bg);border-radius:999px;overflow:hidden;border:1px solid var(--bdr);margin:6px 0 12px}
-.efff{height:100%;border-radius:999px;transition:width .4s}
-.tl{padding:10px 13px;border-radius:10px;background:var(--bg);border:1px solid var(--bdr);margin-bottom:7px;border-left:3px solid var(--bdr)}
+.an-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.an-box{background:var(--bg);border-radius:10px;padding:11px;border:1px solid var(--bdr)}
+.an-l{font-size:9px;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.an-v{font-size:19px;font-weight:800;font-family:var(--mono)}
+/* SUMMARY */
+.sg2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+.sb3{border-radius:10px;padding:12px;text-align:center}
+.sb3.g{background:var(--g50);border:1px solid var(--g100)}.sb3.a{background:var(--a50);border:1px solid var(--a100)}.sb3.b{background:var(--b50);border:1px solid var(--b100)}
+.sv2{font-size:22px;font-weight:800;font-family:var(--mono);line-height:1}
+.sl{font-size:9px;color:var(--mu);margin-top:4px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+/* TODAY PIPELINE */
+.ord-pipe{background:var(--bg);border-radius:10px;padding:10px 12px;margin-bottom:8px;border:1px solid var(--bdr)}
+.op-ord{font-size:10px;font-weight:700;color:var(--mu);font-family:var(--mono);margin-bottom:7px}
+.op-dots{display:flex;align-items:center;gap:0}
+.op-dot{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;border:1.5px solid var(--bdr);background:var(--card);color:var(--dim)}
+.op-dot.d{border-color:#16a34a;background:var(--g50);color:#16a34a}
+.op-dot.p{border-color:#d97706;background:var(--a50);color:#d97706}
+.op-dot.a{border-color:var(--blue);background:var(--b50);color:var(--blue)}
+.op-con{flex:1;height:1.5px;background:var(--bdr);margin-top:-4px;min-width:4px}
+.op-con.d{background:#16a34a}
+/* TIMELINE */
+.tl{padding:9px 12px;border-radius:9px;background:var(--bg);border:1px solid var(--bdr);margin-bottom:6px;border-left:3px solid var(--bdr)}
 .tl.productive{border-left-color:#16a34a;background:linear-gradient(to right,#f0fdf4,var(--bg))}
 .tl.waste{border-left-color:#d97706;background:linear-gradient(to right,#fffbeb,var(--bg))}
-.tlm{font-size:12px;font-weight:600}.tls{font-size:10px;color:var(--mu);font-family:var(--mono);margin-top:3px}
+.tl.paused{border-left-color:#d97706;opacity:.7}
+.tlm{font-size:12px;font-weight:600}.tls{font-size:10px;color:var(--mu);font-family:var(--mono);margin-top:2px}
 @media(max-width:1000px){.grid{grid-template-columns:1fr}.sg,.wg{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
+
+
+
+<!-- 1-HOUR ALERT BANNER -->
+<div class="alert-banner" id="alertBanner">
+  <div>
+    <div class="ab-msg" id="abMsg">Session running over 1 hour!</div>
+    <div class="ab-sub" id="abSub">Consider ending and starting a new task to keep timing accurate.</div>
+  </div>
+  <div class="ab-btns">
+    <button class="ab-btn ab-white" onclick="endFromBanner()">&#9632; End Session Now</button>
+    <button class="ab-btn ab-ghost" onclick="newTaskFromBanner()">&#8595; Clock New Task</button>
+    <a class="ab-btn ab-ghost" id="abCorrect" href="employee_profile.html" style="text-decoration:none">&#128295; Correct Timing</a>
+    <button class="ab-btn ab-x" onclick="document.getElementById('alertBanner').classList.remove('on')">&#10005;</button>
+  </div>
+</div>
+
+<!-- TOPBAR -->
 <header class="topbar">
   <div class="tbl">
-    <div class="logo">&#9881;</div>
+    <div class="tlogo">&#9881;</div>
     <div class="tnm">Cedarwings SAS</div>
     <div class="tsep"></div>
     <div class="tpg">&#9201; Clocking Terminal</div>
@@ -120,41 +157,63 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
     <div class="epill" id="epill" onclick="changeEmp()">
       &#128119; <span id="empNm">Loading&hellip;</span> <span style="font-size:10px;opacity:.6">&#9660;</span>
     </div>
-    <a href="employee_profile.html" id="profileLink" class="btn bg" style="background:var(--b50);color:var(--blue);border:1px solid var(--b100)">&#128100; My Profile</a>
-    <a href="manager.html" class="btn bn">&#128202; Dashboard</a>
-    <a href="index.html" class="btn bg">&#8592; Home</a>
+    <a id="profileLink" href="employee_profile.html" class="btn bn" style="text-decoration:none">&#128100; My Profile</a>
+    <a href="manager.html" class="btn bg-btn" style="text-decoration:none">&#128202; Dashboard</a>
+    <a href="index.html" class="btn bg-btn" style="text-decoration:none">&#8592; Home</a>
   </div>
 </header>
-<div class="body">
 
+<div class="body">
   <div class="grid">
+
+    <!-- LEFT: CLOCKING FORM -->
     <div>
       <div class="card">
-        <div class="ct">Clock In / Start Session</div>
-        <div class="cs">
-  Enter order number, then <strong>tap any step to instantly clock in</strong>.<br>
-  Tapping a new step <strong>automatically closes the previous session</strong> and starts a new one — no extra buttons needed.
-</div>
-        <div class="fg"><lbl>Order Number *</lbl><input class="fi" id="ord" placeholder="e.g. ORD-1048" autocomplete="off"/></div>
-        <!-- PIPELINE — shows right under order number -->
-        <div id="pipeSection" style="background:var(--bg);border-radius:11px;padding:14px;margin-bottom:14px;min-height:80px">
-          <div style="font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Production Pipeline</div>
-          <div class="pipe" id="pipe" style="padding-bottom:2px"></div>
-          <div id="pinfo" style="margin-top:8px"><span style="font-size:11px;color:var(--dim);font-style:italic">Type an order number to see its pipeline</span></div>
+        <div class="ct">Clock In</div>
+        <div class="cs">Enter order number &rarr; tap a step to instantly clock in. Tapping a new step auto-closes the previous session. Use <strong>Pause</strong> to stop without completing the step.</div>
+
+        <!-- ORDER NUMBER + PIPELINE -->
+        <div class="fg"><lbl>Order Number *</lbl><input class="fi" id="ord" placeholder="e.g. ORD-1052" autocomplete="off"/></div>
+        <div style="background:var(--bg);border-radius:10px;padding:12px 14px;margin-bottom:14px">
+          <div style="font-size:9px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Production Pipeline</div>
+          <div class="pipe" id="pipe"></div>
+          <div id="pinfo" style="font-size:11px;color:var(--mu);margin-top:8px"></div>
         </div>
-        <div class="fg">
-          <lbl>&#10003; Tap a step to instantly clock in</lbl>
-          <div class="sg">
-            <button class="sb2" data-step="Printing" data-mach="3D Printing Machine 1"><span class="si">&#128424;</span>Printing</button>
-            <button class="sb2" data-step="Cleaning" data-mach="Cleaning Station"><span class="si">&#129529;</span>Cleaning</button>
-            <button class="sb2" data-step="Thermoforming" data-mach="Thermoforming Machine 1"><span class="si">&#128260;</span>Thermoforming</button>
-            <button class="sb2" data-step="Line Cut" data-mach="Line Cut Station"><span class="si">&#9986;</span>Line Cut</button>
-            <button class="sb2" data-step="Laser Marking" data-mach="Laser Marking Station"><span class="si">&#128294;</span>Laser Marking</button>
-            <button class="sb2" data-step="Packaging" data-mach="Packaging Station"><span class="si">&#128230;</span>Packaging</button>
+
+        <!-- ACTIVE JOB BOX -->
+        <div class="job-box prod" id="jobBox" style="display:none">
+          <div class="jb-top">
+            <div>
+              <div class="jb-badge prod" id="jbBadge">ON JOB</div>
+              <div class="jb-title" id="jbTitle">—</div>
+              <div class="jb-meta" id="jbMeta">—</div>
+            </div>
+            <div style="text-align:right">
+              <div class="jb-timer prod" id="jbTimer">00:00:00</div>
+              <div style="font-size:10px;color:var(--mu);margin-top:3px">elapsed</div>
+            </div>
+          </div>
+          <div class="jb-actions">
+            <button class="jb-pause" id="pauseBtn" onclick="pauseJob()">&#9208; Pause this task</button>
           </div>
         </div>
+
+        <!-- STEP BUTTONS -->
         <div class="fg">
-          <lbl>&#9888; Tap a category to record non-productive time</lbl>
+          <lbl>&#10003; Tap a step to clock in</lbl>
+          <div class="sg" id="stepGrid">
+            <button class="sb" data-step="Printing" data-mach="3D Printing Machine 1"><span class="si">&#128424;</span>Printing</button>
+            <button class="sb" data-step="Cleaning" data-mach="Cleaning Station"><span class="si">&#129529;</span>Cleaning</button>
+            <button class="sb" data-step="Thermoforming" data-mach="Thermoforming Machine 1"><span class="si">&#128260;</span>Thermoforming</button>
+            <button class="sb" data-step="Line Cut" data-mach="Line Cut Station"><span class="si">&#9986;</span>Line Cut</button>
+            <button class="sb" data-step="Laser Marking" data-mach="Laser Marking Station"><span class="si">&#128294;</span>Laser Marking</button>
+            <button class="sb" data-step="Packaging" data-mach="Packaging Station"><span class="si">&#128230;</span>Packaging</button>
+          </div>
+        </div>
+
+        <!-- WASTE BUTTONS -->
+        <div class="fg">
+          <lbl>&#9888; Non-Productive</lbl>
           <div class="wg">
             <button class="wb" data-w="Waiting for next job">&#8987;<br/>W1 Waiting</button>
             <button class="wb" data-w="General cleaning">&#129531;<br/>W2 Cleaning</button>
@@ -164,393 +223,318 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
             <button class="wb" data-w="Rework">&#128260;<br/>W6 Rework</button>
           </div>
         </div>
-        <div class="af" id="af" style="display:none">
-          <div><div class="afl">Session Type</div><div class="afv" id="afT">&#8212;</div></div>
-          <div><div class="afl">Machine / Category</div><div class="afv" id="afM">&#8212;</div></div>
-          <div><div class="afl">Work Type</div><div class="afv" id="afW">&#8212;</div></div>
-          <div><div class="afl">Batch ID</div><div class="afv" id="afB">&#8212;</div></div>
-        </div>
-        <div class="fg"><lbl>Note (optional)</lbl><input class="fi" id="note" placeholder="Task description&hellip;"/></div>
-        <!-- Clock in button is now automatic when clicking a step above -->
-<button class="btn btn-ci" id="btnCI" style="display:none">&#9201; Clock In</button>
-        <button class="btn btn-en" id="btnEnd" style="margin-top:12px">&#127968; Clock Out — End of Day</button>
-        <div class="sbox" id="sbox"><div class="st" id="stT">No active session</div><div class="sd" id="stD">Enter order number and select a step to begin.</div></div>
+
+        <!-- STATUS -->
+        <div class="sbox" id="sbox"><div class="st" id="stT">Ready</div><div class="sd" id="stD">Enter an order number and tap a step to begin.</div></div>
       </div>
     </div>
+
+    <!-- RIGHT PANEL -->
     <div>
+      <!-- CLOCK -->
       <div class="card">
         <div class="clk" id="clk">--:--:--</div>
         <div class="clkd" id="clkd"></div>
-        <div class="as n" id="asC">
-          <div class="asl n" id="asL">Active Session</div>
-          <div class="ast" id="asT">&#8212;</div>
-          <div class="asm" id="asM">No session in progress.</div>
-        </div>
-        <div class="anr">
-          <div class="anb"><div class="anl">Day Start</div><div class="anv" id="anS">08:00</div></div>
-          <div class="anb"><div class="anl">First Clock-In</div><div class="anv" id="anF">&#8212;</div></div>
+        <div class="an-row">
+          <div class="an-box"><div class="an-l">Day Start</div><div class="an-v" id="anS">08:00</div></div>
+          <div class="an-box"><div class="an-l">First Clock-In</div><div class="an-v" id="anF">&mdash;</div></div>
         </div>
       </div>
+
+      <!-- DAY SUMMARY -->
       <div class="card">
         <div class="ct" style="margin-bottom:12px">Day Summary</div>
         <div class="sg2">
           <div class="sb3 g"><div class="sv2" style="color:#15803d" id="sP">00:00</div><div class="sl">Productive</div></div>
-          <div class="sb3 a"><div class="sv2" style="color:#d97706" id="sW">00:00</div><div class="sl">Non-Productive</div></div>
+          <div class="sb3 a"><div class="sv2" style="color:#d97706" id="sW">00:00</div><div class="sl">Non-Prod.</div></div>
+          <div class="sb3 b"><div class="sv2" style="color:var(--blue)" id="sE">0%</div><div class="sl">Efficiency</div></div>
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mu)"><span>Efficiency</span><span id="sE" style="font-family:var(--mono);font-weight:700;color:#16a34a">0%</span></div>
-        <div class="effb"><div class="efff" id="eff" style="width:0%;background:#16a34a"></div></div>
-        <div style="font-size:12px;color:var(--mu)" id="sS">0 sessions today</div>
+        <div style="font-size:12px;color:var(--mu)" id="sSess">0 sessions today</div>
       </div>
-      <div class="card" style="max-height:400px;display:flex;flex-direction:column">
+
+      <!-- TODAY'S ACTIVITY -->
+      <div class="card" style="max-height:420px;display:flex;flex-direction:column">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
           <div class="ct">My Activity Today</div>
-          <span id="tlBadge" style="font-size:10px;font-weight:700;color:var(--mu);background:var(--bg);padding:3px 9px;border-radius:999px;border:1px solid var(--bdr)">0 sessions</span>
+          <span id="tlBadge" style="font-size:10px;font-weight:700;background:var(--bg);border:1px solid var(--bdr);padding:2px 8px;border-radius:999px;color:var(--mu)">0 sessions</span>
         </div>
-        <div style="font-size:12px;color:var(--mu);margin-bottom:12px">Your sessions so far today</div>
-        <!-- Today's mini pipeline per order -->
-        <div id="todayPipe" style="margin-bottom:12px"></div>
+        <div style="font-size:12px;color:var(--mu);margin-bottom:12px">Sessions + pipeline per order</div>
+        <div id="todayPipe" style="margin-bottom:8px"></div>
         <div style="overflow-y:auto;flex:1" id="tldiv"><div style="color:var(--dim);font-size:13px;text-align:center;padding:20px">No sessions yet.</div></div>
       </div>
     </div>
   </div>
 </div>
+
 <script type="module">
 import{createClient}from"https://esm.sh/@supabase/supabase-js@2"
 import{SUPABASE_CONFIG}from"./config.js"
 const sb=createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey)
+
 const STEPS=["Printing","Cleaning","Thermoforming","Line Cut","Laser Marking","Packaging"]
 const ICO={Printing:"&#128424;",Cleaning:"&#129529;",Thermoforming:"&#128260;","Line Cut":"&#9986;","Laser Marking":"&#128294;",Packaging:"&#128230;"}
-const EK="cedarwings_logged_employee",SK="cedarwings_active_session",DK="cedarwings_day_anchor_"
+const AVCOLORS=["#3b5fe2","#16a34a","#d97706","#dc2626","#7c3aed","#0d9488","#db2777","#ea580c"]
+const avCol=n=>AVCOLORS[(n||"").charCodeAt(0)%AVCOLORS.length]
+const ini=n=>(n||"?").trim().split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2)
+const EK="cw_current_emp"
 const ts=()=>{const d=new Date();d.setHours(0,0,0,0);return d}
 const te=()=>{const d=new Date();d.setHours(23,59,59,999);return d}
-const gS=()=>{try{return JSON.parse(localStorage.getItem(SK)||"null")}catch{return null}}
-const sS=s=>localStorage.setItem(SK,JSON.stringify(s))
-const cS=()=>localStorage.removeItem(SK)
-const mins=(a,b)=>Math.max(0,Math.round((b-a)/60000))
 const hm=m=>String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0")
 const hms=ms=>{const t=Math.max(0,Math.floor(ms/1000));return String(Math.floor(t/3600)).padStart(2,"0")+":"+String(Math.floor(t%3600/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")}
-const fT=v=>v?new Date(v).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"&#8212;"
+const fT=v=>v?new Date(v).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"—"
+const mins=(a,b)=>Math.max(0,Math.round((b-a)/60000))
 const gB=()=>"B-"+new Date().toISOString().replace(/[-:TZ.]/g,"").slice(2,14)
-let cfg=null,emp=""
-async function initEmp(){
-  // Check if employee just logged in from index.html
-  const fromLogin = sessionStorage.getItem("cw_current_emp")
-  const fromLocal = localStorage.getItem(EK)
-  
-  if(fromLogin){
-    // Came from login page - use that identity directly, no picker needed
-    emp = fromLogin
-    localStorage.setItem(EK, fromLogin)
-    document.getElementById("empNm").textContent = fromLogin
-    document.getElementById("empOverlay").style.display = "none"
-    return
-  }
-  
-  if(fromLocal){
-    // Previously used this device - use stored name, no picker
-    emp = fromLocal
-    document.getElementById("empNm").textContent = fromLocal
-    document.getElementById("empOverlay").style.display = "none"
-    return
-  }
-  
-  // No identity found - show picker
-  await showEmpPicker()
-}
-window.changeEmp=async()=>{localStorage.removeItem(EK);emp="";await showEmpPicker()}
 
-async function showEmpPicker(){
-  // Load employees from DB
-  let emps=[]
-  try{
-    const{data}=await sb.from("employees").select("name,role,workflow_step").eq("is_active",true).order("name")
-    emps=data||[]
-  }catch(e){console.log("emp load error",e)}
-  
-  const overlay=document.getElementById("empOverlay")
-  const grid=document.getElementById("empPickerGrid")
-  
-  if(!emps.length){
-    // Fallback: manual entry
-    const n=prompt("Enter your name:")
-    if(n){localStorage.setItem(EK,n);emp=n;document.getElementById("empNm").textContent=n}
-    return
-  }
-  
-  const COLS=["#3b5fe2","#16a34a","#d97706","#dc2626","#7c3aed","#0d9488","#db2777","#ea580c"]
-  const avCol=n=>COLS[(n||"").charCodeAt(0)%COLS.length]
-  const ini=n=>(n||"?").trim().split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2)
-  
-  grid.innerHTML=emps.map(e=>`
-    <div class="ep-card" onclick="pickEmp('${e.name.replace(/'/g,"\'")}')">
-      <div class="ep-av" style="background:${avCol(e.name)}">${ini(e.name)}</div>
-      <div class="ep-name">${e.name}</div>
-      <div class="ep-role">${e.role||"Employee"}${e.workflow_step?" · "+e.workflow_step:""}</div>
-    </div>`).join("")
-  overlay.style.display="flex"
+let emp="",activeSession=null,timerInt=null,todaySessions=[]
+
+/* ===================== EMPLOYEE ===================== */
+function initEmp(){
+  // Identity comes from index.html login — no picker needed
+  const name=sessionStorage.getItem(EK)||localStorage.getItem(EK)
+  if(name){setEmp(name)}
+  else{window.location.href="index.html"} // Not logged in → go to login
 }
 
-window.pickEmp=name=>{
-  localStorage.setItem(EK,name);localStorage.setItem(EK+'_last',name);sessionStorage.setItem('cw_current_emp',name);emp=name
+function setEmp(name){
+  emp=name
   document.getElementById("empNm").textContent=name
-  document.getElementById("empOverlay").style.display="none"
+  document.getElementById("profileLink").href="employee_profile.html?emp="+encodeURIComponent(name)
+  document.getElementById("abCorrect").href="employee_profile.html?emp="+encodeURIComponent(name)+"&tab=admin"
   loadToday()
-  // Update profile link
-  const pl=document.getElementById("profileLink")
-  if(pl)pl.href="employee_profile.html?emp="+encodeURIComponent(name)
 }
-function ensureAnc(){const k=DK+new Date().toISOString().slice(0,10);if(!localStorage.getItem(k)){const d=new Date();d.setHours(8,0,0,0);localStorage.setItem(k,d.toISOString())}return localStorage.getItem(k)}
-async function renderPipe(ord){
-  const pv=document.getElementById("pipe"),pi=document.getElementById("pinfo")
-  if(!ord){pv.innerHTML=STEPS.map((s,i)=>(i>0?"<div class=\"pcon\"></div>":"")+"<div class=\"ps locked\"><div class=\"psc\">"+ICO[s]+"</div><div class=\"pslbl\">"+s+"</div></div>").join("");pi.innerHTML="<span class=\"pbdg pbgr\">Enter an order number to see pipeline</span>";return null}
-  const{data}=await sb.from("time_sessions").select("work_type,session_type,ended_at").eq("order_no",ord).order("started_at",{ascending:true})
-  const done=new Set((data||[]).filter(r=>r.session_type==="productive"&&r.ended_at&&STEPS.includes(r.work_type)).map(r=>r.work_type))
+
+window.changeEmp=()=>{
+  // Switch user = go back to login
+  sessionStorage.removeItem(EK)
+  window.location.href="index.html"
+}
+
+/* ===================== PIPELINE ===================== */
+async function renderPipeline(ord){
+  const pipe=document.getElementById("pipe"),pinfo=document.getElementById("pinfo")
+  if(!ord){
+    pipe.innerHTML=STEPS.map((s,i)=>(i>0?'<div class="pcon"></div>':'')+`<div class="ps locked"><div class="psc">${ICO[s]||"·"}</div><div class="pslbl">${s}</div></div>`).join("")
+    pinfo.textContent="Enter order number to see pipeline"
+    updateStepButtons(null,new Set(),new Set(),null)
+    return
+  }
+  const{data}=await sb.from("time_sessions").select("work_type,session_type,ended_at,pause_reason").eq("order_no",ord).order("started_at",{ascending:true})
+  const rows=data||[]
+  // Done = productive, ended, NOT paused
+  const done=new Set(rows.filter(r=>r.session_type==="productive"&&r.ended_at&&!r.pause_reason&&STEPS.includes(r.work_type)).map(r=>r.work_type))
+  // Paused = productive, ended, WITH pause_reason
+  const paused=new Set(rows.filter(r=>r.session_type==="productive"&&r.ended_at&&r.pause_reason&&STEPS.includes(r.work_type)).map(r=>r.work_type))
+  // Remove from paused if later done
+  paused.forEach(s=>{if(done.has(s))paused.delete(s)})
   const lastDone=STEPS.filter(s=>done.has(s)).pop()||null
-  const nextIdx=lastDone?STEPS.indexOf(lastDone)+1:0,next=STEPS[nextIdx]||null
-  pv.innerHTML=STEPS.map((s,i)=>{
-    const d=done.has(s),a=s===next,ldIdx=lastDone?STEPS.indexOf(lastDone):-1
-    const con=i>0?"<div class=\"pcon"+(i<=ldIdx+1&&ldIdx>=0?" done":"")+"\"\></div>":""
-    const cls=d?"done":a?"active ok":"locked"
-    return con+"<div class=\"ps "+cls+"\" "+(a?"onclick=\"pickStep(\'"+s+"\')\"":"")+"><div class=\"psc\">"+ICO[s]+"</div><div class=\"pslbl\">"+s+"</div></div>"
+  const nextIdx=lastDone?STEPS.indexOf(lastDone)+1:0
+  const next=paused.size>0?[...paused][0]:STEPS[nextIdx]||null
+  const actStep=activeSession?.order===ord?activeSession.step:null
+  pipe.innerHTML=STEPS.map((s,i)=>{
+    const d=done.has(s),pa=paused.has(s),a=s===actStep
+    const ldIdx=lastDone?STEPS.indexOf(lastDone):-1
+    const con=i>0?`<div class="pcon${i<=ldIdx+1&&ldIdx>=0?" done":""}"></div>`:""
+    const cls=d?"done":a?"active":pa?"paused":s===next&&!a?"next":"locked"
+    const click=cls==="next"||cls==="paused"?`onclick="window._clockStep('${s}')"`:"" 
+    return con+`<div class="ps ${cls}" ${click}><div class="psc">${ICO[s]||s[0]}</div><div class="pslbl">${s}</div></div>`
   }).join("")
-  const tot=data?.length||0,comp=(data||[]).filter(r=>r.session_type==="productive"&&r.ended_at).length
-  pi.innerHTML=(lastDone?"<span class=\"pbdg pbg\">&#10003; Last: "+lastDone+"</span>":"")+" "+(next?"<span class=\"pbdg pba\">&#8594; Next: "+next+"</span>":"<span class=\"pbdg pbg\">&#10003; Complete!</span>")+" <span class=\"pbdg pbgr\">"+comp+" steps done &#183; "+tot+" sessions</span>"
-  return {next,done}
+  const comp=done.size,tot=STEPS.length
+  pinfo.innerHTML=`<span style="color:#16a34a;font-weight:700">${comp}/${tot} steps done</span>`+(next?` &middot; <strong>${paused.has(next)?"Resume":"Next"}: ${next}</strong>`:" &middot; <span style='color:#16a34a'>All complete!</span>")+(paused.size?` &middot; <span style='color:#d97706'>${paused.size} paused</span>`:"")
+  updateStepButtons(next,done,paused,actStep)
 }
-window.pickStep=s=>{const b=document.querySelector("[data-step=\""+s+"\"]");if(b)b.click()}
-function lockSteps(next,doneSt){
-  document.querySelectorAll(".sb2").forEach(b=>{
-    const step=b.dataset.step
-    b.disabled=true
-    b.classList.remove("next-step","done-step")
-    if(doneSt&&doneSt.has(step)){
-      // Completed step
-      b.classList.add("done-step")
-    } else if(step===next){
-      // This is the next step to do
-      b.disabled=false
-      b.classList.add("next-step")
-    }
-    // else: future steps remain greyed out (default style)
+
+function updateStepButtons(next,done,paused,actStep){
+  document.querySelectorAll(".sb").forEach(b=>{
+    const s=b.dataset.step
+    b.className="sb"
+    b.onclick=null
+    b.style.pointerEvents="none"
+    if(s===actStep){b.classList.add("active")}
+    else if(done?.has(s)){b.classList.add("done")}
+    else if(paused?.has(s)){b.classList.add("paused");b.style.pointerEvents="auto";b.onclick=()=>window._clockStep(s)}
+    else if(s===next&&!actStep){b.classList.add("can");b.style.pointerEvents="auto";b.onclick=()=>window._clockStep(s)}
   })
 }
-document.querySelectorAll(".sb2").forEach(b=>b.addEventListener("click",async()=>{
+
+/* ===================== CLOCK IN ===================== */
+window._clockStep=async(step)=>{
   const ord=document.getElementById("ord").value.trim()
-  if(!ord){setSt("Enter order number first","Type the order number above before selecting a step.","err");return}
-  document.querySelectorAll(".sb2,.wb").forEach(x=>x.classList.remove("on"));b.classList.add("on")
-  cfg={session_type:"productive",machine:b.dataset.mach,work_type:b.dataset.step,waste_category:null}
-  document.getElementById("af").style.display="grid"
-  document.getElementById("afT").textContent="Productive"
-  document.getElementById("afM").textContent=b.dataset.mach
-  document.getElementById("afW").textContent=b.dataset.step
-  document.getElementById("afB").textContent=gB()
-  // AUTO CLOCK IN immediately
-  await clockIn()
-}))
+  if(!ord){setSt("Enter order number first","Type the order number above.","err");return}
+  if(!emp){window.location.href="index.html";return}
+  const now=new Date()
+  // Close existing session
+  if(activeSession?.id){
+    await sb.from("time_sessions").update({ended_at:now.toISOString()}).eq("id",activeSession.id)
+  }
+  clearInterval(timerInt)
+  const batchId=gB()
+  const{data:row,error}=await sb.from("time_sessions").insert([{employee_name:emp,session_type:"productive",work_type:step,machine:document.querySelector(`[data-step="${step}"]`)?.dataset.mach||null,order_no:ord,batch_id:batchId,started_at:now.toISOString(),ended_at:null,pause_reason:null}]).select().single()
+  if(error){setSt("Error",error.message,"err");return}
+  activeSession={id:row?.id,step,order:ord,type:"productive",startTime:now}
+  showJobBox(step,ord,"productive",now)
+  startTimer()
+  setSt("Clocked in: "+step,`${emp} · ${ord} · ${fT(now.toISOString())}`,  "ok")
+  renderPipeline(ord)
+  loadToday()
+}
+
 document.querySelectorAll(".wb").forEach(b=>b.addEventListener("click",async()=>{
   const ord=document.getElementById("ord").value.trim()
-  if(!ord){setSt("Enter order number first","Type the order number above before clocking in.","err");return}
-  document.querySelectorAll(".sb2,.wb").forEach(x=>x.classList.remove("on"));b.classList.add("on")
-  cfg={session_type:"waste",machine:b.dataset.w,work_type:"Waste Time",waste_category:b.dataset.w}
-  document.getElementById("af").style.display="grid"
-  document.getElementById("afT").textContent="Non-Productive"
-  document.getElementById("afM").textContent=b.dataset.w
-  document.getElementById("afW").textContent="Waste Time"
-  document.getElementById("afB").textContent=gB()
-  // AUTO CLOCK IN immediately
-  await clockIn()
-}))
-let pt=null
-document.getElementById("ord").addEventListener("input",()=>{
-  clearTimeout(pt);pt=setTimeout(async()=>{
-    const ord=document.getElementById("ord").value.trim()
-    const r=await renderPipe(ord);if(r)lockSteps(r.next,r.done)
-    cfg=null;document.querySelectorAll(".sb2,.wb").forEach(b=>b.classList.remove("on"));document.getElementById("af").style.display="none"
-  },400)
-})
-function setSt(t,d,type){const b=document.getElementById("sbox");b.className="sbox"+(type?" "+type:"");document.getElementById("stT").textContent=t;document.getElementById("stD").textContent=d}
-function updAP(){
-  const s=gS(),c=document.getElementById("asC")
-  if(!s){c.className="as n";document.getElementById("asL").className="asl n";document.getElementById("asL").textContent="Active Session";document.getElementById("asT").textContent="—";document.getElementById("asT").className="ast";document.getElementById("asM").textContent="No session in progress.";return}
-  const w=s.session_type==="waste"
-  c.className="as "+(w?"w":"r");document.getElementById("asL").className="asl "+(w?"w":"r");document.getElementById("asL").textContent=w?"Non-Productive Session":"Productive Session"
-  document.getElementById("asT").textContent=hms(Date.now()-new Date(s.started_at).getTime())
-  document.getElementById("asT").className="ast "+(w?"w":"r")
-  document.getElementById("asM").innerHTML="<strong>"+s.order_no+"</strong> &middot; "+(s.work_type||s.waste_category||"—")+"<br>"+(s.machine||"—")+" &middot; Started: "+fT(s.started_at)
-}
-async function clockIn(){
-  const ord=document.getElementById("ord").value.trim()
-  if(!emp||!ord||!cfg){setSt("Missing info","Enter order number and select a step.","err");return}
+  if(!ord){setSt("Enter order number first","","err");return}
+  if(!emp){window.location.href="index.html";return}
   const now=new Date()
-  try{
-    const ex=gS();if(ex?.id)await sb.from("time_sessions").update({ended_at:now.toISOString()}).eq("id",ex.id)
-    const{data:row,error}=await sb.from("time_sessions").insert([{employee_name:emp,session_type:cfg.session_type,work_type:cfg.work_type,machine:cfg.machine,order_no:ord,batch_id:gB(),task_description:document.getElementById("note").value.trim()||null,waste_category:cfg.waste_category,started_at:now.toISOString(),ended_at:null}]).select().single()
-    if(error)throw error
-    sS({id:row?.id,employee:emp,started_at:now.toISOString(),session_type:cfg.session_type,order_no:ord,machine:cfg.machine,work_type:cfg.work_type,waste_category:cfg.waste_category})
-    // Show confirmation and keep page ready for next task
-    setSt("Clocked in: "+cfg.work_type,emp+" · Order: "+ord+" · "+fT(now.toISOString()),"ok")
-    document.getElementById("note").value=""
-    cfg=null
-    document.querySelectorAll(".sb2,.wb").forEach(b=>b.classList.remove("on"))
-    document.getElementById("af").style.display="none"
-    updAP()
-    await loadToday()
-    // Re-render pipeline - page stays ready on same order
-    const r=await renderPipe(ord);if(r)lockSteps(r.next,r.done)
-  }catch(err){setSt("Error",err.message,"err")}
-}
-window.endFromBanner=async()=>{
-  await endSession()
-  document.getElementById("alertBanner").style.display="none"
-  // Scroll to step buttons after ending
-  document.querySelector(".sg")?.scrollIntoView({behavior:"smooth",block:"center"})
+  if(activeSession?.id){await sb.from("time_sessions").update({ended_at:now.toISOString()}).eq("id",activeSession.id)}
+  clearInterval(timerInt)
+  const{data:row,error}=await sb.from("time_sessions").insert([{employee_name:emp,session_type:"waste",work_type:"Waste Time",waste_category:b.dataset.w,order_no:ord,batch_id:gB(),started_at:now.toISOString(),ended_at:null}]).select().single()
+  if(error){setSt("Error",error.message,"err");return}
+  activeSession={id:row?.id,step:b.dataset.w,order:ord,type:"waste",startTime:now}
+  showJobBox(b.dataset.w,ord,"waste",now)
+  startTimer()
+  setSt("Non-productive: "+b.dataset.w,`${emp} · ${ord} · ${fT(now.toISOString())}`,"ok")
+  renderPipeline(ord)
+  loadToday()
+}))
+
+/* ===================== PAUSE ===================== */
+window.pauseJob=async()=>{
+  if(!activeSession?.id)return
+  const now=new Date()
+  await sb.from("time_sessions").update({ended_at:now.toISOString(),pause_reason:"paused"}).eq("id",activeSession.id)
+  clearInterval(timerInt)
+  setSt("Task paused","Session saved. Enter a new order or resume this task later.","ok")
+  const ord=activeSession.order
+  activeSession=null
+  document.getElementById("jobBox").style.display="none"
+  document.getElementById("alertBanner").classList.remove("on")
+  // Clear order so page is ready for next task
+  document.getElementById("ord").value=""
+  renderPipeline("")
+  loadToday()
 }
 
-window.clockNewTaskFromBanner=()=>{
-  // End session then scroll to steps
-  endFromBanner().then(()=>{
-    setTimeout(()=>{
-      document.querySelector(".sg")?.scrollIntoView({behavior:"smooth",block:"center"})
-    },300)
-  })
-}
-
+/* ===================== END SESSION ===================== */
 async function endSession(){
-  const s=gS();if(!s){setSt("No active session","","err");return}
-  try{
-    await sb.from("time_sessions").update({ended_at:new Date().toISOString()}).eq("id",s.id)
-    cS();setSt("Session ended","Successfully clocked out.","ok");updAP();await loadToday()
-    const ord=document.getElementById("ord").value.trim();if(ord){const r=await renderPipe(ord);if(r)lockSteps(r.next,r.done)}
-  }catch(err){setSt("Error",err.message,"err")}
+  if(!activeSession?.id)return
+  await sb.from("time_sessions").update({ended_at:new Date().toISOString()}).eq("id",activeSession.id)
+  clearInterval(timerInt)
+  const ord=activeSession.order
+  activeSession=null
+  document.getElementById("jobBox").style.display="none"
+  document.getElementById("alertBanner").classList.remove("on")
+  renderPipeline(ord)
+  loadToday()
+  setSt("Session ended","Clocked out successfully.","ok")
 }
+
+window.endFromBanner=endSession
+window.newTaskFromBanner=async()=>{
+  await endSession()
+  setTimeout(()=>document.getElementById("stepGrid").scrollIntoView({behavior:"smooth",block:"center"}),300)
+}
+
+/* ===================== JOB BOX ===================== */
+function showJobBox(step,ord,type,startTime){
+  const box=document.getElementById("jobBox")
+  box.className="job-box "+(type==="waste"?"waste":"prod")
+  box.style.display="block"
+  document.getElementById("jbBadge").textContent=type==="waste"?"NON-PRODUCTIVE":"ON JOB"
+  document.getElementById("jbBadge").className="jb-badge "+(type==="waste"?"waste":"prod")
+  document.getElementById("jbTitle").textContent=step
+  document.getElementById("jbMeta").textContent=`Order: ${ord} · Started: ${fT(startTime.toISOString())}`
+  document.getElementById("jbTimer").className="jb-timer "+(type==="waste"?"waste":"prod")
+}
+
+function startTimer(){
+  clearInterval(timerInt)
+  timerInt=setInterval(()=>{
+    if(!activeSession)return
+    const ms=Date.now()-activeSession.startTime.getTime()
+    document.getElementById("jbTimer").textContent=hms(ms)
+    const m=Math.floor(ms/60000)
+    const banner=document.getElementById("alertBanner")
+    if(m>=60){
+      banner.classList.add("on")
+      document.getElementById("abMsg").textContent=`Session running ${Math.floor(m/60)}h ${m%60}m — ${activeSession.order} · ${activeSession.step}`
+      document.getElementById("abSub").textContent=`Started ${fT(activeSession.startTime.toISOString())}. End it or pause to keep records accurate.`
+    }else{banner.classList.remove("on")}
+  },1000)
+}
+
+/* ===================== LOAD TODAY ===================== */
 async function loadToday(){
+  if(!emp)return
   const{data}=await sb.from("time_sessions").select("*").eq("employee_name",emp).gte("started_at",ts().toISOString()).lte("started_at",te().toISOString()).order("started_at",{ascending:true})
-  const recs=data||[]
-  if(!recs.length){document.getElementById("tldiv").innerHTML="<div style=\"color:var(--dim);font-size:13px;text-align:center;padding:20px\">No sessions yet.</div>";["sP","sW"].forEach(i=>document.getElementById(i).textContent="00:00");document.getElementById("sE").textContent="0%";document.getElementById("eff").style.width="0%";document.getElementById("sS").textContent="0 sessions today";document.getElementById("anF").textContent="—";return}
+  todaySessions=data||[]
   let pM=0,wM=0
-  document.getElementById("tldiv").innerHTML=recs.map(r=>{const m=r.ended_at?mins(new Date(r.started_at),new Date(r.ended_at)):0;if(r.session_type==="productive")pM+=m;if(r.session_type==="waste")wM+=m;const live=!r.ended_at;return"<div class=\"tl "+(r.session_type||"")+"\"><div class=\"tlm\"> "+(r.session_type==="waste"?"&#9888; "+(r.waste_category||"Waste"):ICO[r.work_type]||"&#9881;"+" "+(r.work_type||"—"))+" &middot; "+(r.order_no||"—")+(live?" <span style=\"background:#16a34a;color:#fff;padding:1px 7px;border-radius:999px;font-size:10px;font-weight:700;margin-left:4px\">LIVE</span>":"")+"</div><div class=\"tls\">"+fT(r.started_at)+" &rarr; "+fT(r.ended_at)+" &middot; "+(live?"<span style=\"color:#16a34a\">ongoing</span>":m+"min")+"</div></div>"}).join("")
+  const allWithActive=[...todaySessions,...(activeSession?[{session_type:activeSession.type,work_type:activeSession.step,waste_category:activeSession.step,order_no:activeSession.order,started_at:activeSession.startTime.toISOString(),ended_at:null,pause_reason:null}]:[]) ]
+  allWithActive.forEach(r=>{const m=r.ended_at?mins(new Date(r.started_at),new Date(r.ended_at)):0;if(r.session_type==="productive")pM+=m;if(r.session_type==="waste")wM+=m})
   const tot=pM+wM,eff=tot>0?Math.round(pM/tot*100):0,bc=eff>=70?"#16a34a":eff>=40?"#d97706":"#dc2626"
-  document.getElementById("sP").textContent=hm(pM);document.getElementById("sW").textContent=hm(wM)
+  document.getElementById("sP").textContent=hm(pM)
+  document.getElementById("sW").textContent=hm(wM)
   document.getElementById("sE").textContent=eff+"%";document.getElementById("sE").style.color=bc
-  document.getElementById("eff").style.width=eff+"%";document.getElementById("eff").style.background=bc
-  document.getElementById("sS").textContent=recs.length+" sessions &middot; "+pM+"min productive"
-  document.getElementById("anF").textContent=fT(recs[0].started_at)
-  document.getElementById("tlBadge").textContent=recs.length+" session"+(recs.length!==1?"s":"")
-  // Build today's pipeline summary per order
+  document.getElementById("sSess").textContent=allWithActive.length+" sessions today"
+  document.getElementById("tlBadge").textContent=allWithActive.length+" session"+(allWithActive.length!==1?"s":"")
+  if(allWithActive.length)document.getElementById("anF").textContent=fT(allWithActive[0].started_at)
+  // Today pipeline per order
   const byOrd={}
-  recs.forEach(r=>{
+  allWithActive.forEach(r=>{
     if(!r.order_no||r.session_type!=="productive")return
-    if(!byOrd[r.order_no])byOrd[r.order_no]=new Set()
-    if(STEPS.includes(r.work_type)&&r.ended_at)byOrd[r.order_no].add(r.work_type)
+    if(!byOrd[r.order_no])byOrd[r.order_no]={done:new Set(),paused:new Set(),active:null}
+    if(STEPS.includes(r.work_type)){
+      if(!r.ended_at)byOrd[r.order_no].active=r.work_type
+      else if(r.pause_reason)byOrd[r.order_no].paused.add(r.work_type)
+      else byOrd[r.order_no].done.add(r.work_type)
+    }
   })
-  const ordList=Object.keys(byOrd)
-  const ICO2={Printing:"&#128424;",Cleaning:"&#129529;",Thermoforming:"&#128260;","Line Cut":"&#9986;","Laser Marking":"&#128294;",Packaging:"&#128230;"}
-  document.getElementById("todayPipe").innerHTML=ordList.length?ordList.map(ord=>{
-    const done=byOrd[ord]
-    const dots=STEPS.map(s=>{
-      const d=done.has(s)
-      return`<span title="${s}" style="display:inline-flex;flex-direction:column;align-items:center;gap:2px;cursor:default">
-        <span style="width:26px;height:26px;border-radius:50%;border:2px solid ${d?"#16a34a":"#e2e8f0"};background:${d?"#f0fdf4":"#f8fafc"};display:inline-flex;align-items:center;justify-content:center;font-size:11px">${d?"&#10003;":ICO2[s]||"&#9675;"}</span>
-      </span>`}).join('<span style="flex:1;height:1.5px;background:#e2e8f0;margin-top:-12px;min-width:8px;display:inline-block"></span>')
-    return`<div style="background:var(--bg);border-radius:9px;padding:10px 12px;margin-bottom:7px;border:1px solid var(--bdr)">
-      <div style="font-size:11px;font-weight:700;color:var(--mu);margin-bottom:8px;font-family:var(--mono)">&#128221; ${ord}</div>
-      <div style="display:flex;align-items:center;gap:0">${dots}</div>
-    </div>`}).join(""):`<div style="font-size:11px;color:var(--dim);text-align:center;padding:6px">No productive steps recorded today</div>`
+  document.getElementById("todayPipe").innerHTML=Object.keys(byOrd).map(ord=>{
+    const{done,paused,active}=byOrd[ord]
+    const dots=STEPS.map((s,i)=>{
+      const cls=done.has(s)?"d":active===s?"a":paused.has(s)?"p":""
+      const label=done.has(s)?"✓":active===s?"▶":paused.has(s)?"⏸":s[0]
+      const con=i>0?`<div class="op-con ${i<=STEPS.filter(x=>done.has(x)).length?"d":""}"></div>`:""
+      return con+`<div class="op-dot ${cls}" title="${s}">${label}</div>`
+    }).join("")
+    return`<div class="ord-pipe"><div class="op-ord">&#128221; ${ord}${active?" &middot; <span style='color:var(--blue);font-weight:700'>"+active+" &#9654;</span>":""}</div><div class="op-dots">${dots}</div></div>`
+  }).join("")||""
+  // Timeline
+  document.getElementById("tldiv").innerHTML=allWithActive.length?allWithActive.slice().reverse().map(r=>{
+    const live=!r.ended_at,m=r.ended_at?mins(new Date(r.started_at),new Date(r.ended_at)):0
+    const cls=r.pause_reason?"paused":r.session_type||""
+    return`<div class="tl ${cls}">
+      <div class="tlm">${r.session_type==="waste"?"&#9888; "+(r.waste_category||"Waste"):ICO[r.work_type]||"&#9881;"+" "+(r.work_type||"—")} &middot; ${r.order_no||"—"}${live?" <span style='background:#16a34a;color:#fff;padding:1px 7px;border-radius:999px;font-size:9px;font-weight:800;margin-left:4px'>LIVE</span>":r.pause_reason?" <span style='background:#d97706;color:#fff;padding:1px 7px;border-radius:999px;font-size:9px;font-weight:800;margin-left:4px'>PAUSED</span>":""}
+      </div>
+      <div class="tls">${fT(r.started_at)} &rarr; ${fT(r.ended_at)} &middot; ${live?"ongoing":r.pause_reason?"paused at "+fT(r.ended_at):m+"min"}</div>
+    </div>`
+  }).join(""):`<div style="color:var(--dim);font-size:13px;text-align:center;padding:20px">No sessions yet.</div>`
 }
+
+/* ===================== ORDER INPUT ===================== */
+let pT=null
+document.getElementById("ord").addEventListener("input",()=>{
+  clearTimeout(pT);pT=setTimeout(()=>{const ord=document.getElementById("ord").value.trim();renderPipeline(ord)},400)
+})
+
+/* ===================== TICK ===================== */
 function tick(){
   const n=new Date()
   document.getElementById("clk").textContent=n.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit"})
   document.getElementById("clkd").textContent=n.toLocaleDateString([],{weekday:"long",year:"numeric",month:"long",day:"numeric"})
-  updAP()
-  // Check 1-hour alert
-  const s=gS()
-  const banner=document.getElementById("alertBanner")
-  if(s&&s.started_at){
-    const elapsed=Date.now()-new Date(s.started_at).getTime()
-    const mins=Math.floor(elapsed/60000)
-    if(mins>=60){
-      banner.style.display="flex"
-      document.getElementById("alertMsg").textContent=`⚠ Session running ${Math.floor(mins/60)}h ${mins%60}m — Order: ${s.order_no||"—"} · ${s.work_type||s.waste_category||"—"}`
-      document.getElementById("alertDetail").textContent=`Clocked in at ${new Date(s.started_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}. End it and start a new task, or correct the timing.`
-      // Update the correct timing link with employee name
-      const ctl=document.getElementById("correctTimingLink")
-      if(ctl)ctl.href="employee_profile.html?emp="+encodeURIComponent(emp)+"&tab=admin"
-    }else{
-      banner.style.display="none"
-    }
-  }else{banner.style.display="none"}
 }
-document.getElementById("btnCI").addEventListener("click",clockIn)
-document.getElementById("btnEnd").addEventListener("click",endSession)
 
-async function loadEmployeeStep(){
-  if(!emp)return
-  const{data}=await sb.from("employees").select("workflow_step,role").eq("name",emp).limit(1)
-  if(!data||!data.length)return
-  const step=data[0].workflow_step
-  if(step&&step!=="all"&&step!==""){
-    // Employee has an assigned step - restrict their view
-    document.querySelectorAll(".sb2").forEach(b=>{
-      if(b.dataset.step!==step){
-        b.style.display="none" // hide other steps
-      }else{
-        b.style.background="var(--b50)";b.style.borderColor="var(--blue)";b.style.color="var(--blue)"
-        b.innerHTML="<span class=\"si\">"+b.innerHTML.split("</span>")[0].split(">").pop()+"</span>"+step
-      }
-    })
-    // Show a role badge
-    const badge=document.createElement("div")
-    badge.style.cssText="background:var(--b50);border:1.5px solid var(--b100);color:var(--blue);padding:6px 14px;border-radius:999px;font-size:12px;font-weight:700;margin-bottom:10px;display:inline-flex;align-items:center;gap:6px"
-    badge.innerHTML="&#128119; Your role: <strong>"+step+"</strong>"
-    const fg=document.querySelector(".fg")
-    if(fg)fg.parentNode.insertBefore(badge,fg)
-  }
+/* ===================== STATUS ===================== */
+function setSt(t,d,type){
+  const b=document.getElementById("sbox");b.className="sbox"+(type?" "+type:"")
+  document.getElementById("stT").textContent=t;document.getElementById("stD").textContent=d
 }
-await initEmp()
-// Set profile link
-const profileLink=document.getElementById("profileLink")
-if(profileLink&&emp)profileLink.href="employee_profile.html?emp="+encodeURIComponent(emp)
-const anc=ensureAnc();document.getElementById("anS").textContent=fT(anc)
-const es=gS();if(es)setSt("Active session detected","Started "+fT(es.started_at)+" &middot; Order: "+(es.order_no||"—"))
-renderPipe("").then(r=>{if(r)lockSteps(r.next,r.done)})
-tick();setInterval(tick,1000);if(emp){loadToday();setInterval(loadToday,15000)}else{setInterval(()=>{if(emp&&!document.getElementById("empOverlay").style.display.includes("flex")){loadToday()}},3000)}
-// Load employee assigned step
-loadEmployeeStep()
+
+/* ===================== INIT ===================== */
+// Set initial day anchor
+const anc=new Date();anc.setHours(8,0,0,0)
+document.getElementById("anS").textContent=fT(anc.toISOString())
+renderPipeline("")
+tick();setInterval(tick,1000)
+setInterval(loadToday,15000)
+initEmp()
 </script>
-<!-- EMPLOYEE PICKER OVERLAY -->
-<div id="empOverlay" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.85);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:20px;padding:20px">
-  <div style="background:#fff;border-radius:20px;padding:32px;max-width:600px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,.3)">
-    <div style="text-align:center;margin-bottom:24px">
-      <div style="font-size:30px;margin-bottom:8px">&#128119;</div>
-      <div style="font-size:20px;font-weight:800;color:#0f172a">Who is clocking in?</div>
-      <div style="font-size:13px;color:#64748b;margin-top:4px">Tap your name to start — only registered employees can clock in</div>
-    </div>
-    <div id="empPickerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px"></div>
-  </div>
-</div>
-<!-- 1-HOUR ALERT BANNER -->
-<div id="alertBanner" style="display:none;position:fixed;top:58px;left:0;right:0;z-index:200;background:linear-gradient(90deg,#dc2626,#b91c1c);color:#fff;padding:12px 24px;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(220,38,38,.4);gap:12px;flex-wrap:wrap">
-  <div style="display:flex;align-items:center;gap:10px;flex:1">
-    <span style="font-size:22px">&#9888;</span>
-    <div>
-      <div style="font-size:13px;font-weight:800" id="alertMsg">Session running over 1 hour!</div>
-      <div style="font-size:11px;opacity:.85" id="alertDetail">Consider ending and starting a new task.</div>
-    </div>
-  </div>
-  <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap">
-    <button onclick="endFromBanner()" style="background:#fff;border:none;color:#dc2626;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:800;font-size:12px">&#9632; End Session Now</button>
-    <button onclick="clockNewTaskFromBanner()" style="background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.5);color:#fff;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:800;font-size:12px">&#8595; Clock Different Task</button>
-    <a id="correctTimingLink" href="employee_profile.html" style="background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.5);color:#fff;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:800;font-size:12px;text-decoration:none;display:flex;align-items:center">&#128295; Correct Timing</a>
-    <button onclick="document.getElementById('alertBanner').style.display='none'" style="background:rgba(0,0,0,.2);border:none;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12px">&#10005;</button>
-  </div>
-</div>
-<style>
-.ep-card{background:#f8fafc;border:2px solid #e2e8f0;border-radius:14px;padding:18px;text-align:center;cursor:pointer;transition:all .15s}
-.ep-card.ep-last{border-color:#16a34a;background:#f0fdf4}
-.ep-card:hover{border-color:#3b5fe2;background:#eef2ff;transform:translateY(-2px);box-shadow:0 6px 20px rgba(59,95,226,.2)}
-.ep-av{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;margin:0 auto 10px}
-.ep-name{font-size:14px;font-weight:800;color:#0f172a}
-.ep-role{font-size:11px;color:#64748b;margin-top:3px}
-</style>
 </body>
 </html>
