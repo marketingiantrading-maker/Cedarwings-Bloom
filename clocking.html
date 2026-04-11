@@ -226,8 +226,54 @@ const hms=ms=>{const t=Math.max(0,Math.floor(ms/1000));return String(Math.floor(
 const fT=v=>v?new Date(v).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"&#8212;"
 const gB=()=>"B-"+new Date().toISOString().replace(/[-:TZ.]/g,"").slice(2,14)
 let cfg=null,emp=""
-function initEmp(){let e=localStorage.getItem(EK)||sessionStorage.getItem("cw_current_emp");if(!e){e=prompt("Enter your name to clock in:");if(!e)e="Employee";localStorage.setItem(EK,e)}emp=e;document.getElementById("empNm").textContent=e}
-window.changeEmp=()=>{const n=prompt("Enter your name:");if(n){localStorage.setItem(EK,n);emp=n;document.getElementById("empNm").textContent=n}}
+async function initEmp(){
+  const stored=localStorage.getItem(EK)
+  if(stored){emp=stored;document.getElementById("empNm").textContent=stored;return}
+  // Show employee picker overlay
+  await showEmpPicker()
+}
+window.changeEmp=async()=>{localStorage.removeItem(EK);emp="";await showEmpPicker()}
+
+async function showEmpPicker(){
+  // Load employees from DB
+  let emps=[]
+  try{
+    const{data}=await sb.from("employees").select("name,role,workflow_step").eq("is_active",true).order("name")
+    emps=data||[]
+  }catch(e){console.log("emp load error",e)}
+  
+  const overlay=document.getElementById("empOverlay")
+  const grid=document.getElementById("empPickerGrid")
+  
+  if(!emps.length){
+    // Fallback: manual entry
+    const n=prompt("Enter your name:")
+    if(n){localStorage.setItem(EK,n);emp=n;document.getElementById("empNm").textContent=n}
+    return
+  }
+  
+  const COLS=["#3b5fe2","#16a34a","#d97706","#dc2626","#7c3aed","#0d9488","#db2777","#ea580c"]
+  const avCol=n=>COLS[(n||"").charCodeAt(0)%COLS.length]
+  const ini=n=>(n||"?").trim().split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2)
+  
+  grid.innerHTML=emps.map(e=>`
+    <div class="ep-card" onclick="pickEmp('${e.name.replace(/'/g,"\'")}')">
+      <div class="ep-av" style="background:${avCol(e.name)}">${ini(e.name)}</div>
+      <div class="ep-name">${e.name}</div>
+      <div class="ep-role">${e.role||"Employee"}${e.workflow_step?" · "+e.workflow_step:""}</div>
+    </div>`).join("")
+  overlay.style.display="flex"
+}
+
+window.pickEmp=name=>{
+  localStorage.setItem(EK,name);emp=name
+  document.getElementById("empNm").textContent=name
+  document.getElementById("empOverlay").style.display="none"
+  loadToday()
+  // Update profile link
+  const pl=document.getElementById("profileLink")
+  if(pl)pl.href="employee_profile.html?emp="+encodeURIComponent(name)
+}
 function ensureAnc(){const k=DK+new Date().toISOString().slice(0,10);if(!localStorage.getItem(k)){const d=new Date();d.setHours(8,0,0,0);localStorage.setItem(k,d.toISOString())}return localStorage.getItem(k)}
 async function renderPipe(ord){
   const pv=document.getElementById("pipe"),pi=document.getElementById("pinfo")
@@ -349,7 +395,26 @@ async function loadToday(){
   document.getElementById("sS").textContent=recs.length+" sessions &middot; "+pM+"min productive"
   document.getElementById("anF").textContent=fT(recs[0].started_at)
 }
-function tick(){const n=new Date();document.getElementById("clk").textContent=n.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit"});document.getElementById("clkd").textContent=n.toLocaleDateString([],{weekday:"long",year:"numeric",month:"long",day:"numeric"});updAP()}
+function tick(){
+  const n=new Date()
+  document.getElementById("clk").textContent=n.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit"})
+  document.getElementById("clkd").textContent=n.toLocaleDateString([],{weekday:"long",year:"numeric",month:"long",day:"numeric"})
+  updAP()
+  // Check 1-hour alert
+  const s=gS()
+  const banner=document.getElementById("alertBanner")
+  if(s&&s.started_at){
+    const elapsed=Date.now()-new Date(s.started_at).getTime()
+    const mins=Math.floor(elapsed/60000)
+    if(mins>=60){
+      banner.style.display="flex"
+      document.getElementById("alertMsg").textContent=`&#9888; Session running for ${Math.floor(mins/60)}h ${mins%60}m!`
+      document.getElementById("alertDetail").textContent=`${s.order_no||"—"} · ${s.work_type||s.waste_category||"—"} · Consider ending and restarting to keep records accurate.`
+    }else{
+      banner.style.display="none"
+    }
+  }else{banner.style.display="none"}
+}
 document.getElementById("btnCI").addEventListener("click",clockIn)
 document.getElementById("btnEnd").addEventListener("click",endSession)
 
@@ -376,16 +441,45 @@ async function loadEmployeeStep(){
     if(fg)fg.parentNode.insertBefore(badge,fg)
   }
 }
-initEmp()
-// Set profile link with employee name
+await initEmp()
+// Set profile link
 const profileLink=document.getElementById("profileLink")
-if(profileLink)profileLink.href="employee_profile.html?emp="+encodeURIComponent(emp)
+if(profileLink&&emp)profileLink.href="employee_profile.html?emp="+encodeURIComponent(emp)
 const anc=ensureAnc();document.getElementById("anS").textContent=fT(anc)
 const es=gS();if(es)setSt("Active session detected","Started "+fT(es.started_at)+" &middot; Order: "+(es.order_no||"—"))
 renderPipe("").then(r=>{if(r)lockSteps(r.next,r.done)})
-tick();setInterval(tick,1000);loadToday();setInterval(loadToday,15000)
+tick();setInterval(tick,1000);if(emp){loadToday();setInterval(loadToday,15000)}else{setInterval(()=>{if(emp&&!document.getElementById("empOverlay").style.display.includes("flex")){loadToday()}},3000)}
 // Load employee assigned step
 loadEmployeeStep()
 </script>
+<!-- EMPLOYEE PICKER OVERLAY -->
+<div id="empOverlay" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.85);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:20px;padding:20px">
+  <div style="background:#fff;border-radius:20px;padding:32px;max-width:600px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,.3)">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-size:30px;margin-bottom:8px">&#128119;</div>
+      <div style="font-size:20px;font-weight:800;color:#0f172a">Who are you?</div>
+      <div style="font-size:13px;color:#64748b;margin-top:4px">Tap your name to start clocking</div>
+    </div>
+    <div id="empPickerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px"></div>
+  </div>
+</div>
+<!-- 1-HOUR ALERT BANNER -->
+<div id="alertBanner" style="display:none;position:fixed;top:58px;left:0;right:0;z-index:200;background:linear-gradient(90deg,#dc2626,#b91c1c);color:#fff;padding:10px 24px;display:none;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(220,38,38,.4)">
+  <div style="display:flex;align-items:center;gap:10px">
+    <span style="font-size:20px;animation:pu 1s infinite">&#9888;</span>
+    <div>
+      <div style="font-size:13px;font-weight:800" id="alertMsg">Session running over 1 hour!</div>
+      <div style="font-size:11px;opacity:.85" id="alertDetail">Consider closing this session and opening a new one to keep records accurate.</div>
+    </div>
+  </div>
+  <button onclick="document.getElementById('alertBanner').style.display='none'" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:6px 12px;border-radius:7px;cursor:pointer;font-weight:700;font-size:12px">Dismiss</button>
+</div>
+<style>
+.ep-card{background:#f8fafc;border:2px solid #e2e8f0;border-radius:14px;padding:18px;text-align:center;cursor:pointer;transition:all .15s}
+.ep-card:hover{border-color:#3b5fe2;background:#eef2ff;transform:translateY(-2px);box-shadow:0 6px 20px rgba(59,95,226,.2)}
+.ep-av{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;margin:0 auto 10px}
+.ep-name{font-size:14px;font-weight:800;color:#0f172a}
+.ep-role{font-size:11px;color:#64748b;margin-top:3px}
+</style>
 </body>
 </html>
