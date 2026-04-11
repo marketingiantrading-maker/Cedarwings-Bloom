@@ -1,170 +1,156 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cedarwings SAS — Sign In</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-  <style>
-    :root{
-      --bg:#f0f4f8;--card:#fff;--border:#e2e8f0;
-      --text:#0f172a;--muted:#64748b;--dim:#94a3b8;
-      --blue:#3b5fe2;--blue-50:#eef2ff;--blue-100:#e0e7ff;
-      --green:#16a34a;--green-50:#f0fdf4;
-      --amber:#d97706;--red:#dc2626;
-      --f:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;
-      --shadow:0 1px 3px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.04);
-      --shadow-lg:0 8px 32px rgba(0,0,0,.1),0 0 0 1px rgba(0,0,0,.04);
-    }
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:var(--f);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
-    .page{width:100%;max-width:980px}
-    /* BRAND */
-    .brand{text-align:center;margin-bottom:48px}
-    .brand-icon{width:64px;height:64px;background:linear-gradient(135deg,var(--blue),#6366f1);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 16px;box-shadow:0 8px 24px rgba(59,95,226,.3)}
-    .brand-name{font-size:28px;font-weight:700;letter-spacing:-.5px}
-    .brand-sub{color:var(--muted);font-size:15px;margin-top:6px}
-    /* ROLE CARDS */
-    .role-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
-    .role-card{background:var(--card);border-radius:20px;box-shadow:var(--shadow-lg);padding:36px;transition:transform .2s,box-shadow .2s;cursor:default}
-    .role-card:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04)}
-    .role-icon{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:20px}
-    .role-icon.emp{background:#f0fdf4}
-    .role-icon.mgr{background:var(--blue-50)}
-    .role-title{font-size:20px;font-weight:700;margin-bottom:6px}
-    .role-desc{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:24px}
-    /* FORM */
-    .form-group{margin-bottom:14px}
-    label{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
-    input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:var(--f);font-size:14px;color:var(--text);background:var(--bg);outline:none;transition:border-color .15s}
-    input:focus{border-color:var(--blue);background:#fff}
-    input.pin{font-family:var(--mono);font-size:22px;letter-spacing:8px;text-align:center}
-    input::placeholder{color:var(--dim)}
-    .btn{width:100%;padding:13px;font-size:14px;font-weight:700;border:none;border-radius:10px;cursor:pointer;font-family:var(--f);transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px}
-    .btn-emp{background:#16a34a;color:#fff}
-    .btn-emp:hover{background:#15803d}
-    .btn-mgr{background:var(--blue);color:#fff}
-    .btn-mgr:hover{background:#2e4fc7}
-    .error-msg{color:var(--red);font-size:13px;text-align:center;margin-top:8px;min-height:18px}
-    /* DIVIDER */
-    .divider{height:1px;background:var(--border);margin:20px 0}
-    .emp-saved{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px;margin-bottom:10px}
-    .emp-chip{background:var(--green-50);border:1px solid #bbf7d0;color:var(--green);padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
-    .emp-chip:hover{background:#dcfce7}
-    .emp-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
-    /* DEFAULT HINT */
-    .hint{font-size:12px;color:var(--dim);text-align:center;margin-top:48px;line-height:1.7}
-    @media(max-width:640px){.role-grid{grid-template-columns:1fr}}
-  </style>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Cedarwings SAS — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#f0f4f8;--card:#fff;--bdr:#e2e8f0;--txt:#0f172a;--mu:#64748b;--dim:#94a3b8;--blue:#3b5fe2;--b50:#eef2ff;--b100:#e0e7ff;--green:#16a34a;--g50:#f0fdf4;--g100:#dcfce7;--red:#dc2626;--r50:#fef2f2;--r100:#fee2e2;--f:"DM Sans",sans-serif;--mono:"JetBrains Mono",monospace}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.wrap{width:100%;max-width:420px}
+/* LOGO */
+.brand{text-align:center;margin-bottom:32px}
+.brand-logo{width:60px;height:60px;background:linear-gradient(135deg,#3b5fe2,#6366f1);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 14px;box-shadow:0 8px 24px rgba(59,95,226,.3)}
+.brand-name{font-size:24px;font-weight:800;letter-spacing:-.5px}
+.brand-sub{font-size:13px;color:var(--mu);margin-top:4px}
+/* CARD */
+.login-card{background:var(--card);border-radius:20px;box-shadow:0 4px 24px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.05);padding:32px}
+.lc-title{font-size:18px;font-weight:800;margin-bottom:4px}
+.lc-sub{font-size:13px;color:var(--mu);margin-bottom:24px;line-height:1.5}
+/* FORM */
+.field{margin-bottom:16px}
+lbl{display:block;font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+.fi{width:100%;padding:12px 14px;border:1.5px solid var(--bdr);border-radius:11px;font-family:var(--f);font-size:14px;color:var(--txt);background:#fff;outline:none;transition:border-color .15s}
+.fi:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,95,226,.08)}
+.fi::placeholder{color:var(--dim)}
+/* PASSWORD FIELD */
+.pw-wrap{position:relative}
+.pw-wrap .fi{padding-right:44px}
+.pw-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--mu);font-size:18px;line-height:1;padding:4px}
+.pw-eye:hover{color:var(--txt)}
+/* LOGIN BUTTON */
+.btn-login{width:100%;padding:13px;background:linear-gradient(135deg,#3b5fe2,#4f6ef7);color:#fff;border:none;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--f);margin-top:4px;transition:all .15s;box-shadow:0 4px 14px rgba(59,95,226,.3)}
+.btn-login:hover{filter:brightness(1.07);transform:translateY(-1px)}
+.btn-login:active{transform:translateY(0)}
+.btn-login:disabled{opacity:.6;cursor:not-allowed;transform:none}
+/* ERROR */
+.err-box{background:var(--r50);border:1px solid var(--r100);border-radius:9px;padding:10px 14px;font-size:13px;color:var(--red);font-weight:600;margin-bottom:14px;display:none}
+.err-box.on{display:block}
+/* ROLE BADGE */
+.role-preview{display:none;background:var(--b50);border:1px solid var(--b100);border-radius:9px;padding:10px 14px;margin-bottom:14px;font-size:13px;font-weight:600;color:var(--blue);align-items:center;gap:8px}
+.role-preview.on{display:flex}
+/* FOOTER */
+.login-foot{text-align:center;margin-top:20px;font-size:12px;color:var(--dim)}
+.login-foot a{color:var(--blue);text-decoration:none;font-weight:600}
+/* DIVIDER */
+.divider{display:flex;align-items:center;gap:10px;margin:20px 0}
+.divider span{font-size:11px;color:var(--dim);white-space:nowrap}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--bdr)}
+</style>
 </head>
 <body>
-<div class="page">
+<div class="wrap">
   <div class="brand">
-    <div class="brand-icon">⚙</div>
+    <div class="brand-logo">&#9881;</div>
     <div class="brand-name">Cedarwings SAS</div>
-    <div class="brand-sub">Manufacturing Operations Platform</div>
+    <div class="brand-sub">Operations Management System</div>
   </div>
-  <div class="role-grid">
-    <!-- EMPLOYEE -->
-    <div class="role-card">
-      <div class="role-icon emp">👷</div>
-      <div class="role-title">Employee</div>
-      <div class="role-desc">Clock in, track your sessions, log production steps and waste time.</div>
-      <div class="divider"></div>
-      <div id="savedChipsSection" style="display:none">
-        <div class="emp-saved">Recent employees:</div>
-        <div class="emp-chips" id="empChips"></div>
-      </div>
-      <div class="form-group">
-        <label>Your Name</label>
-        <input id="empName" placeholder="Enter your name…" autocomplete="off"/>
-      </div>
-      <button class="btn btn-emp" id="empBtn">👷 Enter as Employee</button>
-      <div class="error-msg" id="empError"></div>
+
+  <div class="login-card">
+    <div class="lc-title">Sign In</div>
+    <div class="lc-sub">Enter your username and password. The system will open the correct view based on your role.</div>
+
+    <div class="err-box" id="errBox">Incorrect username or password. Please try again.</div>
+    <div class="role-preview" id="rolePreview"></div>
+
+    <div class="field">
+      <lbl>Username</lbl>
+      <input class="fi" id="username" placeholder="Enter your username" autocomplete="username" autocapitalize="off" spellcheck="false"/>
     </div>
-    <!-- MANAGER -->
-    <div class="role-card">
-      <div class="role-icon mgr">📊</div>
-      <div class="role-title">Manager</div>
-      <div class="role-desc">View dashboard, manage production, inventory, machines, and time reports.</div>
-      <div class="divider"></div>
-      <div class="form-group">
-        <label>Manager PIN</label>
-        <input id="managerPin" type="password" class="pin" placeholder="····" maxlength="6" autocomplete="off"/>
+
+    <div class="field">
+      <lbl>Password</lbl>
+      <div class="pw-wrap">
+        <input class="fi" id="password" type="password" placeholder="Enter your password" autocomplete="current-password"/>
+        <button class="pw-eye" id="pwEye" type="button" onclick="togglePw()">&#128065;</button>
       </div>
-      <button class="btn btn-mgr" id="mgrBtn">📊 Enter as Manager</button>
-      <div class="error-msg" id="mgrError"></div>
+    </div>
+
+    <button class="btn-login" id="loginBtn" onclick="doLogin()">Sign In &rarr;</button>
+
+    <div class="login-foot">
+      Forgot credentials? Contact your manager.<br/>
+      <a href="manager.html" style="font-size:11px;opacity:.7">Manager direct access</a>
     </div>
   </div>
-  <div class="hint">Default manager PIN is <strong>1234</strong> — change it in Manager → Settings<br>Employee names are saved locally on this device</div>
 </div>
 
 <script type="module">
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { SUPABASE_CONFIG } from './config.js'
-const sb = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey)
+import{createClient}from"https://esm.sh/@supabase/supabase-js@2"
+import{SUPABASE_CONFIG}from"./config.js"
+const sb=createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey)
 
-const ROLE_KEY = 'cw_role'
-const EMP_KEY = 'cw_current_emp'
+const EK="cw_current_emp",RK="cw_role",NK="cw_manager_name"
 
-// Load employees from Supabase
-async function loadEmployees() {
-  const { data, error } = await sb.from('employees').select('*').eq('is_active', true).eq('role', 'employee').order('name')
-  const section = document.getElementById('savedChipsSection')
-  const chips = document.getElementById('empChips')
-  if (data && data.length) {
-    section.style.display = 'block'
-    chips.innerHTML = data.map(e => `<span class="emp-chip" onclick="pickEmp('${e.name}')">${e.name}</span>`).join('')
-  } else {
-    section.style.display = 'none'
+function showErr(msg){const b=document.getElementById("errBox");b.textContent=msg;b.classList.add("on")}
+function hideErr(){document.getElementById("errBox").classList.remove("on")}
+function showRole(icon,text){const b=document.getElementById("rolePreview");b.innerHTML=icon+" "+text;b.classList.add("on")}
+
+// Allow Enter key
+document.addEventListener("keydown",e=>{if(e.key==="Enter")doLogin()})
+
+// Show role preview as user types username (optional UX touch)
+document.getElementById("username").addEventListener("blur",async()=>{
+  const u=document.getElementById("username").value.trim()
+  if(!u)return
+  const{data}=await sb.from("employees").select("role,is_active").eq("username",u).limit(1)
+  if(data&&data.length){
+    if(!data[0].is_active){showRole("&#128683;","This account is blocked");return}
+    const r=data[0].role
+    document.getElementById("rolePreview").classList.add("on")
+    document.getElementById("rolePreview").innerHTML=r==="manager"?"&#128202; Manager account detected":"&#128119; Employee account detected"
   }
+})
+
+window.togglePw=()=>{
+  const f=document.getElementById("password")
+  f.type=f.type==="password"?"text":"password"
+  document.getElementById("pwEye").textContent=f.type==="password"?"&#128065;":"&#128064;"
 }
 
-window.pickEmp = (n) => { document.getElementById('empName').value = n }
-
-document.getElementById('empBtn').addEventListener('click', async () => {
-  const name = document.getElementById('empName').value.trim()
-  if (!name) { document.getElementById('empError').textContent = 'Please enter your name'; return }
-  // Check if employee exists and is not blocked
-  const { data } = await sb.from('employees').select('is_active,role').eq('name', name).limit(1)
-  if (data && data.length && !data[0].is_active) {
-    document.getElementById('empError').textContent = '🚫 Your account is blocked. Contact your manager.'
-    return
-  }
-  sessionStorage.setItem(ROLE_KEY, 'employee')
-  sessionStorage.setItem(EMP_KEY, name)
-  localStorage.setItem('cedarwings_logged_employee', name)
-  window.location.href = 'clocking.html'
-})
-
-document.getElementById('mgrBtn').addEventListener('click', async () => {
-  const pin = document.getElementById('managerPin').value
-  if (!pin) { document.getElementById('mgrError').textContent = 'Enter PIN'; return }
-  // Check PIN against managers in Supabase
-  const { data } = await sb.from('employees').select('name,pin,is_active').eq('role', 'manager').eq('pin', pin).limit(1)
-  if (data && data.length) {
-    if (!data[0].is_active) { document.getElementById('mgrError').textContent = '🚫 Account blocked'; return }
-    sessionStorage.setItem(ROLE_KEY, 'manager')
-    sessionStorage.setItem('cw_manager_name', data[0].name)
-    window.location.href = 'manager.html'
-  } else {
-    // Fallback to localStorage PIN
-    const localPin = localStorage.getItem('cw_manager_pin') || '1234'
-    if (pin === localPin) {
-      sessionStorage.setItem(ROLE_KEY, 'manager')
-      window.location.href = 'manager.html'
-    } else {
-      document.getElementById('mgrError').textContent = 'Incorrect PIN'
-      document.getElementById('managerPin').value = ''
-      document.getElementById('managerPin').focus()
-      setTimeout(() => document.getElementById('mgrError').textContent = '', 2500)
+window.doLogin=async()=>{
+  hideErr()
+  const username=document.getElementById("username").value.trim()
+  const password=document.getElementById("password").value
+  if(!username||!password){showErr("Please enter your username and password.");return}
+  const btn=document.getElementById("loginBtn")
+  btn.disabled=true;btn.textContent="Signing in..."
+  try{
+    const{data,error}=await sb.from("employees")
+      .select("id,name,role,is_active,workflow_step")
+      .eq("username",username)
+      .eq("password",password)
+      .limit(1)
+    if(error)throw error
+    if(!data||!data.length){showErr("Incorrect username or password.");btn.disabled=false;btn.textContent="Sign In →";return}
+    const user=data[0]
+    if(!user.is_active){showErr("Your account is blocked. Contact your manager.");btn.disabled=false;btn.textContent="Sign In →";return}
+    // Save identity
+    sessionStorage.setItem(EK,user.name)
+    sessionStorage.setItem(RK,user.role)
+    localStorage.setItem(EK,user.name)
+    if(user.role==="manager"){
+      sessionStorage.setItem(NK,user.name)
+      window.location.href="manager.html"
+    }else{
+      window.location.href="clocking.html"
     }
+  }catch(err){
+    showErr("Login error: "+err.message)
+    btn.disabled=false;btn.textContent="Sign In →"
   }
-})
-
-document.getElementById('empName').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('empBtn').click() })
-document.getElementById('managerPin').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('mgrBtn').click() })
-loadEmployees()
+}
 </script>
 </body>
 </html>
