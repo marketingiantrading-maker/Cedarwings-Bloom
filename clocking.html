@@ -120,6 +120,7 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
     <div class="epill" id="epill" onclick="changeEmp()">
       &#128119; <span id="empNm">Loading&hellip;</span> <span style="font-size:10px;opacity:.6">&#9660;</span>
     </div>
+    <a href="employee_profile.html" id="profileLink" class="btn bg" style="background:var(--b50);color:var(--blue);border:1px solid var(--b100)">&#128100; My Profile</a>
     <a href="manager.html" class="btn bn">&#128202; Dashboard</a>
     <a href="index.html" class="btn bg">&#8592; Home</a>
   </div>
@@ -135,7 +136,10 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
     <div>
       <div class="card">
         <div class="ct">Clock In / Start Session</div>
-        <div class="cs">Enter order number below — then <strong>tap a step to instantly clock in</strong>. The pipeline enforces the correct order automatically.</div>
+        <div class="cs">
+  Enter order number, then <strong>tap any step to instantly clock in</strong>.<br>
+  Tapping a new step <strong>automatically closes the previous session</strong> and starts a new one — no extra buttons needed.
+</div>
         <div class="fg"><lbl>Order Number *</lbl><input class="fi" id="ord" placeholder="e.g. ORD-1048" autocomplete="off"/></div>
         <div class="fg">
           <lbl>&#10003; Tap a step to instantly clock in</lbl>
@@ -168,7 +172,7 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
         <div class="fg"><lbl>Note (optional)</lbl><input class="fi" id="note" placeholder="Task description&hellip;"/></div>
         <!-- Clock in button is now automatic when clicking a step above -->
 <button class="btn btn-ci" id="btnCI" style="display:none">&#9201; Clock In</button>
-        <button class="btn btn-en" id="btnEnd">&#9632; End Current Session</button>
+        <button class="btn btn-en" id="btnEnd" style="margin-top:12px">&#127968; Clock Out — End of Day</button>
         <div class="sbox" id="sbox"><div class="st" id="stT">No active session</div><div class="sd" id="stD">Enter order number and select a step to begin.</div></div>
       </div>
     </div>
@@ -312,9 +316,16 @@ async function clockIn(){
     const{data:row,error}=await sb.from("time_sessions").insert([{employee_name:emp,session_type:cfg.session_type,work_type:cfg.work_type,machine:cfg.machine,order_no:ord,batch_id:gB(),task_description:document.getElementById("note").value.trim()||null,waste_category:cfg.waste_category,started_at:now.toISOString(),ended_at:null}]).select().single()
     if(error)throw error
     sS({id:row?.id,employee:emp,started_at:now.toISOString(),session_type:cfg.session_type,order_no:ord,machine:cfg.machine,work_type:cfg.work_type,waste_category:cfg.waste_category})
-    setSt("Session started",emp+" · "+ord+" · "+cfg.work_type+" · "+fT(now.toISOString()),"ok")
-    document.getElementById("note").value="";cfg=null;document.querySelectorAll(".sb2,.wb").forEach(b=>{b.classList.remove("on");b.disabled=false});document.getElementById("af").style.display="none"
-    updAP();await loadToday();const r=await renderPipe(ord);if(r)lockSteps(r.next,r.done)
+    // Show confirmation and keep page ready for next task
+    setSt("Clocked in: "+cfg.work_type,emp+" · Order: "+ord+" · "+fT(now.toISOString()),"ok")
+    document.getElementById("note").value=""
+    cfg=null
+    document.querySelectorAll(".sb2,.wb").forEach(b=>b.classList.remove("on"))
+    document.getElementById("af").style.display="none"
+    updAP()
+    await loadToday()
+    // Re-render pipeline - page stays ready on same order
+    const r=await renderPipe(ord);if(r)lockSteps(r.next,r.done)
   }catch(err){setSt("Error",err.message,"err")}
 }
 async function endSession(){
@@ -366,6 +377,9 @@ async function loadEmployeeStep(){
   }
 }
 initEmp()
+// Set profile link with employee name
+const profileLink=document.getElementById("profileLink")
+if(profileLink)profileLink.href="employee_profile.html?emp="+encodeURIComponent(emp)
 const anc=ensureAnc();document.getElementById("anS").textContent=fT(anc)
 const es=gS();if(es)setSt("Active session detected","Started "+fT(es.started_at)+" &middot; Order: "+(es.order_no||"—"))
 renderPipe("").then(r=>{if(r)lockSteps(r.next,r.done)})
