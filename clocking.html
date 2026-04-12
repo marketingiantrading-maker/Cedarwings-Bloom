@@ -505,15 +505,27 @@ window._clockStep=async(step)=>{
   await showMachinePicker(step,ord)
 }
 
+// Map step → machine type keyword for fallback lookup
+const STEP_MACHINE_TYPE={"Printing":"Printer","Cleaning":"Cleaning","Thermoforming":"Thermoformer","Line Cut":"Cutting","Laser Marking":"Laser","Packaging":"Packaging"}
+
 async function showMachinePicker(step,ord){
-  // Only load machines specifically linked to this step
+  // Load machines linked to this step from step_machines
   let machines=[]
   try{
     const{data:sm}=await sb.from("step_machines").select("*").eq("step",step).eq("is_active",true)
     machines=sm||[]
   }catch(e){}
 
-  // No machines for this step → clock in directly, no popup
+  // Fallback: if step_machines empty for this step, search machines table by type keyword
+  if(!machines.length){
+    try{
+      const kw=STEP_MACHINE_TYPE[step]||step.split(" ")[0]
+      const{data:allM}=await sb.from("machines").select("id,machine_name,machine_type").ilike("machine_type",`%${kw}%`)
+      if(allM&&allM.length) machines=allM.map(m=>({machine_id:m.id,machine_name:m.machine_name,machine_type:m.machine_type}))
+    }catch(e){}
+  }
+
+  // Still nothing → clock in without machine
   if(!machines.length){ await doClockIn(step,ord,null,null); return }
 
   // Single machine → auto-select silently
@@ -553,8 +565,13 @@ window._pickMachine=async(step,ord,machName,machId)=>{
 async function doClockIn(step,ord,machName,machId){
   const now=new Date()
 
+  // RULE: Kill ALL open sessions for this employee in the DB (prevent duplicate open sessions)
+  await sb.from("time_sessions")
+    .update({ended_at:now.toISOString()})
+    .eq("employee_name",emp)
+    .is("ended_at",null)
+
   // AUTO-COMPLETE previous step on same order if it was in_progress (not paused)
-  // i.e. employee moved naturally to next step → previous is done
   const prevStepIdx=STEPS.indexOf(step)-1
   if(prevStepIdx>=0){
     const prevStep=STEPS[prevStepIdx]
@@ -563,22 +580,15 @@ async function doClockIn(step,ord,machName,machId){
         .select("id,status").eq("order_no",ord).eq("step",prevStep).limit(1)
       if(prevTrack&&prevTrack.length){
         const ps=prevTrack[0]
-        // Only auto-complete if it was in_progress (not paused/machine_running)
         if(ps.status==="in_progress"){
           await sb.from("order_step_tracking").update({
-            status:"complete",
-            completed_at:now.toISOString(),
-            completed_by:emp
+            status:"complete",completed_at:now.toISOString(),completed_by:emp
           }).eq("id",ps.id)
         }
       }
     }catch(e){}
   }
 
-  // Close existing active session
-  if(activeSession?.id){
-    await sb.from("time_sessions").update({ended_at:now.toISOString()}).eq("id",activeSession.id)
-  }
   clearInterval(timerInt)
 
   // AUTO W9: fill any gap since last ended session
