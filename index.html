@@ -9,80 +9,59 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
 .wrap{width:100%;max-width:420px}
-/* LOGO */
 .brand{text-align:center;margin-bottom:32px}
-.brand-logo{width:60px;height:60px;background:linear-gradient(135deg,#3b5fe2,#6366f1);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 14px;box-shadow:0 8px 24px rgba(59,95,226,.3)}
-.brand-name{font-size:24px;font-weight:800;letter-spacing:-.5px}
+.brand-logo{width:64px;height:64px;background:linear-gradient(135deg,#3b5fe2,#6366f1);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 14px;box-shadow:0 8px 24px rgba(59,95,226,.3)}
+.brand-name{font-size:26px;font-weight:800;letter-spacing:-.5px}
 .brand-sub{font-size:13px;color:var(--mu);margin-top:4px}
-/* CARD */
-.login-card{background:var(--card);border-radius:20px;box-shadow:0 4px 24px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.05);padding:32px}
-.lc-title{font-size:18px;font-weight:800;margin-bottom:4px}
-.lc-sub{font-size:13px;color:var(--mu);margin-bottom:24px;line-height:1.5}
-/* FORM */
+.card{background:var(--card);border-radius:20px;box-shadow:0 4px 24px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.05);padding:32px}
+.ct{font-size:18px;font-weight:800;margin-bottom:4px}
+.cs{font-size:13px;color:var(--mu);margin-bottom:24px;line-height:1.5}
 .field{margin-bottom:16px}
 lbl{display:block;font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
 .fi{width:100%;padding:12px 14px;border:1.5px solid var(--bdr);border-radius:11px;font-family:var(--f);font-size:14px;color:var(--txt);background:#fff;outline:none;transition:border-color .15s}
 .fi:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,95,226,.08)}
 .fi::placeholder{color:var(--dim)}
-/* PASSWORD FIELD */
 .pw-wrap{position:relative}
 .pw-wrap .fi{padding-right:44px}
-.pw-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--mu);font-size:18px;line-height:1;padding:4px}
+.pw-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--mu);font-size:18px;padding:4px}
 .pw-eye:hover{color:var(--txt)}
-/* LOGIN BUTTON */
 .btn-login{width:100%;padding:13px;background:linear-gradient(135deg,#3b5fe2,#4f6ef7);color:#fff;border:none;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--f);margin-top:4px;transition:all .15s;box-shadow:0 4px 14px rgba(59,95,226,.3)}
 .btn-login:hover{filter:brightness(1.07);transform:translateY(-1px)}
-.btn-login:active{transform:translateY(0)}
 .btn-login:disabled{opacity:.6;cursor:not-allowed;transform:none}
-/* ERROR */
-.err-box{background:var(--r50);border:1px solid var(--r100);border-radius:9px;padding:10px 14px;font-size:13px;color:var(--red);font-weight:600;margin-bottom:14px;display:none}
-.err-box.on{display:block}
-/* ROLE BADGE */
-.role-preview{display:none;background:var(--b50);border:1px solid var(--b100);border-radius:9px;padding:10px 14px;margin-bottom:14px;font-size:13px;font-weight:600;color:var(--blue);align-items:center;gap:8px}
-.role-preview.on{display:flex}
+.err{background:var(--r50);border:1px solid var(--r100);border-radius:9px;padding:10px 14px;font-size:13px;color:var(--red);font-weight:600;margin-bottom:14px;display:none}
+.err.on{display:block}
+/* ROLE PREVIEW PILL */
+.role-pill{display:none;align-items:center;gap:8px;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;font-weight:600}
+.role-pill.on{display:flex}
 /* FOOTER */
-.login-foot{text-align:center;margin-top:20px;font-size:12px;color:var(--dim)}
-.login-foot a{color:var(--blue);text-decoration:none;font-weight:600}
-/* DIVIDER */
-.divider{display:flex;align-items:center;gap:10px;margin:20px 0}
-.divider span{font-size:11px;color:var(--dim);white-space:nowrap}
-.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--bdr)}
+.foot{text-align:center;margin-top:20px;font-size:12px;color:var(--dim)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="brand">
-    <div class="brand-logo">&#9881;</div>
+    <div class="brand-logo">⚙</div>
     <div class="brand-name">Cedarwings SAS</div>
     <div class="brand-sub">Operations Management System</div>
   </div>
-
-  <div class="login-card">
-    <div class="lc-title">Sign In</div>
-    <div class="lc-sub">Enter your username and password. The system will open the correct view based on your role.</div>
-
-    <div class="err-box" id="errBox">Incorrect username or password. Please try again.</div>
-    <div class="role-preview" id="rolePreview"></div>
-
+  <div class="card">
+    <div class="ct">Sign In</div>
+    <div class="cs">Enter your credentials. The system will open the correct view based on your role and permissions.</div>
+    <div class="err" id="errBox"></div>
+    <div class="role-pill" id="rolePill"></div>
     <div class="field">
       <lbl>Username</lbl>
-      <input class="fi" id="username" placeholder="Enter your username" autocomplete="username" autocapitalize="off" spellcheck="false"/>
+      <input class="fi" id="username" placeholder="Your username" autocomplete="username" autocapitalize="off" spellcheck="false"/>
     </div>
-
     <div class="field">
       <lbl>Password</lbl>
       <div class="pw-wrap">
-        <input class="fi" id="password" type="password" placeholder="Enter your password" autocomplete="current-password"/>
-        <button class="pw-eye" id="pwEye" type="button" onclick="togglePw()">&#128065;</button>
+        <input class="fi" id="password" type="password" placeholder="Your password" autocomplete="current-password"/>
+        <button class="pw-eye" type="button" onclick="togglePw()">👁</button>
       </div>
     </div>
-
-    <button class="btn-login" id="loginBtn" onclick="doLogin()">Sign In &rarr;</button>
-
-    <div class="login-foot">
-      Forgot credentials? Contact your manager.<br/>
-      <a href="manager.html" style="font-size:11px;opacity:.7">Manager direct access</a>
-    </div>
+    <button class="btn-login" id="loginBtn" onclick="doLogin()">Sign In →</button>
+    <div class="foot">Forgot credentials? Contact your administrator.</div>
   </div>
 </div>
 
@@ -91,66 +70,101 @@ import{createClient}from"https://esm.sh/@supabase/supabase-js@2"
 import{SUPABASE_CONFIG}from"./config.js"
 const sb=createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey)
 
-const EK="cw_current_emp",RK="cw_role",NK="cw_manager_name"
+const EK="cw_current_emp",RK="cw_role",PK="cw_pages",NK="cw_name",CRK="cw_custom_role"
 
-function showErr(msg){const b=document.getElementById("errBox");b.textContent=msg;b.classList.add("on")}
-function hideErr(){document.getElementById("errBox").classList.remove("on")}
-function showRole(icon,text){const b=document.getElementById("rolePreview");b.innerHTML=icon+" "+text;b.classList.add("on")}
+// Page routing map — which page each access key maps to
+const PAGE_MAP={
+  all:"manager.html",
+  manager:"manager.html",
+  quality_control:"tracabilite.html",
+  inventory_manager:"inventory.html",
+  production_supervisor:"production.html",
+  hr_manager:"employees.html",
+  employee:"clocking.html",
+  clocking:"clocking.html",
+  tracabilite:"tracabilite.html",
+  qualite:"qualite.html",
+  inventory:"inventory.html",
+  production:"production.html",
+  machines:"machines.html",
+  employees:"employees.html",
+  time_report:"time_report.html",
+  employee_profile:"employee_profile.html",
+  settings:"settings.html"
+}
 
-// Allow Enter key
+function getHomePage(pageAccess, customRole){
+  if(!pageAccess||pageAccess.length===0)return"clocking.html"
+  if(pageAccess.includes("all"))return"manager.html"
+  // Custom role determines home page
+  if(customRole&&PAGE_MAP[customRole])return PAGE_MAP[customRole]
+  // Otherwise use first page in access list
+  const first=pageAccess[0]
+  return PAGE_MAP[first]||"clocking.html"
+}
+
 document.addEventListener("keydown",e=>{if(e.key==="Enter")doLogin()})
 
-// Show role preview as user types username (optional UX touch)
+// Show role preview on username blur
 document.getElementById("username").addEventListener("blur",async()=>{
   const u=document.getElementById("username").value.trim()
   if(!u)return
-  const{data}=await sb.from("employees").select("role,is_active").eq("username",u).limit(1)
-  if(data&&data.length){
-    if(!data[0].is_active){showRole("&#128683;","This account is blocked");return}
-    const r=data[0].role
-    document.getElementById("rolePreview").classList.add("on")
-    document.getElementById("rolePreview").innerHTML=r==="manager"?"&#128202; Manager account detected":"&#128119; Employee account detected"
-  }
+  const{data}=await sb.from("employees").select("role,custom_role,page_access,is_active").eq("username",u).limit(1)
+  if(!data?.length)return
+  const emp=data[0]
+  if(!emp.is_active){showRolePill("#fee2e2","#991b1b","🚫","Account blocked");return}
+  const roleLabels={manager:"Manager — Full Access",quality_control:"Quality Control",inventory_manager:"Inventory Manager",production_supervisor:"Production Supervisor",hr_manager:"HR Manager",employee:"Employee"}
+  const colors={manager:"#eef2ff",quality_control:"#f0fdf4",inventory_manager:"#fffbeb",production_supervisor:"#f5f3ff",hr_manager:"#fdf2f8",employee:"#f8fafc"}
+  const textColors={manager:"#1d4ed8",quality_control:"#15803d",inventory_manager:"#92400e",production_supervisor:"#5b21b6",hr_manager:"#be185d",employee:"#475569"}
+  const cr=emp.custom_role||emp.role
+  const label=roleLabels[cr]||cr||"User"
+  const bg=colors[cr]||"#f8fafc",tc=textColors[cr]||"#475569"
+  showRolePill(bg,tc,"👤",label)
 })
+
+function showRolePill(bg,color,icon,text){
+  const p=document.getElementById("rolePill")
+  p.style.background=bg;p.style.color=color;p.style.border=`1px solid ${color}20`
+  p.innerHTML=`<span>${icon}</span><span>${text}</span>`
+  p.classList.add("on")
+}
 
 window.togglePw=()=>{
   const f=document.getElementById("password")
   f.type=f.type==="password"?"text":"password"
-  document.getElementById("pwEye").textContent=f.type==="password"?"&#128065;":"&#128064;"
+  document.getElementById("pwEye").textContent=f.type==="password"?"👁":"🙈"
 }
 
 window.doLogin=async()=>{
-  hideErr()
+  document.getElementById("errBox").classList.remove("on")
   const username=document.getElementById("username").value.trim()
   const password=document.getElementById("password").value
   if(!username||!password){showErr("Please enter your username and password.");return}
-  const btn=document.getElementById("loginBtn")
-  btn.disabled=true;btn.textContent="Signing in..."
+  const btn=document.getElementById("loginBtn");btn.disabled=true;btn.textContent="Signing in…"
   try{
     const{data,error}=await sb.from("employees")
-      .select("id,name,role,is_active")
-      .eq("username",username)
-      .eq("password",password)
-      .limit(1)
+      .select("id,name,role,is_active,page_access,custom_role,email,phone")
+      .eq("username",username).eq("password",password).limit(1)
     if(error)throw error
-    if(!data||!data.length){showErr("Incorrect username or password.");btn.disabled=false;btn.textContent="Sign In →";return}
+    if(!data?.length){showErr("Incorrect username or password.");btn.disabled=false;btn.textContent="Sign In →";return}
     const user=data[0]
-    if(!user.is_active){showErr("Your account is blocked. Contact your manager.");btn.disabled=false;btn.textContent="Sign In →";return}
-    // Save identity
+    if(!user.is_active){showErr("Your account is blocked. Contact your administrator.");btn.disabled=false;btn.textContent="Sign In →";return}
+    // Save identity to session
+    const pageAccess=user.page_access||["clocking","employee_profile"]
+    const customRole=user.custom_role||user.role
     sessionStorage.setItem(EK,user.name)
     sessionStorage.setItem(RK,user.role)
+    sessionStorage.setItem(PK,JSON.stringify(pageAccess))
+    sessionStorage.setItem(NK,user.name)
+    sessionStorage.setItem(CRK,customRole)
     localStorage.setItem(EK,user.name)
-    if(user.role==="manager"){
-      sessionStorage.setItem(NK,user.name)
-      window.location.href="manager.html"
-    }else{
-      window.location.href="clocking.html"
-    }
-  }catch(err){
-    showErr("Login error: "+err.message)
-    btn.disabled=false;btn.textContent="Sign In →"
-  }
+    // Navigate to appropriate home page
+    const homePage=getHomePage(pageAccess,customRole)
+    window.location.href=homePage
+  }catch(err){showErr("Error: "+err.message);btn.disabled=false;btn.textContent="Sign In →"}
 }
+
+function showErr(msg){const b=document.getElementById("errBox");b.textContent=msg;b.classList.add("on")}
 </script>
 </body>
 </html>

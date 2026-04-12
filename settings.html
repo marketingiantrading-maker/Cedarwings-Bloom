@@ -122,6 +122,13 @@ tbody tr:last-child td{border:none}
       <button class="btn bgh" onclick="addRecipient()" style="margin-top:12px">+ Add Recipient</button>
     </div>
 
+    <!-- ROLES OVERVIEW -->
+    <div class="card">
+      <div class="card-title">🔑 Role Templates</div>
+      <div class="card-sub">Predefined roles with page access. Assign these to employees in the <a href="employees.html" style="color:var(--blue);font-weight:700">Employees page</a>.</div>
+      <div id="rolesList" style="display:grid;gap:10px"></div>
+    </div>
+
     <!-- NOTIFICATION TRIGGERS -->
     <div class="card">
       <div class="card-title">🔔 Notification Triggers</div>
@@ -203,6 +210,31 @@ const sb=createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey)
 
 let recipients=[]
 function ntf(m,t='ok'){const e=document.getElementById('notif');e.textContent=(t==='ok'?'✅ ':'❌ ')+m;e.className='notif on '+t;setTimeout(()=>e.classList.remove('on'),4000)}
+
+// Load role templates
+async function loadRoles(){
+  const{data}=await sb.from('role_templates').select('*').order('name')
+  document.getElementById('rolesList').innerHTML=(data||[]).map(t=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:${t.color}12;border:1.5px solid ${t.color}30;border-radius:12px">
+      <div style="font-size:24px;flex-shrink:0">${t.icon}</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:800;color:${t.color}">${t.label}</div>
+        <div style="font-size:11px;color:var(--mu);margin-top:2px">${t.description||''}</div>
+      </div>
+      <div style="font-size:11px;background:var(--bg);border-radius:8px;padding:6px 10px;font-family:var(--mono);color:var(--mu);max-width:300px;text-align:right">
+        ${JSON.parse(t.page_access||'[]').includes('all')?'All pages':JSON.parse(t.page_access||'[]').join(', ')}
+      </div>
+      <button onclick="editRole('${t.id}','${t.name}')" style="padding:6px 12px;background:var(--b50);border:1px solid var(--b100);color:var(--blue);border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;font-family:var(--f)">Edit Pages</button>
+    </div>`).join('')
+}
+
+window.editRole=async(id,name)=>{
+  const pagesStr=prompt('Edit page access for '+name+' (comma-separated):\nOptions: all, manager, production, machines, employees, employee_profile, time_report, inventory, clocking, tracabilite, qualite, settings')
+  if(pagesStr===null)return
+  const pages=pagesStr.split(',').map(s=>s.trim()).filter(Boolean)
+  await sb.from('role_templates').update({page_access:JSON.stringify(pages)}).eq('id',id)
+  ntf('Role updated ✅');loadRoles()
+}
 
 async function load(){
   // Load settings
@@ -378,7 +410,7 @@ window.sendTestWhatsApp=async()=>{
   else ntf('Failed: '+(res.error||'Check Brevo WhatsApp setup'),'err')
 }
 
-load()
+load();loadRoles()
 </script>
 </body>
 </html>
