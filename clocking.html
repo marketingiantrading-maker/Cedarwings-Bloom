@@ -338,6 +338,10 @@ async function fillW9Gap(empName,newSessionStart){
   const lastEnd=new Date(data[0].ended_at)
   const gapMs=newSessionStart.getTime()-lastEnd.getTime()
   if(gapMs<=0)return // no gap
+  // Skip tiny gaps under 30 seconds (clock-in overlap noise)
+  if(gapMs<30000)return
+  // Skip large gaps over 30 minutes — means previous session was left open incorrectly, not a real transition
+  if(gapMs>30*60*1000)return
   // Skip if last session was already a W9 (avoid chaining)
   if(data[0].waste_category==="W9 - Transition Time")return
   // Insert W9 gap session
@@ -363,11 +367,48 @@ function initEmp(){
   else{window.location.href="index.html"} // Not logged in → go to login
 }
 
-function setEmp(name){
+async function setEmp(name){
   emp=name
   document.getElementById("empNm").textContent=name
   document.getElementById("profileLink").href="employee_profile.html?emp="+encodeURIComponent(name)
   document.getElementById("abCorrect").href="employee_profile.html?emp="+encodeURIComponent(name)+"&tab=admin"
+
+  // RULE: On page load, close any orphan open sessions from previous day or lost state
+  const todayStart=new Date();todayStart.setHours(0,0,0,0)
+  const{data:openSess}=await sb.from("time_sessions")
+    .select("id,started_at,work_type")
+    .eq("employee_name",name)
+    .is("ended_at",null)
+    .order("started_at",{ascending:false})
+  
+  if(openSess&&openSess.length>0){
+    // Keep the most recent one as potentially active, close all others
+    const toClose=openSess.slice(1) // all except most recent
+    const mostRecent=openSess[0]
+    const startedAt=new Date(mostRecent.started_at)
+    const isToday=startedAt>=todayStart
+    
+    if(toClose.length>0){
+      // Close all duplicate sessions
+      await sb.from("time_sessions")
+        .update({ended_at:new Date().toISOString()})
+        .in("id",toClose.map(s=>s.id))
+    }
+    
+    if(!isToday){
+      // Session from a previous day — close it at 23:59 of that day
+      const endOfDay=new Date(startedAt)
+      endOfDay.setHours(23,59,59,0)
+      await sb.from("time_sessions").update({ended_at:endOfDay.toISOString()}).eq("id",mostRecent.id)
+      activeSession=null
+    } else {
+      // Session from today — restore it as active
+      activeSession={id:mostRecent.id,step:mostRecent.work_type,order:mostRecent.order_no,type:"productive",startTime:startedAt}
+      showJobBox(mostRecent.work_type,mostRecent.order_no,"productive",startedAt,mostRecent.machine)
+      startTimer()
+    }
+  }
+
   loadToday()
 }
 
@@ -655,6 +696,51 @@ document.querySelectorAll(".wb").forEach(b=>b.addEventListener("click",async()=>
   loadToday()
 }))
 
+/* ===================== INACTIVITY WATCHER ===================== */
+let inactivityInt=null
+
+function startInactivityWatch(){
+  clearInterval(inactivityInt)
+  inactivityInt=setInterval(async()=>{
+    if(!activeSession?.id)return
+    const elapsed=Date.now()-activeSession.startTime.getTime()
+    const ONE_HOUR=60*60*1000
+    if(elapsed>=ONE_HOUR){
+      clearInterval(inactivityInt)
+      // Show red fullscreen warning
+      document.getElementById("inactivityInfo").textContent=
+        `Étape: ${activeSession.step} · Commande: ${activeSession.order||"—"} · Démarrée à ${fT(activeSession.startTime.toISOString())}`
+      document.getElementById("inactivityModal").style.display="flex"
+    }
+  },60000) // check every minute
+}
+
+window.inactivityStillWorking=()=>{
+  // Employee confirms still working — reset the watch timer from now
+  document.getElementById("inactivityModal").style.display="none"
+  if(activeSession) activeSession.startTime=new Date() // reset clock
+  startInactivityWatch()
+}
+
+window.inactivityStop=async()=>{
+  document.getElementById("inactivityModal").style.display="none"
+  if(!activeSession?.id)return
+  const now=new Date()
+  // Close the session
+  await sb.from("time_sessions")
+    .update({ended_at:now.toISOString(),pause_reason:"inactivity_auto_close"})
+    .eq("id",activeSession.id)
+  // Keep step in_progress so anyone can resume
+  clearInterval(timerInt);clearInterval(inactivityInt)
+  activeSession=null
+  document.getElementById("jobBox").style.display="none"
+  document.getElementById("alertBanner").classList.remove("on")
+  setSt("Session clôturée automatiquement","Tâche toujours ouverte — un autre employé peut reprendre.","ok")
+  document.getElementById("ord").value=""
+  renderPipeline("")
+  loadToday()
+}
+
 /* ===================== PAUSE ===================== */
 window.showPauseDialog=()=>{
   if(!activeSession)return
@@ -666,24 +752,33 @@ window.confirmPause=async(reason)=>{
   document.getElementById("pauseModal").style.display="none"
   if(!activeSession?.id)return
   const now=new Date();const ord=activeSession.order;const step=activeSession.step
-  // Close time session
-  await sb.from("time_sessions").update({ended_at:now.toISOString(),pause_reason:reason}).eq("id",activeSession.id)
-  // Update or create step tracking
+
+  // RULE: Close the time session (employee stops working)
+  await sb.from("time_sessions").update({
+    ended_at:now.toISOString(),
+    pause_reason:reason
+  }).eq("id",activeSession.id)
+
+  // RULE: Step stays in_progress (NOT complete, NOT paused)
+  // So any employee can resume and continue — total hours = sum of all sessions
+  // Only exception: machine_running = machine still running autonomously
   const{data:existing}=await sb.from("order_step_tracking").select("id").eq("order_no",ord).eq("step",step).limit(1)
-  const newStatus=reason==="machine_running"?"machine_running":"paused"
+  const newStatus=reason==="machine_running"?"machine_running":"in_progress"
   if(existing&&existing.length){
     await sb.from("order_step_tracking").update({status:newStatus}).eq("id",existing[0].id)
   }else{
     await sb.from("order_step_tracking").insert([{order_no:ord,step,status:newStatus,first_started_at:now.toISOString()}])
   }
+
   clearInterval(timerInt);activeSession=null
   document.getElementById("jobBox").style.display="none"
   document.getElementById("alertBanner").classList.remove("on")
+
   if(reason==="machine_running"){
-    setSt("Machine running — you are free to work on another order",`${step} on ${ord} — machine timer running. Tap Resume when done.`,"ok")
-    renderPipeline(ord) // stay on same order to show machine running box
+    setSt("Machine running — libre pour autre commande",`${step} sur ${ord} — machine en cours. Appuyez sur Terminer quand prêt.`,"ok")
+    renderPipeline(ord)
   }else{
-    setSt("Task paused","Ready for new order.","ok")
+    setSt("Tâche suspendue — continuable par tout employé",`${step} sur ${ord} reste ouvert. Entrez à nouveau la commande pour reprendre.`,"ok")
     document.getElementById("ord").value=""
     renderPipeline("")
   }
@@ -756,6 +851,7 @@ function startTimer(){
       document.getElementById("abSub").textContent=`Started ${fT(activeSession.startTime.toISOString())}. End it or pause to keep records accurate.`
     }else{banner.classList.remove("on")}
   },1000)
+  startInactivityWatch()
 }
 
 /* ===================== LOAD TODAY ===================== */
@@ -991,6 +1087,20 @@ cleanOrphans()
     <div style="font-size:13px;color:#64748b;margin-bottom:20px" id="machModalSub">Choose the machine you will work on</div>
     <div id="machList" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px"></div>
     <button onclick="document.getElementById('machModal').style.display='none'" style="width:100%;padding:10px;background:#f1f5f9;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;color:#64748b;font-family:var(--f)">Cancel</button>
+  </div>
+</div>
+
+<!-- INACTIVITY WARNING MODAL -->
+<div id="inactivityModal" style="display:none;position:fixed;inset:0;background:rgba(180,0,0,.88);z-index:900;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:20px;padding:32px;max-width:440px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="font-size:52px;margin-bottom:12px">⚠️</div>
+    <div style="font-size:20px;font-weight:800;color:#dc2626;margin-bottom:8px">Session ouverte depuis 1 heure !</div>
+    <div style="font-size:13px;color:#64748b;line-height:1.6;margin-bottom:8px">Vous avez une session active non fermée.</div>
+    <div style="font-size:13px;font-weight:700;background:#fef2f2;border:1px solid #fee2e2;border-radius:8px;padding:10px;margin-bottom:20px;color:#dc2626" id="inactivityInfo">—</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button onclick="window.inactivityStillWorking()" style="padding:13px;background:#16a34a;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">✅ Je travaille encore — continuer</button>
+      <button onclick="window.inactivityStop()" style="padding:13px;background:#dc2626;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">⏹ Clôturer cette session maintenant</button>
+    </div>
   </div>
 </div>
 
