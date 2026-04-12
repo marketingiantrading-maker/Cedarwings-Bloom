@@ -506,71 +506,44 @@ window._clockStep=async(step)=>{
 }
 
 async function showMachinePicker(step,ord){
-  // Load machines for this step from step_machines table
-  // Also load all machines as fallback in case step_machines not populated
+  // Only load machines specifically linked to this step
   let machines=[]
   try{
     const{data:sm}=await sb.from("step_machines").select("*").eq("step",step).eq("is_active",true)
     machines=sm||[]
   }catch(e){}
 
-  // Fallback: load ALL machines if step_machines returned nothing
-  if(!machines.length){
-    try{
-      const{data:allM}=await sb.from("machines").select("id,machine_name,machine_type,status").eq("status","operational")
-      if(allM&&allM.length){
-        machines=allM.map(m=>({machine_id:m.id,machine_name:m.machine_name}))
-      }
-    }catch(e){}
-  }
+  // No machines for this step → clock in directly, no popup
+  if(!machines.length){ await doClockIn(step,ord,null,null); return }
 
-  if(!machines.length){
-    // No machines at all — offer "No machine" option
-    document.getElementById("machModalTitle").textContent=`Clocking in: ${step}`
-    document.getElementById("machModalSub").textContent=`Order ${ord} — no machines configured yet`
-    document.getElementById("machList").innerHTML=`
-      <div onclick="window._pickMachine('${step}','${ord}','','')"
-        style="background:#f8fafc;border:2px solid #e2e8f0;border-radius:13px;padding:16px;text-align:center;cursor:pointer;transition:all .15s;grid-column:1/-1"
-        onmouseover="this.style.borderColor='#3b5fe2';this.style.background='#eef2ff'"
-        onmouseout="this.style.borderColor='#e2e8f0';this.style.background='#f8fafc'">
-        <div style="font-size:24px;margin-bottom:8px">👷</div>
-        <div style="font-size:13px;font-weight:800;color:#0f172a">No Machine — Manual Work</div>
-        <div style="font-size:11px;color:#64748b;margin-top:4px">Clock in without a machine</div>
-      </div>`
-    document.getElementById("machModal").style.display="flex"
-    return
-  }
+  // Single machine → auto-select silently
+  if(machines.length===1){ await doClockIn(step,ord,machines[0].machine_name,machines[0].machine_id||null); return }
 
-  if(machines.length===1){
-    // Only one machine — auto-select, no picker needed
-    await doClockIn(step,ord,machines[0].machine_name,machines[0].machine_id||machines[0].id||null)
-    return
-  }
-
-  // Multiple machines — show picker modal
-  document.getElementById("machModalTitle").textContent=`Select machine — ${step}`
-  document.getElementById("machModalSub").textContent=`Order ${ord} · tap the machine you will use`
+  // Multiple → show picker
+  document.getElementById("machModalTitle").textContent=`${step} — Choisir la machine`
+  document.getElementById("machModalSub").textContent=`Commande ${ord} · Tapez la machine que vous utilisez`
   const COLORS=["#3b5fe2","#16a34a","#d97706","#dc2626","#7c3aed","#0d9488"]
   document.getElementById("machList").innerHTML=[
-    // "No machine" option always first
     `<div onclick="window._pickMachine('${step}','${ord}','','')"
       style="background:#f8fafc;border:2px dashed #cbd5e1;border-radius:13px;padding:14px;text-align:center;cursor:pointer;transition:all .15s"
       onmouseover="this.style.borderColor='#64748b';this.style.background='#f1f5f9'"
       onmouseout="this.style.borderColor='#cbd5e1';this.style.background='#f8fafc'">
       <div style="font-size:20px;margin-bottom:6px">👷</div>
-      <div style="font-size:12px;font-weight:700;color:#64748b">No Machine</div>
+      <div style="font-size:12px;font-weight:700;color:#64748b">Sans machine</div>
     </div>`,
     ...machines.map((m,i)=>`
-    <div onclick="window._pickMachine('${step}','${ord}','${(m.machine_name||'').replace(/'/g,"\\'")}','${m.machine_id||m.id||''}')"
+    <div onclick="window._pickMachine('${step}','${ord}','${(m.machine_name||'').replace(/'/g,"\'")}','${m.machine_id||''}')"
       style="background:#f8fafc;border:2px solid #e2e8f0;border-radius:13px;padding:14px;text-align:center;cursor:pointer;transition:all .15s"
       onmouseover="this.style.borderColor='${COLORS[i%COLORS.length]}';this.style.background='#eef2ff'"
       onmouseout="this.style.borderColor='#e2e8f0';this.style.background='#f8fafc'">
       <div style="font-size:24px;margin-bottom:8px">⚙</div>
       <div style="font-size:13px;font-weight:800;color:#0f172a">${m.machine_name}</div>
+      ${m.machine_type?`<div style="font-size:10px;color:#64748b;margin-top:3px">${m.machine_type}</div>`:''}
     </div>`)
   ].join("")
   document.getElementById("machModal").style.display="flex"
 }
+
 
 window._pickMachine=async(step,ord,machName,machId)=>{
   document.getElementById("machModal").style.display="none"
@@ -645,8 +618,10 @@ async function doClockIn(step,ord,machName,machId){
   showJobBox(step,ord,"productive",now,machName)
   startTimer()
   setSt("Clocked in: "+step,`${emp} · ${ord} · ${fT(now.toISOString())}`, "ok")
+  // Clear order field so employee can immediately type a new order
   document.getElementById("ord").value=""
-  renderPipeline(ord)
+  // Reset pipeline to blank — ready for next order entry
+  renderPipeline("")
   loadToday()
 }
 
