@@ -240,9 +240,9 @@ async function load(){
   // Load settings
   const{data:ss}=await sb.from('system_settings').select('*')
   const smap={};(ss||[]).forEach(s=>smap[s.key]=s.value)
-  if(smap.brevo_api_key)document.getElementById('brevoKey').value=smap.brevo_api_key
-  if(smap.brevo_sender_email)document.getElementById('brevoEmail').value=smap.brevo_sender_email
-  if(smap.brevo_sender_name)document.getElementById('brevoName').value=smap.brevo_sender_name
+  if(smap.brevo_api_key){document.getElementById('brevoKey').value=smap.brevo_api_key;window._brevoKey=smap.brevo_api_key}
+  if(smap.brevo_sender_email){document.getElementById('brevoEmail').value=smap.brevo_sender_email;window._brevoEmail=smap.brevo_sender_email}
+  if(smap.brevo_sender_name){document.getElementById('brevoName').value=smap.brevo_sender_name;window._brevoName=smap.brevo_sender_name}
   if(smap.company_name)document.getElementById('companyName').value=smap.company_name
   if(smap.daily_report_time)document.getElementById('reportTime').value=smap.daily_report_time
 
@@ -341,9 +341,15 @@ window.testBrevo=async()=>{
 
 // MAIN NOTIFICATION FUNCTION — used across all pages
 window.sendBrevoEmail=async(toEmail,toName,subject,htmlContent,type='system')=>{
-  const{data:ss}=await sb.from('system_settings').select('*')
-  const smap={};(ss||[]).forEach(s=>smap[s.key]=s.value)
-  const apiKey=smap.brevo_api_key;const senderEmail=smap.brevo_sender_email;const senderName=smap.brevo_sender_name||'Cedarwings SAS'
+  // Try loading from DB, fallback to cached window values
+  let apiKey=window._brevoKey, senderEmail=window._brevoEmail, senderName=window._brevoName||'Cedarwings SAS'
+  if(!apiKey){
+    const{data:ss}=await sb.from('system_settings').select('key,value')
+    const smap={};(ss||[]).forEach(s=>smap[s.key]=s.value)
+    apiKey=smap.brevo_api_key;senderEmail=smap.brevo_sender_email;senderName=smap.brevo_sender_name||'Cedarwings SAS'
+    // Cache for subsequent calls
+    window._brevoKey=apiKey;window._brevoEmail=senderEmail;window._brevoName=senderName
+  }
   if(!apiKey||!senderEmail)return{ok:false,error:'Brevo not configured'}
   try{
     const r=await fetch('https://api.brevo.com/v3/smtp/email',{
