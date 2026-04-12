@@ -143,16 +143,16 @@ window.doLogin=async()=>{
   const btn=document.getElementById("loginBtn");btn.disabled=true;btn.textContent="Signing in…"
   try{
     const{data,error}=await sb.from("employees")
-      .select("id,name,role,is_active,page_access,custom_role")
+      .select("id,name,role,is_active")
       .eq("username",username).eq("password",password).limit(1)
     if(error)throw error
     if(!data?.length){showErr("Incorrect username or password.");btn.disabled=false;btn.textContent="Sign In →";return}
     const user=data[0]
     if(!user.is_active){showErr("Your account is blocked. Contact your administrator.");btn.disabled=false;btn.textContent="Sign In →";return}
     // Save identity to session
-    // Safe fallback if columns don't exist yet
-    const pageAccess=user.page_access||(user.role==="manager"?["all"]:["clocking","employee_profile"])
-    const customRole=user.custom_role||user.role
+    // Use role to determine access
+    const pageAccess=user.role==="manager"?["all"]:["clocking","employee_profile"]
+    const customRole=user.role
     sessionStorage.setItem(EK,user.name)
     sessionStorage.setItem(RK,user.role)
     sessionStorage.setItem(PK,JSON.stringify(pageAccess))
