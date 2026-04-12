@@ -248,7 +248,13 @@ async function load(){
 
   // Load recipients
   const{data:ns}=await sb.from('notification_settings').select('*').order('employee_name')
-  recipients=ns||[]
+  recipients=(ns||[]).map(r=>({
+    ...r,
+    employee_name: r.employee_name||r.name||'',
+    email: r.email||'',
+    whatsapp_phone: r.whatsapp_phone||r.whatsapp||'',
+    is_active: r.is_active!==false
+  }))
   renderRecipients()
 
   // Load log
@@ -302,8 +308,10 @@ window.saveAll=async()=>{
   await sb.from('notification_settings').delete().neq('id','00000000-0000-0000-0000-000000000000')
   // Then insert fresh
   const toInsert=recipients.filter(r=>r.employee_name).map(r=>({
+    name:r.employee_name,
     employee_name:r.employee_name,
     email:r.email||null,
+    whatsapp:r.whatsapp_phone||null,
     whatsapp_phone:r.whatsapp_phone||null,
     is_active:r.is_active!==false,
     notify_low_stock:document.getElementById('t_low_stock').checked,
