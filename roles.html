@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Cedarwings — Role Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#f0f4f8;--card:#fff;--bdr:#e2e8f0;--txt:#0f172a;--mu:#64748b;--dim:#94a3b8;--blue:#3b5fe2;--b50:#eef2ff;--b100:#e0e7ff;--green:#16a34a;--g50:#f0fdf4;--g100:#dcfce7;--amber:#d97706;--a50:#fffbeb;--a100:#fef3c7;--red:#dc2626;--r50:#fef2f2;--r100:#fee2e2;--purple:#7c3aed;--p50:#f5f3ff;--p100:#ede9fe;--f:"DM Sans",sans-serif;--mono:"JetBrains Mono",monospace;--sh:0 1px 3px rgba(0,0,0,.07),0 0 0 1px rgba(0,0,0,.04);--sh2:0 6px 24px rgba(0,0,0,.09),0 0 0 1px rgba(0,0,0,.04)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh}
+.sb{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--card);border-right:1px solid var(--bdr);display:flex;flex-direction:column;z-index:100;overflow-y:auto}
+.sb-top{display:flex;align-items:center;gap:12px;padding:20px 18px 16px;border-bottom:1px solid var(--bdr)}
+.logo{width:38px;height:38px;background:linear-gradient(135deg,#3b5fe2,#6366f1);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.sb-nm{font-weight:800;font-size:14px}.sb-role{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;margin-top:3px;background:var(--b50);color:var(--blue)}
+.sb-nav{flex:1;padding:10px}.sb-s{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;padding:14px 8px 6px}
+.nl{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13px;font-weight:500;color:var(--mu);text-decoration:none;transition:all .12s}
+.nl:hover{background:var(--bg);color:var(--txt)}.nl.on{background:var(--b50);color:var(--blue);font-weight:700}
+.nl .ic{font-size:15px;width:18px;text-align:center}
+.sb-foot{padding:12px 10px;border-top:1px solid var(--bdr)}
+.content{margin-left:240px;min-height:100vh}
+.topbar{background:var(--card);border-bottom:1px solid var(--bdr);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.tb-t{font-size:20px;font-weight:800;letter-spacing:-.4px}.tb-s{font-size:12px;color:var(--mu);margin-top:2px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;font-size:13px;font-weight:600;border:none;border-radius:9px;cursor:pointer;font-family:var(--f);transition:all .12s;text-decoration:none}
+.bb{background:var(--blue);color:#fff}.bb:hover{background:#2e4fc7}
+.bg{background:var(--green);color:#fff}
+.br{background:var(--red);color:#fff}
+.bgh{background:var(--card);border:1px solid var(--bdr);color:var(--mu)}.bgh:hover{color:var(--txt)}
+.body{padding:22px 28px 60px}
+/* ROLE CARDS GRID */
+.roles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;margin-bottom:20px}
+.role-card{background:var(--card);border-radius:16px;box-shadow:var(--sh);overflow:hidden;transition:box-shadow .2s}
+.role-card:hover{box-shadow:var(--sh2)}
+.rc-stripe{height:4px}
+.rc-head{padding:16px 18px;display:flex;align-items:center;gap:12px}
+.rc-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.rc-name{font-size:15px;font-weight:800}
+.rc-desc{font-size:11px;color:var(--mu);margin-top:2px}
+.rc-body{padding:0 18px 16px}
+/* PAGE PILLS */
+.page-pills{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.pp{padding:3px 10px;border-radius:999px;font-size:10px;font-weight:700;border:1px solid}
+.pp-on{background:var(--b50);border-color:var(--b100);color:var(--blue)}
+.pp-off{background:#f8fafc;border-color:var(--bdr);color:var(--dim)}
+/* NOTIFICATION BADGES */
+.notif-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.nb{padding:3px 9px;border-radius:999px;font-size:10px;font-weight:700;display:inline-flex;align-items:center;gap:4px}
+.nb-email{background:#eef2ff;color:#3b5fe2}
+.nb-wa{background:#f0fdf4;color:#16a34a}
+.nb-both{background:linear-gradient(90deg,#eef2ff,#f0fdf4);color:#3b5fe2;border:1px solid #e0e7ff}
+.nb-none{background:#f8fafc;color:var(--dim)}
+/* FREQUENCY */
+.freq-badge{padding:3px 9px;border-radius:999px;font-size:10px;font-weight:700;background:var(--p50);color:var(--purple);border:1px solid var(--p100)}
+/* ACTIONS */
+.rc-actions{display:flex;gap:6px;padding-top:10px;border-top:1px solid var(--bdr);margin-top:4px}
+/* MODAL */
+.mov{position:fixed;inset:0;background:rgba(15,23,42,.7);z-index:500;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+.mov.on{display:flex}
+.mo{background:var(--card);border-radius:18px;padding:28px;width:100%;max-width:680px;box-shadow:0 20px 60px rgba(0,0,0,.25);margin:auto}
+.mot{font-size:20px;font-weight:800;margin-bottom:4px}
+.mos{font-size:13px;color:var(--mu);margin-bottom:22px;line-height:1.6}
+/* FORM */
+lbl{display:block;font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.fi{width:100%;padding:11px 14px;border:1.5px solid var(--bdr);border-radius:10px;font-family:var(--f);font-size:13px;color:var(--txt);background:#fff;outline:none;transition:border-color .15s}
+.fi:focus{border-color:var(--blue)}.fi::placeholder{color:var(--dim)}
+.fgrp{margin-bottom:16px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+/* PAGE ACCESS CHECKBOXES */
+.pages-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.page-check{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:9px;border:1.5px solid var(--bdr);cursor:pointer;transition:all .12s}
+.page-check:hover{border-color:var(--blue);background:var(--b50)}
+.page-check.on{border-color:var(--blue);background:var(--b50)}
+.page-check input{width:15px;height:15px;cursor:pointer;accent-color:var(--blue)}
+.page-check-label{font-size:12px;font-weight:600;cursor:pointer}
+/* NOTIFICATION TOGGLES */
+.notif-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.notif-check{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:9px;border:1.5px solid var(--bdr);cursor:pointer;transition:all .12s}
+.notif-check:hover{border-color:var(--green);background:var(--g50)}
+.notif-check.on{border-color:var(--green);background:var(--g50)}
+.notif-check input{width:15px;height:15px;cursor:pointer;accent-color:var(--green)}
+/* CHANNEL SELECTOR */
+.channel-opts{display:flex;gap:8px;margin-bottom:16px}
+.ch-btn{flex:1;padding:10px;border-radius:9px;border:1.5px solid var(--bdr);background:var(--card);cursor:pointer;font-family:var(--f);font-size:12px;font-weight:700;text-align:center;transition:all .12s;color:var(--mu)}
+.ch-btn:hover{border-color:var(--blue)}
+.ch-btn.on{border-color:var(--blue);background:var(--b50);color:var(--blue)}
+/* COLOR PICKER */
+.color-opts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.co{width:32px;height:32px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .12s;display:flex;align-items:center;justify-content:center;font-size:14px}
+.co.sel{border-color:var(--txt);transform:scale(1.1)}
+/* ICON PICKER */
+.icon-opts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.io{width:36px;height:36px;border-radius:9px;cursor:pointer;border:1.5px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .12s}
+.io:hover{border-color:var(--blue);background:var(--b50)}
+.io.sel{border-color:var(--blue);background:var(--b50);box-shadow:0 0 0 3px rgba(59,95,226,.15)}
+.moa{display:flex;gap:10px;margin-top:22px;justify-content:flex-end}
+.mer{color:var(--red);font-size:12px;margin-top:8px;min-height:14px}
+/* NOTIF */
+.notif{position:fixed;bottom:24px;right:24px;padding:13px 18px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;display:none;align-items:center;gap:8px;box-shadow:var(--sh2)}
+.notif.on{display:flex}.notif.ok{background:#15803d;color:#fff}.notif.err{background:var(--red);color:#fff}
+.section-title{font-size:12px;font-weight:800;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--bdr)}
+@media(max-width:768px){.sb{display:none}.content{margin-left:0}.pages-grid{grid-template-columns:1fr 1fr}.notif-grid{grid-template-columns:1fr}.roles-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<aside class="sb">
+  <div class="sb-top"><div class="logo">⚙</div><div><div class="sb-nm">Cedarwings SAS</div><div class="sb-role">Manager</div></div></div>
+  <nav class="sb-nav">
+    <div class="sb-s">Operations</div>
+    <a href="manager.html" class="nl"><span class="ic">📊</span>Dashboard</a>
+    <a href="production.html" class="nl"><span class="ic">🏭</span>Production</a>
+    <a href="machines.html" class="nl"><span class="ic">⚙</span>Machines</a>
+    <div class="sb-s">Team</div>
+    <a href="employees.html" class="nl"><span class="ic">👥</span>Employees</a>
+    <a href="employee_profile.html" class="nl"><span class="ic">👤</span>Employee Profile</a>
+    <a href="time_report.html" class="nl"><span class="ic">📈</span>Time Report</a>
+    <div class="sb-s">Quality</div>
+    <a href="tracabilite.html" class="nl"><span class="ic">🔖</span>Traceability</a>
+    <a href="qualite.html" class="nl"><span class="ic">✅</span>Quality Control</a>
+    <div class="sb-s">Resources</div>
+    <a href="inventory.html" class="nl"><span class="ic">📦</span>Inventory</a>
+    <div class="sb-s">System</div>
+    <a href="settings.html" class="nl"><span class="ic">⚙</span>Settings</a>
+    <a href="roles.html" class="nl on"><span class="ic">🔑</span>Role Manager</a>
+    <a href="clocking.html" class="nl"><span class="ic">⏱</span>Clocking Terminal</a>
+  </nav>
+  <div class="sb-foot"><a href="index.html" class="nl"><span class="ic">←</span>Switch Role</a></div>
+</aside>
+
+<div class="content">
+  <div class="topbar">
+    <div><div class="tb-t">🔑 Role Manager</div><div class="tb-s">Create custom roles with page access and notification preferences</div></div>
+    <button class="btn bb" id="btnNew">+ Create New Role</button>
+  </div>
+  <div class="body">
+    <div class="roles-grid" id="rolesGrid">
+      <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--dim)">Loading roles…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ROLE MODAL -->
+<div class="mov" id="mRole">
+  <div class="mo">
+    <div class="mot" id="mRoleTitle">Create New Role</div>
+    <div class="mos">Define which pages this role can access and what notifications they receive.</div>
+    <input type="hidden" id="rId"/>
+
+    <!-- BASIC INFO -->
+    <div class="section-title">Role Identity</div>
+    <div class="fg">
+      <div>
+        <lbl>Role Name *</lbl>
+        <input class="fi" id="rName" placeholder="e.g. Quality Control, Inventory Manager"/>
+      </div>
+      <div>
+        <lbl>Description</lbl>
+        <input class="fi" id="rDesc" placeholder="Short description of this role"/>
+      </div>
+    </div>
+
+    <!-- COLOR & ICON -->
+    <div class="fg">
+      <div>
+        <lbl>Color</lbl>
+        <div class="color-opts" id="colorOpts">
+          <div class="co sel" data-c="#3b5fe2" style="background:#3b5fe2">✓</div>
+          <div class="co" data-c="#16a34a" style="background:#16a34a"></div>
+          <div class="co" data-c="#d97706" style="background:#d97706"></div>
+          <div class="co" data-c="#dc2626" style="background:#dc2626"></div>
+          <div class="co" data-c="#7c3aed" style="background:#7c3aed"></div>
+          <div class="co" data-c="#0d9488" style="background:#0d9488"></div>
+          <div class="co" data-c="#db2777" style="background:#db2777"></div>
+          <div class="co" data-c="#64748b" style="background:#64748b"></div>
+        </div>
+      </div>
+      <div>
+        <lbl>Icon</lbl>
+        <div class="icon-opts" id="iconOpts">
+          <div class="io sel" data-i="👔">👔</div>
+          <div class="io" data-i="👷">👷</div>
+          <div class="io" data-i="✅">✅</div>
+          <div class="io" data-i="📦">📦</div>
+          <div class="io" data-i="🏭">🏭</div>
+          <div class="io" data-i="👥">👥</div>
+          <div class="io" data-i="🔖">🔖</div>
+          <div class="io" data-i="📊">📊</div>
+          <div class="io" data-i="🔑">🔑</div>
+          <div class="io" data-i="⚙">⚙</div>
+          <div class="io" data-i="🧪">🧪</div>
+          <div class="io" data-i="🎯">🎯</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE ACCESS -->
+    <div class="section-title">Page Access</div>
+    <div class="pages-grid" id="pagesGrid">
+      <!-- generated by JS -->
+    </div>
+
+    <!-- NOTIFICATION CHANNEL -->
+    <div class="section-title">Notification Channel</div>
+    <div class="channel-opts">
+      <button class="ch-btn on" data-ch="none" onclick="setCh(this)">🔕 None</button>
+      <button class="ch-btn" data-ch="email" onclick="setCh(this)">📧 Email only</button>
+      <button class="ch-btn" data-ch="whatsapp" onclick="setCh(this)">💬 WhatsApp only</button>
+      <button class="ch-btn" data-ch="both" onclick="setCh(this)">📧+💬 Email & WhatsApp</button>
+    </div>
+
+    <!-- NOTIFICATION TYPES -->
+    <div class="section-title">Notification Types</div>
+    <div class="notif-grid">
+      <div class="notif-check" id="nc_low_stock" onclick="toggleNotif(this)">
+        <input type="checkbox" id="n_low_stock"/>
+        <div><div style="font-size:13px;font-weight:700">⚠ Low Stock Alert</div><div style="font-size:11px;color:var(--mu)">When item drops below minimum</div></div>
+      </div>
+      <div class="notif-check" id="nc_requisition" onclick="toggleNotif(this)">
+        <input type="checkbox" id="n_requisition"/>
+        <div><div style="font-size:13px;font-weight:700">📋 Auto-Requisition</div><div style="font-size:11px;color:var(--mu)">When system creates a purchase order</div></div>
+      </div>
+      <div class="notif-check" id="nc_quality" onclick="toggleNotif(this)">
+        <input type="checkbox" id="n_quality"/>
+        <div><div style="font-size:13px;font-weight:700">✅ Quality Approval Needed</div><div style="font-size:11px;color:var(--mu)">When lot pending quality control</div></div>
+      </div>
+      <div class="notif-check" id="nc_rejection" onclick="toggleNotif(this)">
+        <input type="checkbox" id="n_rejection"/>
+        <div><div style="font-size:13px;font-weight:700">❌ Quality Rejection</div><div style="font-size:11px;color:var(--mu)">When lot fails quality control</div></div>
+      </div>
+      <div class="notif-check" id="nc_daily_report" onclick="toggleNotif(this)">
+        <input type="checkbox" id="n_daily_report"/>
+        <div><div style="font-size:13px;font-weight:700">📊 Production Report</div><div style="font-size:11px;color:var(--mu)">Aligners, cases and efficiency summary</div></div>
+      </div>
+    </div>
+
+    <!-- REPORT FREQUENCY -->
+    <div id="freqSection" style="display:none">
+      <div class="section-title">Report Schedule</div>
+      <div class="fg">
+        <div>
+          <lbl>Frequency</lbl>
+          <select class="fi" id="rFreq" onchange="updateFreqUI()">
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly (1st of month)</option>
+          </select>
+        </div>
+        <div>
+          <lbl>Send at time</lbl>
+          <input type="time" class="fi" id="rTime" value="18:00"/>
+        </div>
+      </div>
+      <div id="weekDayRow" style="display:none">
+        <lbl>Day of week</lbl>
+        <select class="fi" id="rDay" style="max-width:200px">
+          <option value="monday">Monday</option>
+          <option value="tuesday">Tuesday</option>
+          <option value="wednesday">Wednesday</option>
+          <option value="thursday">Thursday</option>
+          <option value="friday">Friday</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="moa">
+      <button class="btn bgh" onclick="closeModal()">Cancel</button>
+      <button class="btn br" id="btnDelete" onclick="deleteRole()" style="display:none;margin-right:auto">🗑 Delete Role</button>
+      <button class="btn bb" onclick="saveRole()">Save Role</button>
+    </div>
+    <div class="mer" id="rErr"></div>
+  </div>
+</div>
+
+<div class="notif" id="notif"></div>
+
+<script type="module">
+import{createClient}from"https://esm.sh/@supabase/supabase-js@2"
+import{SUPABASE_CONFIG}from"./config.js"
+const sb=createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey)
+
+const ALL_PAGES=[
+  {key:'manager',label:'📊 Dashboard',desc:'Main dashboard & KPIs'},
+  {key:'production',label:'🏭 Production',desc:'Record production batches'},
+  {key:'machines',label:'⚙ Machines',desc:'Machine management'},
+  {key:'employees',label:'👥 Employees',desc:'Manage team members'},
+  {key:'employee_profile',label:'👤 Profile',desc:'Employee profiles & history'},
+  {key:'time_report',label:'📈 Time Report',desc:'Productivity reports'},
+  {key:'inventory',label:'📦 Inventory',desc:'Stock management'},
+  {key:'tracabilite',label:'🔖 Traceability',desc:'Production lot tracing'},
+  {key:'qualite',label:'✅ Quality Control',desc:'QC forms & approvals'},
+  {key:'clocking',label:'⏱ Clocking',desc:'Clock in/out terminal'},
+  {key:'settings',label:'⚙ Settings',desc:'System configuration'},
+  {key:'roles',label:'🔑 Roles',desc:'Role manager'}
+]
+
+let roles=[]
+
+function ntf(m,t='ok'){const e=document.getElementById('notif');e.textContent=(t==='ok'?'✅ ':'❌ ')+m;e.className='notif on '+t;setTimeout(()=>e.classList.remove('on'),3500)}
+
+async function load(){
+  const{data}=await sb.from('role_templates').select('*').order('created_at')
+  roles=data||[]
+  render()
+}
+
+function render(){
+  const grid=document.getElementById('rolesGrid')
+  if(!roles.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--dim)">No roles yet. Click + Create New Role to get started.</div>';return}
+  grid.innerHTML=roles.map(r=>{
+    const pages=Array.isArray(r.page_access)?r.page_access:(JSON.parse(r.page_access||'[]'))
+    const hasAll=pages.includes('all')
+    const ch=r.notify_channel||'none'
+    const chLabel=ch==='both'?'📧+💬':ch==='email'?'📧':ch==='whatsapp'?'💬':'🔕'
+    const chClass=ch==='both'?'nb-both':ch==='email'?'nb-email':ch==='whatsapp'?'nb-wa':'nb-none'
+    const notifs=[]
+    if(r.notify_low_stock)notifs.push('⚠ Low Stock')
+    if(r.notify_requisition)notifs.push('📋 Requisition')
+    if(r.notify_quality)notifs.push('✅ Quality')
+    if(r.notify_rejection)notifs.push('❌ Rejection')
+    if(r.notify_daily_report)notifs.push('📊 Reports')
+    return`<div class="role-card">
+      <div class="rc-stripe" style="background:${r.color||'#3b5fe2'}"></div>
+      <div class="rc-head">
+        <div class="rc-icon" style="background:${r.color||'#3b5fe2'}20">${r.icon||'👤'}</div>
+        <div style="flex:1">
+          <div class="rc-name">${r.label}</div>
+          <div class="rc-desc">${r.description||'Custom role'}</div>
+        </div>
+        <button class="btn bgh" style="padding:5px 11px;font-size:11px" onclick="openEdit('${r.id}')">✏ Edit</button>
+      </div>
+      <div class="rc-body">
+        <div style="font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Pages</div>
+        <div class="page-pills">
+          ${hasAll?'<span class="pp pp-on">All Pages</span>':pages.map(p=>{const pg=ALL_PAGES.find(x=>x.key===p);return`<span class="pp pp-on">${pg?pg.label:p}</span>`}).join('')}
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            <span class="nb ${chClass}">${chLabel} ${ch==='none'?'No notifications':ch==='both'?'Email & WhatsApp':ch==='email'?'Email':' WhatsApp'}</span>
+            ${notifs.map(n=>`<span style="background:#f1f5f9;color:var(--mu);padding:2px 8px;border-radius:999px;font-size:9px;font-weight:700">${n}</span>`).join('')}
+          </div>
+          ${r.notify_daily_report?`<span class="freq-badge">${r.report_frequency||'daily'} @ ${r.report_time||'18:00'}</span>`:''}
+        </div>
+      </div>
+    </div>`
+  }).join('')
+}
+
+// Build page checkboxes
+function buildPages(selected){
+  const sel=Array.isArray(selected)?selected:(typeof selected==='string'?JSON.parse(selected||'[]'):[])
+  const hasAll=sel.includes('all')
+  document.getElementById('pagesGrid').innerHTML=`
+    <div class="page-check ${hasAll?'on':''}" onclick="toggleAll(this)" style="grid-column:1/-1;background:${hasAll?'var(--b50)':'var(--bg)'}">
+      <input type="checkbox" id="pg_all" ${hasAll?'checked':''}/>
+      <div class="page-check-label">✨ All Pages (Full Access)</div>
+    </div>
+    ${ALL_PAGES.map(p=>`
+    <div class="page-check ${sel.includes(p.key)?'on':''}" onclick="togglePage(this,'${p.key}')">
+      <input type="checkbox" id="pg_${p.key}" ${sel.includes(p.key)||hasAll?'checked':''}/>
+      <div>
+        <div class="page-check-label">${p.label}</div>
+        <div style="font-size:10px;color:var(--mu)">${p.desc}</div>
+      </div>
+    </div>`).join('')}`
+}
+
+window.toggleAll=(el)=>{
+  const cb=document.getElementById('pg_all')
+  cb.checked=!cb.checked
+  el.classList.toggle('on',cb.checked)
+  document.querySelectorAll('.pages-grid .page-check:not(:first-child)').forEach(c=>{
+    c.classList.toggle('on',cb.checked)
+    const inp=c.querySelector('input');if(inp)inp.checked=cb.checked
+  })
+}
+window.togglePage=(el,key)=>{
+  const cb=document.getElementById('pg_'+key)
+  if(!cb)return
+  cb.checked=!cb.checked
+  el.classList.toggle('on',cb.checked)
+  // Uncheck "all" if any page unchecked
+  if(!cb.checked){
+    document.getElementById('pg_all').checked=false
+    document.querySelectorAll('.pages-grid .page-check:first-child').forEach(c=>c.classList.remove('on'))
+  }
+}
+
+function getSelectedPages(){
+  if(document.getElementById('pg_all')?.checked)return['all']
+  return ALL_PAGES.filter(p=>document.getElementById('pg_'+p.key)?.checked).map(p=>p.key)
+}
+
+// Color picker
+document.getElementById('colorOpts').addEventListener('click',e=>{
+  const co=e.target.closest('.co')
+  if(!co)return
+  document.querySelectorAll('.co').forEach(c=>{c.classList.remove('sel');c.textContent=''})
+  co.classList.add('sel');co.textContent='✓'
+})
+
+// Icon picker
+document.getElementById('iconOpts').addEventListener('click',e=>{
+  const io=e.target.closest('.io')
+  if(!io)return
+  document.querySelectorAll('.io').forEach(c=>c.classList.remove('sel'))
+  io.classList.add('sel')
+})
+
+// Channel
+window.setCh=(el)=>{
+  document.querySelectorAll('.ch-btn').forEach(b=>b.classList.remove('on'))
+  el.classList.add('on')
+  const hasReport=document.getElementById('n_daily_report')?.checked
+  document.getElementById('freqSection').style.display=(el.dataset.ch!=='none'&&hasReport)?'block':'none'
+}
+
+// Notif toggles
+window.toggleNotif=(el)=>{
+  const cb=el.querySelector('input')
+  cb.checked=!cb.checked
+  el.classList.toggle('on',cb.checked)
+  // Show freq section if daily report checked and channel not none
+  const ch=document.querySelector('.ch-btn.on')?.dataset.ch||'none'
+  const hasReport=document.getElementById('n_daily_report')?.checked
+  document.getElementById('freqSection').style.display=(ch!=='none'&&hasReport)?'block':'none'
+}
+
+window.updateFreqUI=()=>{
+  const freq=document.getElementById('rFreq').value
+  document.getElementById('weekDayRow').style.display=freq==='weekly'?'block':'none'
+}
+
+// OPEN CREATE
+document.getElementById('btnNew').addEventListener('click',()=>{
+  document.getElementById('rId').value=''
+  document.getElementById('mRoleTitle').textContent='Create New Role'
+  document.getElementById('rName').value=''
+  document.getElementById('rDesc').value=''
+  document.getElementById('rErr').textContent=''
+  document.getElementById('btnDelete').style.display='none'
+  document.querySelectorAll('.co').forEach(c=>{c.classList.remove('sel');c.textContent=''})
+  document.querySelector('.co[data-c="#3b5fe2"]').classList.add('sel');document.querySelector('.co[data-c="#3b5fe2"]').textContent='✓'
+  document.querySelectorAll('.io').forEach(c=>c.classList.remove('sel'))
+  document.querySelector('.io[data-i="👔"]').classList.add('sel')
+  document.querySelectorAll('.ch-btn').forEach(b=>b.classList.remove('on'))
+  document.querySelector('.ch-btn[data-ch="none"]').classList.add('on')
+  document.querySelectorAll('.notif-check').forEach(c=>{c.classList.remove('on');c.querySelector('input').checked=false})
+  document.getElementById('freqSection').style.display='none'
+  document.getElementById('rFreq').value='daily'
+  document.getElementById('rTime').value='18:00'
+  buildPages([])
+  document.getElementById('mRole').classList.add('on')
+})
+
+// OPEN EDIT
+window.openEdit=(id)=>{
+  const r=roles.find(x=>x.id===id)
+  if(!r)return
+  document.getElementById('rId').value=id
+  document.getElementById('mRoleTitle').textContent='Edit Role: '+r.label
+  document.getElementById('rName').value=r.label||''
+  document.getElementById('rDesc').value=r.description||''
+  document.getElementById('rErr').textContent=''
+  document.getElementById('btnDelete').style.display='inline-flex'
+  // Color
+  document.querySelectorAll('.co').forEach(c=>{c.classList.remove('sel');c.textContent=''})
+  const co=document.querySelector(`.co[data-c="${r.color}"]`)
+  if(co){co.classList.add('sel');co.textContent='✓'}
+  // Icon
+  document.querySelectorAll('.io').forEach(c=>c.classList.remove('sel'))
+  const io=document.querySelector(`.io[data-i="${r.icon}"]`)
+  if(io)io.classList.add('sel')
+  // Pages
+  buildPages(r.page_access)
+  // Channel
+  document.querySelectorAll('.ch-btn').forEach(b=>b.classList.remove('on'))
+  const ch=document.querySelector(`.ch-btn[data-ch="${r.notify_channel||'none'}"]`)
+  if(ch)ch.classList.add('on')
+  // Notifs
+  ;['low_stock','requisition','quality','rejection','daily_report'].forEach(k=>{
+    const cb=document.getElementById('n_'+k)
+    const nc=document.getElementById('nc_'+k)
+    if(cb){cb.checked=!!r['notify_'+k];nc?.classList.toggle('on',!!r['notify_'+k])}
+  })
+  // Freq
+  document.getElementById('rFreq').value=r.report_frequency||'daily'
+  document.getElementById('rTime').value=r.report_time||'18:00'
+  if(r.report_day)document.getElementById('rDay').value=r.report_day
+  updateFreqUI()
+  const hasReport=r.notify_daily_report&&(r.notify_channel||'none')!=='none'
+  document.getElementById('freqSection').style.display=hasReport?'block':'none'
+  document.getElementById('mRole').classList.add('on')
+}
+
+window.closeModal=()=>document.getElementById('mRole').classList.remove('on')
+document.getElementById('mRole').addEventListener('click',e=>{if(e.target===document.getElementById('mRole'))closeModal()})
+
+// SAVE
+window.saveRole=async()=>{
+  const id=document.getElementById('rId').value
+  const name=document.getElementById('rName').value.trim()
+  if(!name){document.getElementById('rErr').textContent='Role name is required';return}
+  const color=document.querySelector('.co.sel')?.dataset.c||'#3b5fe2'
+  const icon=document.querySelector('.io.sel')?.dataset.i||'👤'
+  const pages=getSelectedPages()
+  const ch=document.querySelector('.ch-btn.on')?.dataset.ch||'none'
+  const slug=id?roles.find(r=>r.id===id)?.name:name.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'')
+  const payload={
+    name:slug||name.toLowerCase().replace(/\s+/g,'_'),
+    label:name,
+    description:document.getElementById('rDesc').value.trim()||null,
+    page_access:JSON.stringify(pages),
+    color,icon,
+    notify_channel:ch,
+    notify_low_stock:document.getElementById('n_low_stock').checked,
+    notify_requisition:document.getElementById('n_requisition').checked,
+    notify_quality:document.getElementById('n_quality').checked,
+    notify_rejection:document.getElementById('n_rejection').checked,
+    notify_daily_report:document.getElementById('n_daily_report').checked,
+    report_frequency:document.getElementById('rFreq').value,
+    report_time:document.getElementById('rTime').value,
+    report_day:document.getElementById('rDay').value
+  }
+  try{
+    if(id){
+      const{error}=await sb.from('role_templates').update(payload).eq('id',id)
+      if(error)throw error
+    }else{
+      const{error}=await sb.from('role_templates').insert([payload])
+      if(error)throw error
+    }
+    closeModal();ntf(id?'Role updated ✅':'Role created ✅');load()
+  }catch(err){document.getElementById('rErr').textContent=err.message}
+}
+
+// DELETE
+window.deleteRole=async()=>{
+  const id=document.getElementById('rId').value
+  const r=roles.find(x=>x.id===id)
+  if(!confirm(`Delete role "${r?.label}"? Employees with this role will revert to Employee access.`))return
+  await sb.from('role_templates').delete().eq('id',id)
+  closeModal();ntf('Role deleted');load()
+}
+
+load()
+</script>
+</body>
+</html>
