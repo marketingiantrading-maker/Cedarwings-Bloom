@@ -507,30 +507,68 @@ window._clockStep=async(step)=>{
 
 async function showMachinePicker(step,ord){
   // Load machines for this step from step_machines table
-  const{data:sm}=await sb.from("step_machines").select("*").eq("step",step).eq("is_active",true)
-  const machines=sm||[]
+  // Also load all machines as fallback in case step_machines not populated
+  let machines=[]
+  try{
+    const{data:sm}=await sb.from("step_machines").select("*").eq("step",step).eq("is_active",true)
+    machines=sm||[]
+  }catch(e){}
+
+  // Fallback: load ALL machines if step_machines returned nothing
   if(!machines.length){
-    // No machines configured — clock in without machine
-    await doClockIn(step,ord,null,null)
+    try{
+      const{data:allM}=await sb.from("machines").select("id,machine_name,machine_type,status").eq("status","operational")
+      if(allM&&allM.length){
+        machines=allM.map(m=>({machine_id:m.id,machine_name:m.machine_name}))
+      }
+    }catch(e){}
+  }
+
+  if(!machines.length){
+    // No machines at all — offer "No machine" option
+    document.getElementById("machModalTitle").textContent=`Clocking in: ${step}`
+    document.getElementById("machModalSub").textContent=`Order ${ord} — no machines configured yet`
+    document.getElementById("machList").innerHTML=`
+      <div onclick="window._pickMachine('${step}','${ord}','','')"
+        style="background:#f8fafc;border:2px solid #e2e8f0;border-radius:13px;padding:16px;text-align:center;cursor:pointer;transition:all .15s;grid-column:1/-1"
+        onmouseover="this.style.borderColor='#3b5fe2';this.style.background='#eef2ff'"
+        onmouseout="this.style.borderColor='#e2e8f0';this.style.background='#f8fafc'">
+        <div style="font-size:24px;margin-bottom:8px">👷</div>
+        <div style="font-size:13px;font-weight:800;color:#0f172a">No Machine — Manual Work</div>
+        <div style="font-size:11px;color:#64748b;margin-top:4px">Clock in without a machine</div>
+      </div>`
+    document.getElementById("machModal").style.display="flex"
     return
   }
+
   if(machines.length===1){
-    // Only one machine — auto-select
-    await doClockIn(step,ord,machines[0].machine_name,machines[0].machine_id)
+    // Only one machine — auto-select, no picker needed
+    await doClockIn(step,ord,machines[0].machine_name,machines[0].machine_id||machines[0].id||null)
     return
   }
-  // Multiple machines — show picker
-  document.getElementById("machModalTitle").textContent=`Select machine for: ${step}`
-  document.getElementById("machModalSub").textContent=`Order ${ord} — tap the machine you will use`
+
+  // Multiple machines — show picker modal
+  document.getElementById("machModalTitle").textContent=`Select machine — ${step}`
+  document.getElementById("machModalSub").textContent=`Order ${ord} · tap the machine you will use`
   const COLORS=["#3b5fe2","#16a34a","#d97706","#dc2626","#7c3aed","#0d9488"]
-  document.getElementById("machList").innerHTML=machines.map((m,i)=>`
-    <div onclick="window._pickMachine('${step}','${ord}','${m.machine_name.replace(/'/g,"\'")}','${m.machine_id||''}')"
-      style="background:#f8fafc;border:2px solid #e2e8f0;border-radius:13px;padding:16px;text-align:center;cursor:pointer;transition:all .15s"
+  document.getElementById("machList").innerHTML=[
+    // "No machine" option always first
+    `<div onclick="window._pickMachine('${step}','${ord}','','')"
+      style="background:#f8fafc;border:2px dashed #cbd5e1;border-radius:13px;padding:14px;text-align:center;cursor:pointer;transition:all .15s"
+      onmouseover="this.style.borderColor='#64748b';this.style.background='#f1f5f9'"
+      onmouseout="this.style.borderColor='#cbd5e1';this.style.background='#f8fafc'">
+      <div style="font-size:20px;margin-bottom:6px">👷</div>
+      <div style="font-size:12px;font-weight:700;color:#64748b">No Machine</div>
+    </div>`,
+    ...machines.map((m,i)=>`
+    <div onclick="window._pickMachine('${step}','${ord}','${(m.machine_name||'').replace(/'/g,"\\'")}','${m.machine_id||m.id||''}')"
+      style="background:#f8fafc;border:2px solid #e2e8f0;border-radius:13px;padding:14px;text-align:center;cursor:pointer;transition:all .15s"
       onmouseover="this.style.borderColor='${COLORS[i%COLORS.length]}';this.style.background='#eef2ff'"
       onmouseout="this.style.borderColor='#e2e8f0';this.style.background='#f8fafc'">
       <div style="font-size:24px;margin-bottom:8px">⚙</div>
       <div style="font-size:13px;font-weight:800;color:#0f172a">${m.machine_name}</div>
-    </div>`).join("")
+    </div>`)
+  ].join("")
   document.getElementById("machModal").style.display="flex"
 }
 
@@ -541,30 +579,74 @@ window._pickMachine=async(step,ord,machName,machId)=>{
 
 async function doClockIn(step,ord,machName,machId){
   const now=new Date()
-  // Close existing session
+
+  // AUTO-COMPLETE previous step on same order if it was in_progress (not paused)
+  // i.e. employee moved naturally to next step → previous is done
+  const prevStepIdx=STEPS.indexOf(step)-1
+  if(prevStepIdx>=0){
+    const prevStep=STEPS[prevStepIdx]
+    try{
+      const{data:prevTrack}=await sb.from("order_step_tracking")
+        .select("id,status").eq("order_no",ord).eq("step",prevStep).limit(1)
+      if(prevTrack&&prevTrack.length){
+        const ps=prevTrack[0]
+        // Only auto-complete if it was in_progress (not paused/machine_running)
+        if(ps.status==="in_progress"){
+          await sb.from("order_step_tracking").update({
+            status:"complete",
+            completed_at:now.toISOString(),
+            completed_by:emp
+          }).eq("id",ps.id)
+        }
+      }
+    }catch(e){}
+  }
+
+  // Close existing active session
   if(activeSession?.id){
     await sb.from("time_sessions").update({ended_at:now.toISOString()}).eq("id",activeSession.id)
   }
   clearInterval(timerInt)
+
   // AUTO W9: fill any gap since last ended session
   await fillW9Gap(emp,now)
+
   const batchId=gB()
-  const{data:row,error}=await sb.from("time_sessions").insert([{employee_name:emp,session_type:"productive",work_type:step,machine:machName||null,machine_id:machId||null,order_no:ord,batch_id:batchId,started_at:now.toISOString(),ended_at:null,pause_reason:null}]).select().single()
+  const{data:row,error}=await sb.from("time_sessions").insert([{
+    employee_name:emp,
+    session_type:"productive",
+    work_type:step,
+    machine:machName||null,
+    machine_id:machId||null,
+    order_no:ord,
+    batch_id:batchId,
+    started_at:now.toISOString(),
+    ended_at:null,
+    pause_reason:null
+  }]).select().single()
   if(error){setSt("Error",error.message,"err");return}
-  // Create or update step tracking (upsert — don't overwrite first_started_at)
-  const{data:existing}=await sb.from("order_step_tracking").select("id,first_started_at").eq("order_no",ord).eq("step",step).limit(1)
+
+  // Create or update step tracking
+  const{data:existing}=await sb.from("order_step_tracking")
+    .select("id,first_started_at").eq("order_no",ord).eq("step",step).limit(1)
   if(existing&&existing.length){
-    await sb.from("order_step_tracking").update({status:"in_progress",last_resumed_at:now.toISOString()}).eq("id",existing[0].id)
+    await sb.from("order_step_tracking").update({
+      status:"in_progress",
+      last_resumed_at:now.toISOString()
+    }).eq("id",existing[0].id)
   }else{
-    await sb.from("order_step_tracking").insert([{order_no:ord,step,status:"in_progress",first_started_at:now.toISOString()}])
+    await sb.from("order_step_tracking").insert([{
+      order_no:ord,step,status:"in_progress",
+      first_started_at:now.toISOString()
+    }])
   }
+
   activeSession={id:row?.id,step,order:ord,type:"productive",startTime:now,machine:machName}
   showJobBox(step,ord,"productive",now,machName)
   startTimer()
   setSt("Clocked in: "+step,`${emp} · ${ord} · ${fT(now.toISOString())}`, "ok")
-  // Clear order field — page ready for next task entry
   document.getElementById("ord").value=""
-  renderPipeline("")
+  renderPipeline(ord)
   loadToday()
 }
 
