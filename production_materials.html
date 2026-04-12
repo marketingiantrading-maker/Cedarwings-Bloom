@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Cedarwings — Production & Materials</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#f0f4f8;--card:#fff;--bdr:#e2e8f0;--txt:#0f172a;--mu:#64748b;--dim:#94a3b8;--blue:#3b5fe2;--b50:#eef2ff;--b100:#e0e7ff;--green:#16a34a;--g50:#f0fdf4;--g100:#dcfce7;--amber:#d97706;--a50:#fffbeb;--a100:#fef3c7;--red:#dc2626;--r50:#fef2f2;--r100:#fee2e2;--purple:#7c3aed;--p50:#f5f3ff;--p100:#ede9fe;--f:"DM Sans",sans-serif;--mono:"JetBrains Mono",monospace;--sh:0 1px 3px rgba(0,0,0,.07),0 0 0 1px rgba(0,0,0,.04);--sh2:0 6px 24px rgba(0,0,0,.09)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh}
+.sb{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--card);border-right:1px solid var(--bdr);display:flex;flex-direction:column;z-index:100;overflow-y:auto}
+.sb-top{display:flex;align-items:center;gap:12px;padding:20px 18px 16px;border-bottom:1px solid var(--bdr)}
+.logo{width:38px;height:38px;background:linear-gradient(135deg,#3b5fe2,#6366f1);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.sb-nm{font-weight:800;font-size:14px}.sb-role{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;margin-top:3px;background:var(--b50);color:var(--blue)}
+.sb-nav{flex:1;padding:10px}.sb-s{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;padding:14px 8px 6px}
+.nl{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13px;font-weight:500;color:var(--mu);text-decoration:none;transition:all .12s}
+.nl:hover{background:var(--bg);color:var(--txt)}.nl.on{background:var(--b50);color:var(--blue);font-weight:700}
+.nl .ic{font-size:15px;width:18px;text-align:center}
+.sb-foot{padding:12px 10px;border-top:1px solid var(--bdr)}
+.content{margin-left:240px;min-height:100vh}
+.topbar{background:var(--card);border-bottom:1px solid var(--bdr);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.tb-t{font-size:20px;font-weight:800;letter-spacing:-.4px}.tb-s{font-size:12px;color:var(--mu);margin-top:2px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;font-size:13px;font-weight:600;border:none;border-radius:9px;cursor:pointer;font-family:var(--f);transition:all .12s;text-decoration:none}
+.bb{background:var(--blue);color:#fff}.bb:hover{background:#2e4fc7}
+.bg{background:var(--green);color:#fff}.bg:hover{background:#15803d}
+.br{background:var(--red);color:#fff}
+.bgh{background:var(--card);border:1px solid var(--bdr);color:var(--mu)}.bgh:hover{color:var(--txt)}
+.bam{background:var(--amber);color:#fff}
+.bs{padding:5px 10px;font-size:11px}
+.body{padding:22px 28px 60px}
+/* TABS */
+.tabs{display:flex;gap:2px;background:#f1f5f9;border-radius:12px;padding:3px;margin-bottom:22px;width:fit-content}
+.tab{padding:8px 18px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;color:var(--mu);transition:all .15s;border:none;background:none;font-family:var(--f)}
+.tab.on{background:var(--card);color:var(--txt);box-shadow:var(--sh)}
+/* KPI */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.kpi{background:var(--card);border-radius:14px;box-shadow:var(--sh);padding:18px}
+.kpi-icon{font-size:22px;margin-bottom:8px}.kpi-lbl{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.kpi-val{font-size:28px;font-weight:700;font-family:var(--mono);letter-spacing:-1px}
+.kpi-sub{font-size:11px;color:var(--mu);margin-top:3px}
+/* CARD */
+.card{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:20px;margin-bottom:16px}
+.card-t{font-size:15px;font-weight:800;margin-bottom:4px}
+.card-s{font-size:12px;color:var(--mu);margin-bottom:16px}
+/* FORM */
+lbl{display:block;font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.fi{width:100%;padding:10px 14px;border:1.5px solid var(--bdr);border-radius:9px;font-family:var(--f);font-size:13px;color:var(--txt);background:#fff;outline:none;transition:border-color .15s}
+.fi:focus{border-color:var(--blue)}.fi::placeholder{color:var(--dim)}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.fgrp{margin-bottom:14px}
+/* MACHINE LOT CARDS */
+.lot-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:20px}
+.lot-card{background:var(--card);border-radius:14px;box-shadow:var(--sh);overflow:hidden;border:1.5px solid var(--bdr)}
+.lot-card.active{border-color:var(--green)}
+.lc-head{padding:14px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--bdr)}
+.lc-machine{font-size:14px;font-weight:800}
+.lc-lot{font-size:11px;color:var(--mu);margin-top:2px;font-family:var(--mono)}
+.lc-body{padding:14px 16px}
+/* PROGRESS BAR */
+.prog-wrap{background:#f1f5f9;border-radius:999px;height:10px;margin:10px 0 6px;overflow:hidden}
+.prog-bar{height:100%;border-radius:999px;transition:width .3s}
+.prog-green{background:var(--green)}
+.prog-amber{background:var(--amber)}
+.prog-red{background:var(--red)}
+/* YIELD RULES */
+.rule-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--bdr);margin-bottom:8px;background:#f8fafc}
+.rule-icon{font-size:20px;width:30px;text-align:center}
+/* PRODUCTION ENTRIES TABLE */
+.tw{overflow-x:auto;border-radius:12px;border:1px solid var(--bdr)}
+table{width:100%;border-collapse:collapse}
+thead th{padding:10px 14px;font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;background:#f8fafc;border-bottom:1px solid var(--bdr);text-align:left;white-space:nowrap}
+tbody td{padding:12px 14px;font-size:13px;border-bottom:1px solid var(--bdr);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#f8fafc}
+/* MODAL */
+.mov{position:fixed;inset:0;background:rgba(15,23,42,.75);z-index:500;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+.mov.on{display:flex}
+.mo{background:var(--card);border-radius:18px;padding:28px;width:100%;max-width:560px;box-shadow:0 20px 60px rgba(0,0,0,.25);margin:auto}
+.mo-t{font-size:18px;font-weight:800;margin-bottom:3px}
+.mo-s{font-size:13px;color:var(--mu);margin-bottom:20px}
+.mo-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+.mer{color:var(--red);font-size:12px;margin-top:8px;min-height:14px}
+/* BADGE */
+.badge{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:700}
+.b-ok{background:var(--g50);color:var(--green)}.b-warn{background:var(--a50);color:var(--amber)}.b-low{background:var(--r50);color:var(--red)}
+/* NOTIF */
+.notif{position:fixed;bottom:24px;right:24px;padding:13px 18px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;display:none;align-items:center;gap:8px;box-shadow:var(--sh2)}
+.notif.on{display:flex}.notif.ok{background:#15803d;color:#fff}.notif.err{background:var(--red);color:#fff}
+/* ALIGNER COUNTER */
+.counter-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.counter-card{background:var(--card);border-radius:14px;box-shadow:var(--sh);padding:18px}
+.cc-num{font-family:var(--mono);font-size:36px;font-weight:700;letter-spacing:-2px}
+.cc-lbl{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-top:4px}
+</style>
+</head>
+<body>
+<aside class="sb">
+  <div class="sb-top"><div class="logo">🏭</div><div><div class="sb-nm">Cedarwings SAS</div><div class="sb-role">Manager</div></div></div>
+  <nav class="sb-nav">
+    <div class="sb-s">Operations</div>
+    <a href="manager.html" class="nl"><span class="ic">📊</span>Dashboard</a>
+    <a href="production.html" class="nl on"><span class="ic">🏭</span>Production</a>
+    <a href="machines.html" class="nl"><span class="ic">⚙</span>Machines</a>
+    <div class="sb-s">Team</div>
+    <a href="employees.html" class="nl"><span class="ic">👥</span>Employees</a>
+    <a href="employee_profile.html" class="nl"><span class="ic">👤</span>Employee Profile</a>
+    <a href="time_report.html" class="nl"><span class="ic">📈</span>Time Report</a>
+    <div class="sb-s">Quality</div>
+    <a href="tracabilite.html" class="nl"><span class="ic">🔖</span>Traceability</a>
+    <a href="qualite.html" class="nl"><span class="ic">✅</span>Quality Control</a>
+    <div class="sb-s">Resources</div>
+    <a href="inventory.html" class="nl"><span class="ic">📦</span>Inventory</a>
+    <div class="sb-s">System</div>
+    <a href="settings.html" class="nl"><span class="ic">⚙</span>Settings</a>
+    <a href="roles.html" class="nl"><span class="ic">🔑</span>Roles</a>
+    <a href="clocking.html" class="nl"><span class="ic">⏱</span>Clocking Terminal</a>
+  </nav>
+  <div class="sb-foot"><a href="index.html" class="nl"><span class="ic">←</span>Switch Role</a></div>
+</aside>
+
+<div class="content">
+  <div class="topbar">
+    <div><div class="tb-t">🏭 Production & Materials</div><div class="tb-s">Aligner output, material lots, yield rules and consumption tracking</div></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn bgh" id="btnYield">⚙ Yield Rules</button>
+      <button class="btn bgh" id="btnLoadLot">📦 Load Lot to Machine</button>
+      <button class="btn bb" id="btnEntry">+ Log Production</button>
+    </div>
+  </div>
+
+  <div class="body">
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab on" onclick="showTab('overview')">📊 Overview</button>
+      <button class="tab" onclick="showTab('lots')">📦 Active Material Lots</button>
+      <button class="tab" onclick="showTab('entries')">📋 Production Log</button>
+      <button class="tab" onclick="showTab('consumption')">🔬 Consumption Log</button>
+    </div>
+
+    <!-- OVERVIEW TAB -->
+    <div id="tab-overview">
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-icon">🦷</div><div class="kpi-lbl">Aligners Today</div><div class="kpi-val" id="kpiToday">—</div><div class="kpi-sub">across all orders</div></div>
+        <div class="kpi"><div class="kpi-icon">📅</div><div class="kpi-lbl">This Week</div><div class="kpi-val" id="kpiWeek">—</div><div class="kpi-sub">Mon–today</div></div>
+        <div class="kpi"><div class="kpi-icon">📦</div><div class="kpi-lbl">Active Lots</div><div class="kpi-val" id="kpiLots">—</div><div class="kpi-sub">materials loaded</div></div>
+        <div class="kpi"><div class="kpi-icon">⚠</div><div class="kpi-lbl">Low Material</div><div class="kpi-val" id="kpiLow" style="color:#dc2626">—</div><div class="kpi-sub">lots under 20%</div></div>
+      </div>
+
+      <!-- ACTIVE LOTS SUMMARY -->
+      <div class="card">
+        <div class="card-t">📦 Loaded Material Lots</div>
+        <div class="card-s">Materials currently loaded in machines — remaining capacity and estimated aligners left</div>
+        <div class="lot-grid" id="lotsOverview"><div style="color:var(--dim);font-size:13px">Loading…</div></div>
+      </div>
+
+      <!-- ALIGNER COUNTER TODAY -->
+      <div class="card">
+        <div class="card-t">🦷 Aligner Production Today</div>
+        <div class="card-s">Orders logged today with aligner counts</div>
+        <div class="counter-grid" id="counterGrid"><div style="color:var(--dim);font-size:13px">No production logged today.</div></div>
+      </div>
+    </div>
+
+    <!-- LOTS TAB -->
+    <div id="tab-lots" style="display:none">
+      <div class="card">
+        <div class="card-t">📦 All Active Material Lots</div>
+        <div class="card-s">Lots currently loaded in machines. When a lot is consumed, unload it and load the next one.</div>
+        <div class="lot-grid" id="lotsAll"><div style="color:var(--dim)">Loading…</div></div>
+      </div>
+    </div>
+
+    <!-- ENTRIES TAB -->
+    <div id="tab-entries" style="display:none">
+      <div class="card">
+        <div class="card-t">📋 Production Log</div>
+        <div class="card-s">Manual entry of aligners completed per order. Future: auto-linked from production API.</div>
+        <div class="tw"><table>
+          <thead><tr><th>Date</th><th>Order</th><th>Case Type</th><th>Aligners</th><th>Upper</th><th>Lower</th><th>By</th><th>Notes</th><th></th></tr></thead>
+          <tbody id="entriesTable"><tr><td colspan="9" style="text-align:center;padding:24px;color:var(--dim)">No entries yet.</td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- CONSUMPTION TAB -->
+    <div id="tab-consumption" style="display:none">
+      <div class="card">
+        <div class="card-t">🔬 Material Consumption Log</div>
+        <div class="card-s">Auto-recorded each time aligners are produced — shows which lot was used and how much.</div>
+        <div class="tw"><table>
+          <thead><tr><th>Date</th><th>Order</th><th>Step</th><th>Material</th><th>Lot</th><th>Qty Used</th><th>Aligners</th><th>Machine</th></tr></thead>
+          <tbody id="consumptionTable"><tr><td colspan="8" style="text-align:center;padding:24px;color:var(--dim)">No consumption recorded yet.</td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Load Lot to Machine -->
+<div class="mov" id="mLoadLot">
+  <div class="mo">
+    <div class="mo-t">📦 Load Material Lot to Machine</div>
+    <div class="mo-s">Assign a lot from inventory to a machine. The system will track consumption automatically.</div>
+    <div class="fgrp"><lbl>Machine *</lbl><select class="fi" id="llMachine"><option value="">Select machine…</option></select></div>
+    <div class="fgrp"><lbl>Material / Item *</lbl><select class="fi" id="llItem"><option value="">Select material…</option></select></div>
+    <div class="fg2">
+      <div><lbl>Lot Number *</lbl><input class="fi" id="llLot" placeholder="e.g. LOT-2024-RESIN-001"/></div>
+      <div><lbl>Initial Quantity *</lbl>
+        <div style="display:flex;gap:6px">
+          <input class="fi" id="llQty" type="number" step="0.001" placeholder="e.g. 1.5" style="flex:1"/>
+          <select class="fi" id="llUnit" style="width:80px"><option>kg</option><option>g</option><option>ml</option><option>L</option><option>pcs</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="fgrp"><lbl>Loaded by</lbl><input class="fi" id="llBy" placeholder="Your name"/></div>
+    <div class="mo-actions">
+      <button class="btn bgh" onclick="document.getElementById('mLoadLot').classList.remove('on')">Cancel</button>
+      <button class="btn bb" onclick="saveLoadLot()">Load Lot</button>
+    </div>
+    <div class="mer" id="llErr"></div>
+  </div>
+</div>
+
+<!-- MODAL: Log Production Entry -->
+<div class="mov" id="mEntry">
+  <div class="mo">
+    <div class="mo-t">🦷 Log Aligner Production</div>
+    <div class="mo-s">Record how many aligners were produced for an order today.</div>
+    <div class="fg2">
+      <div><lbl>Order Number *</lbl><input class="fi" id="enOrder" placeholder="e.g. ORD-1052"/></div>
+      <div><lbl>Case Type</lbl>
+        <select class="fi" id="enCase">
+          <option value="">Select…</option>
+          <option>Full Treatment</option>
+          <option>Refinement</option>
+          <option>Retainer</option>
+          <option>Partial</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg3">
+      <div><lbl>Total Aligners *</lbl><input class="fi" id="enTotal" type="number" min="1" placeholder="e.g. 28"/></div>
+      <div><lbl>Upper</lbl><input class="fi" id="enUpper" type="number" min="0" placeholder="e.g. 14"/></div>
+      <div><lbl>Lower</lbl><input class="fi" id="enLower" type="number" min="0" placeholder="e.g. 14"/></div>
+    </div>
+    <div id="materialDeductPreview" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px;margin-bottom:14px;display:none">
+      <div style="font-size:11px;font-weight:700;color:#15803d;margin-bottom:6px">📊 MATERIAL DEDUCTION PREVIEW</div>
+      <div id="deductList" style="font-size:12px;color:#166534"></div>
+    </div>
+    <div class="fgrp"><lbl>Notes</lbl><input class="fi" id="enNotes" placeholder="Optional notes…"/></div>
+    <div class="fgrp"><lbl>Entered by</lbl><input class="fi" id="enBy" placeholder="Your name"/></div>
+    <div class="mo-actions">
+      <button class="btn bgh" onclick="document.getElementById('mEntry').classList.remove('on')">Cancel</button>
+      <button class="btn bb" onclick="saveEntry()">Save & Deduct Materials</button>
+    </div>
+    <div class="mer" id="enErr"></div>
+  </div>
+</div>
+
+<!-- MODAL: Yield Rules -->
+<div class="mov" id="mYield">
+  <div class="mo" style="max-width:640px">
+    <div class="mo-t">⚙ Yield Rules</div>
+    <div class="mo-s">Define how much material is consumed per aligner. The system uses these to auto-deduct from loaded lots.</div>
+    <div id="yieldList" style="margin-bottom:16px"></div>
+    <div style="background:#f8fafc;border-radius:12px;padding:16px;border:1px solid var(--bdr)">
+      <div style="font-size:12px;font-weight:700;margin-bottom:10px">+ Add New Rule</div>
+      <div class="fg3">
+        <div><lbl>Material</lbl><input class="fi" id="yrItem" placeholder="e.g. Resin"/></div>
+        <div><lbl>Step</lbl>
+          <select class="fi" id="yrStep">
+            <option>Printing</option><option>Cleaning</option><option>Thermoforming</option>
+            <option>Line Cut</option><option>Laser Marking</option><option>Packaging</option>
+          </select>
+        </div>
+        <div><lbl>Qty / Aligner</lbl>
+          <div style="display:flex;gap:5px">
+            <input class="fi" id="yrQty" type="number" step="0.001" placeholder="0.025" style="flex:1"/>
+            <select class="fi" id="yrUnit" style="width:70px"><option>kg</option><option>g</option><option>ml</option><option>L</option><option>pcs</option></select>
+          </div>
+        </div>
+      </div>
+      <button class="btn bb bs" onclick="saveYieldRule()">+ Add Rule</button>
+    </div>
+    <div class="mo-actions">
+      <button class="btn bgh" onclick="document.getElementById('mYield').classList.remove('on')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="notif" id="notif"></div>
+
+<script type="module">
+import{createClient}from"https://esm.sh/@supabase/supabase-js@2"
+import{SUPABASE_CONFIG}from"./config.js"
+const sb=createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey)
+
+const ntf=(m,t='ok')=>{const e=document.getElementById('notif');e.textContent=(t==='ok'?'✅ ':'❌ ')+m;e.className='notif on '+t;setTimeout(()=>e.classList.remove('on'),3500)}
+const fd=v=>v?new Date(v).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'—'
+const fmt=n=>n%1===0?n:parseFloat(n).toFixed(3)
+
+let machines=[],inventory=[],yieldRules=[],activeLots=[],entries=[],consumption=[]
+
+/* ─── TABS ─── */
+window.showTab=(t)=>{
+  document.querySelectorAll('[id^="tab-"]').forEach(el=>el.style.display='none')
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'))
+  document.getElementById('tab-'+t).style.display='block'
+  event.target.classList.add('on')
+}
+
+/* ─── LOAD ─── */
+async function load(){
+  const[mRes,iRes,yRes,lRes,eRes,cRes]=await Promise.all([
+    sb.from('machines').select('id,machine_name,machine_type').order('machine_name'),
+    sb.from('inventory_items').select('id,name,unit_of_measure,current_stock').order('name'),
+    sb.from('material_yield_rules').select('*').order('step'),
+    sb.from('machine_lot_assignments').select('*').eq('is_active',true).order('loaded_at',{ascending:false}),
+    sb.from('production_entries').select('*').order('entered_at',{ascending:false}).limit(100),
+    sb.from('material_consumption_log').select('*').order('recorded_at',{ascending:false}).limit(200)
+  ])
+  machines=mRes.data||[]
+  inventory=iRes.data||[]
+  yieldRules=yRes.data||[]
+  activeLots=lRes.data||[]
+  entries=eRes.data||[]
+  consumption=cRes.data||[]
+  renderAll()
+  populateSelects()
+}
+
+function populateSelects(){
+  document.getElementById('llMachine').innerHTML='<option value="">Select machine…</option>'+
+    machines.map(m=>`<option value="${m.id}" data-name="${m.machine_name}">${m.machine_name} (${m.machine_type})</option>`).join('')
+  document.getElementById('llItem').innerHTML='<option value="">Select material…</option>'+
+    inventory.map(i=>`<option value="${i.id}" data-name="${i.name}" data-unit="${i.unit_of_measure||'pcs'}">${i.name} (stock: ${i.current_stock||0} ${i.unit_of_measure||''})</option>`).join('')
+  document.getElementById('llItem').addEventListener('change',function(){
+    const opt=this.options[this.selectedIndex]
+    if(opt.dataset.unit)document.getElementById('llUnit').value=opt.dataset.unit
+  })
+}
+
+function renderAll(){
+  renderLotsCards()
+  renderCounterGrid()
+  renderEntriesTable()
+  renderConsumptionTable()
+  renderKPIs()
+}
+
+function renderKPIs(){
+  const todayStr=new Date().toISOString().slice(0,10)
+  const todayEntries=entries.filter(e=>e.session_date===todayStr)
+  const todayTotal=todayEntries.reduce((s,e)=>s+(e.aligners_done||0),0)
+  const mon=new Date();mon.setDate(mon.getDate()-mon.getDay()+1);mon.setHours(0,0,0,0)
+  const weekTotal=entries.filter(e=>new Date(e.entered_at)>=mon).reduce((s,e)=>s+(e.aligners_done||0),0)
+  const lowLots=activeLots.filter(l=>(l.remaining_qty/l.initial_qty)<0.2).length
+  document.getElementById('kpiToday').textContent=todayTotal
+  document.getElementById('kpiWeek').textContent=weekTotal
+  document.getElementById('kpiLots').textContent=activeLots.length
+  document.getElementById('kpiLow').textContent=lowLots
+}
+
+function lotCardHtml(lot){
+  const pct=lot.initial_qty>0?Math.round((lot.remaining_qty/lot.initial_qty)*100):0
+  const progCls=pct>40?'prog-green':pct>20?'prog-amber':'prog-red'
+  const badgeCls=pct>40?'b-ok':pct>20?'b-warn':'b-low'
+  // Estimate remaining aligners
+  const rule=yieldRules.find(r=>r.item_name.toLowerCase()===lot.item_name.toLowerCase())
+  const remaining_aligners=rule&&rule.qty_per_aligner>0?Math.floor(lot.remaining_qty/rule.qty_per_aligner):null
+  return`<div class="lot-card active">
+    <div class="lc-head">
+      <div style="font-size:22px">⚙</div>
+      <div style="flex:1">
+        <div class="lc-machine">${lot.machine_name}</div>
+        <div class="lc-lot">${lot.item_name} · ${lot.lot_number}</div>
+      </div>
+      <span class="badge ${badgeCls}">${pct}%</span>
+    </div>
+    <div class="lc-body">
+      <div style="display:flex;justify-content:space-between;font-size:12px">
+        <span style="color:var(--mu)">Remaining</span>
+        <span style="font-weight:700;font-family:var(--mono)">${fmt(lot.remaining_qty)} ${lot.unit}</span>
+      </div>
+      <div class="prog-wrap"><div class="prog-bar ${progCls}" style="width:${pct}%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--dim)">
+        <span>Initial: ${fmt(lot.initial_qty)} ${lot.unit}</span>
+        ${remaining_aligners!==null?`<span style="color:var(--green);font-weight:700">~${remaining_aligners} aligners left</span>`:''}
+      </div>
+      ${rule?`<div style="font-size:10px;color:var(--mu);margin-top:6px;background:#f8fafc;padding:5px 8px;border-radius:6px">Rule: ${rule.qty_per_aligner} ${rule.unit}/aligner</div>`:'<div style="font-size:10px;color:var(--red);margin-top:6px">⚠ No yield rule — set one via ⚙ Yield Rules</div>'}
+      <div style="display:flex;gap:6px;margin-top:10px">
+        <button class="btn bgh bs" onclick="unloadLot('${lot.id}')">Unload</button>
+        <button class="btn br bs" style="flex:1" onclick="manualDeduct('${lot.id}','${lot.item_name}','${lot.unit}')">− Deduct</button>
+      </div>
+    </div>
+  </div>`
+}
+
+function renderLotsCards(){
+  const html=activeLots.length?activeLots.map(lotCardHtml).join(''):'<div style="color:var(--dim);font-size:13px;padding:20px">No active lots. Click "Load Lot to Machine" to assign a material lot.</div>'
+  document.getElementById('lotsOverview').innerHTML=html
+  document.getElementById('lotsAll').innerHTML=html
+}
+
+function renderCounterGrid(){
+  const todayStr=new Date().toISOString().slice(0,10)
+  const todayEntries=entries.filter(e=>e.session_date===todayStr)
+  if(!todayEntries.length){
+    document.getElementById('counterGrid').innerHTML='<div style="color:var(--dim);font-size:13px;padding:10px">No production logged today. Click "+ Log Production" to add.</div>'
+    return
+  }
+  document.getElementById('counterGrid').innerHTML=todayEntries.map(e=>`
+    <div class="counter-card">
+      <div class="cc-num" style="color:var(--blue)">${e.aligners_done}</div>
+      <div class="cc-lbl">Aligners — Order ${e.order_no}</div>
+      <div style="font-size:11px;color:var(--mu);margin-top:6px">${e.case_type||'—'} · ${e.upper_count||0} upper + ${e.lower_count||0} lower</div>
+      ${e.notes?`<div style="font-size:11px;color:var(--dim);margin-top:4px">${e.notes}</div>`:''}
+    </div>`).join('')
+}
+
+function renderEntriesTable(){
+  document.getElementById('entriesTable').innerHTML=entries.length?entries.map(e=>`
+    <tr>
+      <td>${fd(e.entered_at)}</td>
+      <td style="font-weight:700;font-family:var(--mono)">${e.order_no}</td>
+      <td>${e.case_type||'—'}</td>
+      <td style="font-weight:700;color:var(--blue)">${e.aligners_done}</td>
+      <td>${e.upper_count||0}</td>
+      <td>${e.lower_count||0}</td>
+      <td>${e.entered_by||'—'}</td>
+      <td style="color:var(--mu);font-size:11px">${e.notes||'—'}</td>
+      <td><button class="btn br bs" onclick="deleteEntry('${e.id}')">🗑</button></td>
+    </tr>`).join(''):'<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--dim)">No entries yet.</td></tr>'
+}
+
+function renderConsumptionTable(){
+  document.getElementById('consumptionTable').innerHTML=consumption.length?consumption.map(c=>`
+    <tr>
+      <td>${fd(c.recorded_at)}</td>
+      <td style="font-family:var(--mono);font-weight:700">${c.order_no}</td>
+      <td>${c.step||'—'}</td>
+      <td>${c.item_name}</td>
+      <td style="font-family:var(--mono);font-size:11px">${c.lot_number}</td>
+      <td style="font-weight:700">${fmt(c.qty_used)} ${c.unit||''}</td>
+      <td style="color:var(--blue);font-weight:700">${c.aligners_count||'—'}</td>
+      <td>${c.machine_name||'—'}</td>
+    </tr>`).join(''):'<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--dim)">No consumption recorded yet.</td></tr>'
+}
+
+/* ─── LOAD LOT MODAL ─── */
+document.getElementById('btnLoadLot').addEventListener('click',()=>{
+  document.getElementById('llErr').textContent=''
+  document.getElementById('llMachine').value=''
+  document.getElementById('llItem').value=''
+  document.getElementById('llLot').value=''
+  document.getElementById('llQty').value=''
+  document.getElementById('mLoadLot').classList.add('on')
+})
+
+window.saveLoadLot=async()=>{
+  const machSel=document.getElementById('llMachine')
+  const itemSel=document.getElementById('llItem')
+  const machId=machSel.value
+  const machName=machSel.options[machSel.selectedIndex]?.dataset.name||''
+  const itemId=itemSel.value
+  const itemName=itemSel.options[itemSel.selectedIndex]?.dataset.name||''
+  const lot=document.getElementById('llLot').value.trim()
+  const qty=parseFloat(document.getElementById('llQty').value||0)
+  const unit=document.getElementById('llUnit').value
+  const by=document.getElementById('llBy').value.trim()
+  if(!machId||!itemId||!lot||!qty){document.getElementById('llErr').textContent='All fields required';return}
+  // Deactivate any existing assignment for same machine+item
+  await sb.from('machine_lot_assignments').update({is_active:false,unloaded_at:new Date().toISOString()})
+    .eq('machine_id',machId).eq('item_name',itemName).eq('is_active',true)
+  const{error}=await sb.from('machine_lot_assignments').insert([{
+    machine_id:machId,machine_name:machName,item_id:itemId,item_name:itemName,
+    lot_number:lot,initial_qty:qty,remaining_qty:qty,unit,loaded_by:by||null,is_active:true
+  }])
+  if(error){document.getElementById('llErr').textContent=error.message;return}
+  document.getElementById('mLoadLot').classList.remove('on')
+  ntf('Lot loaded to '+machName);load()
+}
+
+/* ─── PRODUCTION ENTRY MODAL ─── */
+document.getElementById('btnEntry').addEventListener('click',()=>{
+  document.getElementById('enErr').textContent=''
+  document.getElementById('enOrder').value=''
+  document.getElementById('enTotal').value=''
+  document.getElementById('enUpper').value=''
+  document.getElementById('enLower').value=''
+  document.getElementById('enNotes').value=''
+  document.getElementById('materialDeductPreview').style.display='none'
+  document.getElementById('mEntry').classList.add('on')
+})
+
+// Live preview of material deduction
+document.getElementById('enTotal')?.addEventListener('input',()=>{
+  const n=parseInt(document.getElementById('enTotal').value||0)
+  if(!n||!activeLots.length){document.getElementById('materialDeductPreview').style.display='none';return}
+  const lines=[]
+  activeLots.forEach(lot=>{
+    const rule=yieldRules.find(r=>r.item_name.toLowerCase()===lot.item_name.toLowerCase())
+    if(!rule)return
+    const deduct=rule.qty_per_aligner*n
+    lines.push(`• ${lot.item_name} (${lot.lot_number}): −${fmt(deduct)} ${lot.unit} → remaining: ${fmt(Math.max(0,lot.remaining_qty-deduct))} ${lot.unit}`)
+  })
+  if(lines.length){
+    document.getElementById('deductList').innerHTML=lines.join('<br>')
+    document.getElementById('materialDeductPreview').style.display='block'
+  }
+})
+
+window.saveEntry=async()=>{
+  const order=document.getElementById('enOrder').value.trim()
+  const total=parseInt(document.getElementById('enTotal').value||0)
+  if(!order||!total){document.getElementById('enErr').textContent='Order and aligner count required';return}
+  const upper=parseInt(document.getElementById('enUpper').value||0)
+  const lower=parseInt(document.getElementById('enLower').value||0)
+  const by=document.getElementById('enBy').value.trim()
+  const notes=document.getElementById('enNotes').value.trim()
+  const caseType=document.getElementById('enCase').value
+  const now=new Date()
+
+  // Insert production entry
+  const{error}=await sb.from('production_entries').insert([{
+    order_no:order,case_type:caseType||null,aligners_done:total,
+    upper_count:upper,lower_count:lower,notes:notes||null,
+    entered_by:by||null,entered_at:now.toISOString(),session_date:now.toISOString().slice(0,10)
+  }])
+  if(error){document.getElementById('enErr').textContent=error.message;return}
+
+  // Auto-deduct from active lots based on yield rules
+  for(const lot of activeLots){
+    const rule=yieldRules.find(r=>r.item_name.toLowerCase()===lot.item_name.toLowerCase())
+    if(!rule)continue
+    const deduct=parseFloat((rule.qty_per_aligner*total).toFixed(6))
+    const newRemaining=Math.max(0,parseFloat((lot.remaining_qty-deduct).toFixed(6)))
+    // Update remaining qty
+    await sb.from('machine_lot_assignments').update({remaining_qty:newRemaining}).eq('id',lot.id)
+    // Log consumption
+    await sb.from('material_consumption_log').insert([{
+      order_no:order,step:rule.step,machine_id:lot.machine_id,machine_name:lot.machine_name,
+      assignment_id:lot.id,item_name:lot.item_name,lot_number:lot.lot_number,
+      qty_used:deduct,unit:lot.unit,aligners_count:total,recorded_by:by||null
+    }])
+  }
+
+  document.getElementById('mEntry').classList.remove('on')
+  ntf(`${total} aligners logged — materials deducted`);load()
+}
+
+window.deleteEntry=async(id)=>{
+  if(!confirm('Delete this entry?'))return
+  await sb.from('production_entries').delete().eq('id',id)
+  ntf('Entry deleted');load()
+}
+
+window.unloadLot=async(id)=>{
+  const lot=activeLots.find(l=>l.id===id)
+  if(!confirm(`Unload ${lot?.item_name} from ${lot?.machine_name}?`))return
+  await sb.from('machine_lot_assignments').update({is_active:false,unloaded_at:new Date().toISOString()}).eq('id',id)
+  ntf('Lot unloaded');load()
+}
+
+window.manualDeduct=async(id,itemName,unit)=>{
+  const qty=parseFloat(prompt(`Manually deduct from ${itemName} (${unit}):`)||0)
+  if(!qty||qty<=0)return
+  const lot=activeLots.find(l=>l.id===id)
+  const newQty=Math.max(0,parseFloat((lot.remaining_qty-qty).toFixed(6)))
+  await sb.from('machine_lot_assignments').update({remaining_qty:newQty}).eq('id',id)
+  ntf(`Deducted ${qty} ${unit}`);load()
+}
+
+/* ─── YIELD RULES MODAL ─── */
+document.getElementById('btnYield').addEventListener('click',()=>{
+  renderYieldList();document.getElementById('mYield').classList.add('on')
+})
+function renderYieldList(){
+  document.getElementById('yieldList').innerHTML=yieldRules.length?yieldRules.map(r=>`
+    <div class="rule-row">
+      <span class="rule-icon">📦</span>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:13px">${r.item_name}</div>
+        <div style="font-size:11px;color:var(--mu)">${r.step} · ${r.qty_per_aligner} ${r.unit} per aligner</div>
+      </div>
+      <button class="btn br bs" onclick="deleteYieldRule('${r.id}')">🗑</button>
+    </div>`).join(''):'<div style="color:var(--dim);font-size:13px;margin-bottom:8px">No rules yet. Add one below.</div>'
+}
+window.saveYieldRule=async()=>{
+  const item=document.getElementById('yrItem').value.trim()
+  const step=document.getElementById('yrStep').value
+  const qty=parseFloat(document.getElementById('yrQty').value||0)
+  const unit=document.getElementById('yrUnit').value
+  if(!item||!qty){alert('Item and qty required');return}
+  await sb.from('material_yield_rules').insert([{item_name:item,step,qty_per_aligner:qty,unit}])
+  document.getElementById('yrItem').value=''
+  document.getElementById('yrQty').value=''
+  await load();renderYieldList();ntf('Rule added')
+}
+window.deleteYieldRule=async(id)=>{
+  await sb.from('material_yield_rules').delete().eq('id',id)
+  await load();renderYieldList();ntf('Rule deleted')
+}
+
+// Close modals on backdrop click
+document.querySelectorAll('.mov').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('on')}))
+
+load()
+</script>
+</body>
+</html>
