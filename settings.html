@@ -297,19 +297,25 @@ window.saveAll=async()=>{
   for(const s of settings){
     await sb.from('system_settings').upsert({key:s.key,value:s.value,updated_at:new Date().toISOString()},{onConflict:'key'})
   }
-  // Save recipients
-  for(const r of recipients){
-    if(!r.employee_name)continue
-    await sb.from('notification_settings').upsert({
-      employee_name:r.employee_name,email:r.email||null,whatsapp_phone:r.whatsapp_phone||null,
-      is_active:r.is_active,
-      notify_low_stock:document.getElementById('t_low_stock').checked,
-      notify_requisition:document.getElementById('t_requisition').checked,
-      notify_daily_report:document.getElementById('t_daily_report').checked,
-      notify_approval_needed:document.getElementById('t_quality').checked,
-      notify_quality_rejected:document.getElementById('t_rejection').checked,
-      daily_report_time:document.getElementById('reportTime').value
-    },{onConflict:'employee_name'})
+  // Save recipients — delete all then re-insert
+  // First delete existing
+  await sb.from('notification_settings').delete().neq('id','00000000-0000-0000-0000-000000000000')
+  // Then insert fresh
+  const toInsert=recipients.filter(r=>r.employee_name).map(r=>({
+    employee_name:r.employee_name,
+    email:r.email||null,
+    whatsapp_phone:r.whatsapp_phone||null,
+    is_active:r.is_active!==false,
+    notify_low_stock:document.getElementById('t_low_stock').checked,
+    notify_requisition:document.getElementById('t_requisition').checked,
+    notify_daily_report:document.getElementById('t_daily_report').checked,
+    notify_approval_needed:document.getElementById('t_quality').checked,
+    notify_quality_rejected:document.getElementById('t_rejection').checked,
+    daily_report_time:document.getElementById('reportTime').value
+  }))
+  if(toInsert.length){
+    const{error:re}=await sb.from('notification_settings').insert(toInsert)
+    if(re){ntf('Recipient save failed: '+re.message,'err');return}
   }
   ntf('All settings saved ✅')
   load()
