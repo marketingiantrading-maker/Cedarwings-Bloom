@@ -104,6 +104,9 @@
     <a href="machines.html" class="sb-link"><span class="icon">⚙</span>Machines</a>
     <div class="sb-sec">Team</div>
     <a href="employees.html" class="sb-link"><span class="icon">👥</span>Employees</a>
+    <div class="sb-sec">Quality</div>
+    <a href="tracabilite.html" class="nav-link"><span class="ic">🔖</span>Traceability</a>
+    <a href="qualite.html" class="nav-link"><span class="ic">✅</span>Quality Control</a>
     <div class="sb-sec">Resources</div>
     <a href="inventory.html" class="sb-link"><span class="icon">📦</span>Inventory</a>
     <a href="time_report.html" class="sb-link"><span class="icon">📈</span>Time Report</a>
@@ -133,12 +136,26 @@
           <div class="form-grid">
             <div><label>Order Number *</label><input id="prdOrderNo" placeholder="e.g. ORD-1048"/></div>
             <div><label>Batch ID</label><input id="prdBatchId" placeholder="Auto-generated"/></div>
+            <!-- PRODUCTION TYPE SELECTOR -->
+            <div style="grid-column:1/-1">
+              <label>Production Type *</label>
+              <div style="display:flex;gap:8px;margin-top:4px">
+                <button type="button" id="typeAligner" onclick="setProdType('aligner')" 
+                  style="flex:1;padding:10px;border-radius:10px;border:2px solid #3b5fe2;background:#eef2ff;color:#1d4ed8;font-weight:700;cursor:pointer;font-family:var(--f);font-size:13px">
+                  🦷 Per Aligner
+                </button>
+                <button type="button" id="typeCase" onclick="setProdType('case')"
+                  style="flex:1;padding:10px;border-radius:10px;border:2px solid #e2e8f0;background:#f8fafc;color:#64748b;font-weight:600;cursor:pointer;font-family:var(--f);font-size:13px">
+                  📦 Per Case
+                </button>
+              </div>
+            </div>
             <div>
-              <label>Aligners Produced *</label>
+              <label id="alignerLabel">Aligners Produced *</label>
               <input id="prdAligners" type="number" min="0" step="1" placeholder="0" oninput="previewConsumption()"/>
             </div>
             <div>
-              <label>Cases Completed *</label>
+              <label id="caseLabel">Cases Completed *</label>
               <input id="prdCases" type="number" min="0" step="1" placeholder="0" oninput="previewConsumption()"/>
             </div>
             <div><label>Machine Used</label><select id="prdMachine"><option value="">— Select machine (optional) —</option></select></div>
