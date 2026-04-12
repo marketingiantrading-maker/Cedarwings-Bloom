@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Cedarwings — Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#f0f4f8;--card:#fff;--bdr:#e2e8f0;--txt:#0f172a;--mu:#64748b;--dim:#94a3b8;--blue:#3b5fe2;--b50:#eef2ff;--b100:#e0e7ff;--green:#16a34a;--g50:#f0fdf4;--g100:#dcfce7;--amber:#d97706;--a50:#fffbeb;--a100:#fef3c7;--red:#dc2626;--r50:#fef2f2;--r100:#fee2e2;--f:"DM Sans",sans-serif;--mono:"JetBrains Mono",monospace;--sh:0 1px 3px rgba(0,0,0,.07),0 0 0 1px rgba(0,0,0,.04);--sh2:0 6px 24px rgba(0,0,0,.09),0 0 0 1px rgba(0,0,0,.04)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh}
+.sb{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--card);border-right:1px solid var(--bdr);display:flex;flex-direction:column;z-index:100;overflow-y:auto}
+.sb-top{display:flex;align-items:center;gap:12px;padding:20px 18px 16px;border-bottom:1px solid var(--bdr)}
+.logo{width:38px;height:38px;background:linear-gradient(135deg,#3b5fe2,#6366f1);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.sb-nm{font-weight:800;font-size:14px}.sb-role{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;margin-top:3px;background:var(--b50);color:var(--blue)}
+.sb-nav{flex:1;padding:10px}.sb-s{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;padding:14px 8px 6px}
+.nl{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13px;font-weight:500;color:var(--mu);text-decoration:none;transition:all .12s}
+.nl:hover{background:var(--bg);color:var(--txt)}.nl.on{background:var(--b50);color:var(--blue);font-weight:700}
+.nl .ic{font-size:15px;width:18px;text-align:center}
+.sb-foot{padding:12px 10px;border-top:1px solid var(--bdr)}
+.content{margin-left:240px;min-height:100vh}
+.topbar{background:var(--card);border-bottom:1px solid var(--bdr);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.tb-t{font-size:20px;font-weight:800;letter-spacing:-.4px}.tb-s{font-size:12px;color:var(--mu);margin-top:2px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;font-size:13px;font-weight:600;border:none;border-radius:9px;cursor:pointer;font-family:var(--f);transition:all .12s;text-decoration:none}
+.bb{background:var(--blue);color:#fff}.bb:hover{background:#2e4fc7}
+.bg{background:var(--green);color:#fff}
+.bgh{background:var(--card);border:1px solid var(--bdr);color:var(--mu)}.bgh:hover{color:var(--txt)}
+.ba{background:var(--amber);color:#fff}
+.body{padding:22px 28px 60px;max-width:900px}
+.card{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:24px;margin-bottom:20px}
+.card-title{font-size:15px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.card-sub{font-size:12px;color:var(--mu);margin-bottom:20px;line-height:1.6}
+lbl{display:block;font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.fi{width:100%;padding:11px 14px;border:1.5px solid var(--bdr);border-radius:10px;font-family:var(--f);font-size:13px;color:var(--txt);background:#fff;outline:none;transition:border-color .15s}
+.fi:focus{border-color:var(--blue)}.fi::placeholder{color:var(--dim)}
+.fi-pw{-webkit-text-security:disc;font-family:var(--mono)}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.fgrp{margin-bottom:14px}
+/* TOGGLE */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--bdr)}
+.toggle-row:last-child{border:none}
+.tr-left .tr-title{font-size:14px;font-weight:600}
+.tr-left .tr-sub{font-size:12px;color:var(--mu);margin-top:3px}
+.toggle{position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#e2e8f0;border-radius:999px;transition:.3s}
+.slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+input:checked+.slider{background:var(--green)}
+input:checked+.slider:before{transform:translateX(20px)}
+/* STATUS */
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700}
+.sb-ok{background:var(--g100);color:#15803d}.sb-err{background:var(--r100);color:#991b1b}.sb-pend{background:var(--a100);color:#92400e}
+/* LOG TABLE */
+.tw{overflow-x:auto;border-radius:12px;border:1px solid var(--bdr)}
+table{width:100%;border-collapse:collapse}
+thead th{padding:9px 13px;font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;background:#f8fafc;border-bottom:1px solid var(--bdr);text-align:left}
+tbody td{padding:10px 13px;font-size:13px;border-bottom:1px solid var(--bdr)}
+tbody tr:last-child td{border:none}
+.mono{font-family:var(--mono);font-size:11px}
+.ec{color:var(--dim)!important;text-align:center;padding:28px!important}
+/* NOTIF */
+.notif{position:fixed;bottom:24px;right:24px;padding:13px 18px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;display:none;align-items:center;gap:8px;box-shadow:var(--sh2)}
+.notif.on{display:flex}.notif.ok{background:#15803d;color:#fff}.notif.err{background:var(--red);color:#fff}
+@media(max-width:768px){.sb{display:none}.content{margin-left:0}.fg{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<aside class="sb">
+  <div class="sb-top"><div class="logo">⚙</div><div><div class="sb-nm">Cedarwings SAS</div><div class="sb-role">Manager</div></div></div>
+  <nav class="sb-nav">
+    <div class="sb-s">Operations</div>
+    <a href="manager.html" class="nl"><span class="ic">📊</span>Dashboard</a>
+    <a href="production.html" class="nl"><span class="ic">🏭</span>Production</a>
+    <a href="machines.html" class="nl"><span class="ic">⚙</span>Machines</a>
+    <div class="sb-s">Team</div>
+    <a href="employees.html" class="nl"><span class="ic">👥</span>Employees</a>
+    <a href="employee_profile.html" class="nl"><span class="ic">👤</span>Employee Profile</a>
+    <a href="time_report.html" class="nl"><span class="ic">📈</span>Time Report</a>
+    <div class="sb-s">Quality</div>
+    <a href="tracabilite.html" class="nl"><span class="ic">🔖</span>Traceability</a>
+    <a href="qualite.html" class="nl"><span class="ic">✅</span>Quality Control</a>
+    <div class="sb-s">Resources</div>
+    <a href="inventory.html" class="nl"><span class="ic">📦</span>Inventory</a>
+    <div class="sb-s">System</div>
+    <a href="settings.html" class="nl on"><span class="ic">⚙</span>Settings</a>
+    <a href="clocking.html" class="nl"><span class="ic">⏱</span>Clocking Terminal</a>
+  </nav>
+  <div class="sb-foot"><a href="index.html" class="nl"><span class="ic">←</span>Switch Role</a></div>
+</aside>
+
+<div class="content">
+  <div class="topbar">
+    <div><div class="tb-t">⚙ System Settings</div><div class="tb-s">Notifications · Brevo Integration · Roles · Daily Reports</div></div>
+    <button class="btn bb" onclick="saveAll()">💾 Save All Settings</button>
+  </div>
+  <div class="body">
+
+    <!-- BREVO INTEGRATION -->
+    <div class="card">
+      <div class="card-title">📧 Brevo Integration (Email + WhatsApp)</div>
+      <div class="card-sub">Connect your Brevo account to send automated email and WhatsApp notifications. Get your API key from <strong>app.brevo.com → Settings → API Keys</strong>.</div>
+      <div class="fg">
+        <div><lbl>Brevo API Key *</lbl><input class="fi fi-pw" id="brevoKey" placeholder="xkeysib-…" autocomplete="off"/></div>
+        <div><lbl>Sender Email *</lbl><input class="fi" id="brevoEmail" placeholder="noreply@cedarwings.com" type="email"/></div>
+      </div>
+      <div class="fg">
+        <div><lbl>Sender Name</lbl><input class="fi" id="brevoName" placeholder="Cedarwings SAS"/></div>
+        <div><lbl>Company Name</lbl><input class="fi" id="companyName" placeholder="Cedarwings SAS"/></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;margin-top:4px">
+        <button class="btn bg" onclick="testBrevo()">🧪 Test Connection</button>
+        <div id="brevoStatus"></div>
+      </div>
+    </div>
+
+    <!-- MANAGER NOTIFICATION RECIPIENTS -->
+    <div class="card">
+      <div class="card-title">👥 Notification Recipients</div>
+      <div class="card-sub">Managers who receive notifications. Each can have email and/or WhatsApp configured.</div>
+      <div id="recipientList">
+        <div style="color:var(--dim);text-align:center;padding:20px">Loading…</div>
+      </div>
+      <button class="btn bgh" onclick="addRecipient()" style="margin-top:12px">+ Add Recipient</button>
+    </div>
+
+    <!-- NOTIFICATION TRIGGERS -->
+    <div class="card">
+      <div class="card-title">🔔 Notification Triggers</div>
+      <div class="card-sub">Choose which events trigger automatic notifications. All enabled notifications are sent to all active recipients.</div>
+      <div class="toggle-row">
+        <div class="tr-left">
+          <div class="tr-title">⚠ Low Stock Alert</div>
+          <div class="tr-sub">Sent when any inventory item drops below minimum quantity</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="t_low_stock" checked/><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="tr-left">
+          <div class="tr-title">📋 Auto-Requisition Generated</div>
+          <div class="tr-sub">Sent when system creates an automatic purchase requisition — requires manager approval</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="t_requisition" checked/><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="tr-left">
+          <div class="tr-title">📊 Daily Production Report</div>
+          <div class="tr-sub">Summary of aligners + cases produced, sent daily at the configured time</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="t_daily_report" checked/><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="tr-left">
+          <div class="tr-title">✅ Quality Approval Needed</div>
+          <div class="tr-sub">Sent when a production lot is pending quality control approval</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="t_quality" checked/><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="tr-left">
+          <div class="tr-title">❌ Quality Rejection</div>
+          <div class="tr-sub">Sent when a production lot fails quality control</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="t_rejection" checked/><span class="slider"></span></label>
+      </div>
+      <div style="margin-top:16px;display:flex;align-items:center;gap:14px">
+        <div><lbl>Daily Report Time</lbl><input type="time" class="fi" id="reportTime" value="18:00" style="width:130px"/></div>
+        <div style="flex:1"><lbl>Note</lbl><div style="font-size:12px;color:var(--mu)">Daily reports are triggered by opening the dashboard at/after this time. For true scheduled sending, set up a Supabase Edge Function or external cron.</div></div>
+      </div>
+    </div>
+
+    <!-- TEST NOTIFICATIONS -->
+    <div class="card">
+      <div class="card-title">🧪 Test Notifications</div>
+      <div class="card-sub">Send a test notification to verify your Brevo integration is working correctly.</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn bgh" onclick="sendTest('low_stock')">⚠ Test Low Stock</button>
+        <button class="btn bgh" onclick="sendTest('requisition')">📋 Test Requisition</button>
+        <button class="btn bgh" onclick="sendTest('daily_report')">📊 Test Daily Report</button>
+        <button class="btn bgh" onclick="sendTestWhatsApp()">💬 Test WhatsApp</button>
+      </div>
+    </div>
+
+    <!-- NOTIFICATION LOG -->
+    <div class="card">
+      <div class="card-title">📜 Notification Log</div>
+      <div class="card-sub">History of all sent notifications</div>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Time</th><th>Type</th><th>Channel</th><th>Recipient</th><th>Subject</th><th>Status</th></tr></thead>
+          <tbody id="logBody"><tr><td colspan="6" class="ec">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="notif" id="notif"></div>
+
+<script type="module">
+import{createClient}from"https://esm.sh/@supabase/supabase-js@2"
+import{SUPABASE_CONFIG}from"./config.js"
+const sb=createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey)
+
+let recipients=[]
+function ntf(m,t='ok'){const e=document.getElementById('notif');e.textContent=(t==='ok'?'✅ ':'❌ ')+m;e.className='notif on '+t;setTimeout(()=>e.classList.remove('on'),4000)}
+
+async function load(){
+  // Load settings
+  const{data:ss}=await sb.from('system_settings').select('*')
+  const smap={};(ss||[]).forEach(s=>smap[s.key]=s.value)
+  if(smap.brevo_api_key)document.getElementById('brevoKey').value=smap.brevo_api_key
+  if(smap.brevo_sender_email)document.getElementById('brevoEmail').value=smap.brevo_sender_email
+  if(smap.brevo_sender_name)document.getElementById('brevoName').value=smap.brevo_sender_name
+  if(smap.company_name)document.getElementById('companyName').value=smap.company_name
+  if(smap.daily_report_time)document.getElementById('reportTime').value=smap.daily_report_time
+
+  // Load recipients
+  const{data:ns}=await sb.from('notification_settings').select('*').order('employee_name')
+  recipients=ns||[]
+  renderRecipients()
+
+  // Load log
+  const{data:logs}=await sb.from('notification_log').select('*').order('sent_at',{ascending:false}).limit(30)
+  document.getElementById('logBody').innerHTML=(logs||[]).length?(logs||[]).map(l=>`<tr>
+    <td class="mono">${new Date(l.sent_at).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
+    <td style="font-size:12px">${l.type}</td>
+    <td><span style="background:${l.channel==='whatsapp'?'#f0fdf4':l.channel==='email'?'#eef2ff':'#f5f3ff'};color:${l.channel==='whatsapp'?'#15803d':l.channel==='email'?'#1d4ed8':'#5b21b6'};padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700">${l.channel}</span></td>
+    <td style="font-size:12px">${l.recipient||'—'}</td>
+    <td style="font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.subject||'—'}</td>
+    <td><span class="status-badge ${l.status==='sent'?'sb-ok':l.status==='failed'?'sb-err':'sb-pend'}">${l.status}</span></td>
+  </tr>`).join(''):`<tr><td colspan="6" class="ec">No notifications sent yet.</td></tr>`
+}
+
+function renderRecipients(){
+  document.getElementById('recipientList').innerHTML=recipients.map((r,i)=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--bdr)">
+      <div style="flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div><lbl>Name</lbl><input class="fi" value="${r.employee_name||''}" onchange="recipients[${i}].employee_name=this.value" placeholder="Manager name"/></div>
+        <div><lbl>Email</lbl><input class="fi" type="email" value="${r.email||''}" onchange="recipients[${i}].email=this.value" placeholder="email@company.com"/></div>
+        <div><lbl>WhatsApp (+country code)</lbl><input class="fi" value="${r.whatsapp_phone||''}" onchange="recipients[${i}].whatsapp_phone=this.value" placeholder="+21212345678"/></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:center;flex-shrink:0">
+        <label style="font-size:10px;color:var(--mu);font-weight:700">ACTIVE</label>
+        <label class="toggle"><input type="checkbox" ${r.is_active?'checked':''} onchange="recipients[${i}].is_active=this.checked"/><span class="slider"></span></label>
+      </div>
+      <button onclick="removeRecipient(${i})" style="padding:6px;background:var(--r50);border:1px solid var(--r100);border-radius:8px;color:var(--red);cursor:pointer;font-size:14px">🗑</button>
+    </div>`).join('')||'<div style="color:var(--dim);text-align:center;padding:16px">No recipients configured. Add a manager to receive notifications.</div>'
+}
+
+window.addRecipient=()=>{
+  recipients.push({employee_name:'',email:'',whatsapp_phone:'',is_active:true})
+  renderRecipients()
+}
+window.removeRecipient=i=>{recipients.splice(i,1);renderRecipients()}
+
+window.saveAll=async()=>{
+  // Save system settings
+  const settings=[
+    {key:'brevo_api_key',value:document.getElementById('brevoKey').value.trim()},
+    {key:'brevo_sender_email',value:document.getElementById('brevoEmail').value.trim()},
+    {key:'brevo_sender_name',value:document.getElementById('brevoName').value.trim()},
+    {key:'company_name',value:document.getElementById('companyName').value.trim()},
+    {key:'daily_report_time',value:document.getElementById('reportTime').value}
+  ]
+  for(const s of settings){
+    await sb.from('system_settings').upsert({key:s.key,value:s.value,updated_at:new Date().toISOString()},{onConflict:'key'})
+  }
+  // Save recipients
+  for(const r of recipients){
+    if(!r.employee_name)continue
+    await sb.from('notification_settings').upsert({
+      employee_name:r.employee_name,email:r.email||null,whatsapp_phone:r.whatsapp_phone||null,
+      is_active:r.is_active,
+      notify_low_stock:document.getElementById('t_low_stock').checked,
+      notify_requisition:document.getElementById('t_requisition').checked,
+      notify_daily_report:document.getElementById('t_daily_report').checked,
+      notify_approval_needed:document.getElementById('t_quality').checked,
+      notify_quality_rejected:document.getElementById('t_rejection').checked,
+      daily_report_time:document.getElementById('reportTime').value
+    },{onConflict:'employee_name'})
+  }
+  ntf('All settings saved ✅')
+  load()
+}
+
+window.testBrevo=async()=>{
+  const key=document.getElementById('brevoKey').value.trim()
+  const email=document.getElementById('brevoEmail').value.trim()
+  if(!key||!email){ntf('Enter Brevo API key and sender email first','err');return}
+  document.getElementById('brevoStatus').innerHTML='<span class="status-badge sb-pend">Testing…</span>'
+  try{
+    const r=await fetch('https://api.brevo.com/v3/account',{headers:{'api-key':key,'accept':'application/json'}})
+    const d=await r.json()
+    if(r.ok){
+      document.getElementById('brevoStatus').innerHTML=`<span class="status-badge sb-ok">✓ Connected — ${d.email||'verified'}</span>`
+      ntf('Brevo connection successful!')
+    }else{
+      document.getElementById('brevoStatus').innerHTML=`<span class="status-badge sb-err">✗ ${d.message||'Invalid key'}</span>`
+      ntf('Brevo connection failed: '+(d.message||'Invalid key'),'err')
+    }
+  }catch(e){document.getElementById('brevoStatus').innerHTML='<span class="status-badge sb-err">✗ Network error</span>'}
+}
+
+// MAIN NOTIFICATION FUNCTION — used across all pages
+window.sendBrevoEmail=async(toEmail,toName,subject,htmlContent,type='system')=>{
+  const{data:ss}=await sb.from('system_settings').select('*')
+  const smap={};(ss||[]).forEach(s=>smap[s.key]=s.value)
+  const apiKey=smap.brevo_api_key;const senderEmail=smap.brevo_sender_email;const senderName=smap.brevo_sender_name||'Cedarwings SAS'
+  if(!apiKey||!senderEmail)return{ok:false,error:'Brevo not configured'}
+  try{
+    const r=await fetch('https://api.brevo.com/v3/smtp/email',{
+      method:'POST',
+      headers:{'api-key':apiKey,'content-type':'application/json','accept':'application/json'},
+      body:JSON.stringify({sender:{name:senderName,email:senderEmail},to:[{email:toEmail,name:toName}],subject,htmlContent})
+    })
+    const d=await r.json()
+    await sb.from('notification_log').insert([{type,channel:'email',recipient:toEmail,subject,message:htmlContent.replace(/<[^>]+>/g,'').slice(0,200),status:r.ok?'sent':'failed',error_msg:r.ok?null:JSON.stringify(d)}])
+    return{ok:r.ok,data:d}
+  }catch(e){
+    await sb.from('notification_log').insert([{type,channel:'email',recipient:toEmail,subject,status:'failed',error_msg:e.message}])
+    return{ok:false,error:e.message}
+  }
+}
+
+window.sendBrevoWhatsApp=async(phone,message,type='system')=>{
+  const{data:ss}=await sb.from('system_settings').select('*')
+  const smap={};(ss||[]).forEach(s=>smap[s.key]=s.value)
+  const apiKey=smap.brevo_api_key
+  if(!apiKey)return{ok:false,error:'Brevo not configured'}
+  // Brevo WhatsApp API
+  try{
+    const r=await fetch('https://api.brevo.com/v3/whatsapp/sendMessage',{
+      method:'POST',
+      headers:{'api-key':apiKey,'content-type':'application/json','accept':'application/json'},
+      body:JSON.stringify({receiverNumber:phone,type:'text',text:{body:message}})
+    })
+    const d=await r.json()
+    await sb.from('notification_log').insert([{type,channel:'whatsapp',recipient:phone,message:message.slice(0,200),status:r.ok?'sent':'failed',error_msg:r.ok?null:JSON.stringify(d)}])
+    return{ok:r.ok,data:d}
+  }catch(e){
+    await sb.from('notification_log').insert([{type,channel:'whatsapp',recipient:phone,status:'failed',error_msg:e.message}])
+    return{ok:false,error:e.message}
+  }
+}
+
+// Notify all active recipients
+window.notifyAll=async(subject,htmlMsg,textMsg,type)=>{
+  const{data:rs}=await sb.from('notification_settings').select('*').eq('is_active',true)
+  if(!rs?.length)return
+  for(const r of rs){
+    if(r.email)await window.sendBrevoEmail(r.email,r.employee_name,subject,htmlMsg,type)
+    if(r.whatsapp_phone)await window.sendBrevoWhatsApp(r.whatsapp_phone,textMsg,type)
+  }
+}
+
+window.sendTest=async(type)=>{
+  const htmlTemplates={
+    low_stock:`<div style="font-family:DM Sans,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden"><div style="background:linear-gradient(135deg,#dc2626,#b91c1c);padding:24px;color:#fff"><h1 style="margin:0;font-size:20px">⚠ Low Stock Alert</h1><p style="margin:4px 0 0;opacity:.8">Cedarwings SAS — Inventory System</p></div><div style="padding:24px"><p>This is a <strong>test notification</strong> for low stock alerts.</p><table style="width:100%;border-collapse:collapse;margin:16px 0"><tr style="background:#fef2f2"><td style="padding:10px;border:1px solid #fecaca;font-weight:700">TEST ITEM — Dental Resin</td><td style="padding:10px;border:1px solid #fecaca;color:#dc2626">2 L remaining (min: 5 L)</td></tr></table><a href="${location.origin}/inventory.html" style="display:inline-block;background:#dc2626;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">View Inventory →</a></div></div>`,
+    requisition:`<div style="font-family:DM Sans,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden"><div style="background:linear-gradient(135deg,#d97706,#b45309);padding:24px;color:#fff"><h1 style="margin:0;font-size:20px">📋 Auto-Requisition Generated</h1><p style="margin:4px 0 0;opacity:.8">Action Required: Manager Approval</p></div><div style="padding:24px"><p>This is a <strong>test notification</strong>. A new automatic requisition has been generated.</p><div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:16px;margin:16px 0"><strong>TEST ITEM — Dental Resin</strong><br><span style="color:#92400e">Qty: 18 L · Priority: HIGH</span></div><a href="${location.origin}/inventory.html" style="display:inline-block;background:#d97706;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">Approve Requisition →</a></div></div>`,
+    daily_report:`<div style="font-family:DM Sans,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden"><div style="background:linear-gradient(135deg,#3b5fe2,#6366f1);padding:24px;color:#fff"><h1 style="margin:0;font-size:20px">📊 Daily Production Report</h1><p style="margin:4px 0 0;opacity:.8">Cedarwings SAS — ${new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})}</p></div><div style="padding:24px"><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:16px 0"><div style="background:#f0fdf4;border-radius:8px;padding:14px;text-align:center"><div style="font-size:28px;font-weight:800;color:#16a34a">--</div><div style="font-size:11px;color:#64748b;margin-top:4px">ALIGNERS</div></div><div style="background:#f5f3ff;border-radius:8px;padding:14px;text-align:center"><div style="font-size:28px;font-weight:800;color:#7c3aed">--</div><div style="font-size:11px;color:#64748b;margin-top:4px">CASES</div></div><div style="background:#eef2ff;border-radius:8px;padding:14px;text-align:center"><div style="font-size:28px;font-weight:800;color:#3b5fe2">--%</div><div style="font-size:11px;color:#64748b;margin-top:4px">EFFICIENCY</div></div></div><p style="color:#64748b;font-size:13px">This is a test notification. Real reports include actual production data.</p><a href="${location.origin}/manager.html" style="display:inline-block;background:#3b5fe2;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">View Full Dashboard →</a></div></div>`
+  }
+  const subjects={low_stock:'⚠ Low Stock Alert — Cedarwings SAS',requisition:'📋 Action Required: New Requisition — Cedarwings SAS',daily_report:'📊 Daily Production Report — Cedarwings SAS'}
+  const{data:rs}=await sb.from('notification_settings').select('*').eq('is_active',true).limit(1)
+  const r=rs?.[0]
+  if(!r?.email){ntf('No active recipient with email found. Add a recipient in settings first.','err');return}
+  const res=await window.sendBrevoEmail(r.email,r.employee_name,subjects[type],htmlTemplates[type],type+'_test')
+  if(res.ok)ntf('Test email sent to '+r.email+'!')
+  else ntf('Failed: '+(res.error||'Check Brevo settings'),'err')
+}
+
+window.sendTestWhatsApp=async()=>{
+  const{data:rs}=await sb.from('notification_settings').select('*').eq('is_active',true).limit(1)
+  const r=rs?.[0]
+  if(!r?.whatsapp_phone){ntf('No active recipient with WhatsApp number found.','err');return}
+  const msg=`🧪 TEST — Cedarwings SAS\n\nThis is a test WhatsApp notification from your production management system.\n\nIf you received this, WhatsApp notifications are working correctly!\n\n— Cedarwings Ops System`
+  const res=await window.sendBrevoWhatsApp(r.whatsapp_phone,msg,'whatsapp_test')
+  if(res.ok)ntf('Test WhatsApp sent to '+r.whatsapp_phone+'!')
+  else ntf('Failed: '+(res.error||'Check Brevo WhatsApp setup'),'err')
+}
+
+load()
+</script>
+</body>
+</html>

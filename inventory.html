@@ -87,8 +87,13 @@
     <div class="sb-s">Team</div>
     <a href="employees.html" class="nl"><span class="ic">👥</span>Employees</a>
     <a href="time_report.html" class="nl"><span class="ic">📈</span>Time Report</a>
+    <div class="sb-s">Qualité</div>
+    <a href="tracabilite.html" class="nl"><span class="ic">🔖</span>Traçabilité</a>
+    <a href="qualite.html" class="nl"><span class="ic">✅</span>Contrôle Qualité</a>
     <div class="sb-s">Resources</div>
     <a href="inventory.html" class="nl on"><span class="ic">📦</span>Inventory</a>
+    <div class="sb-s">System</div>
+    <a href="settings.html" class="nl"><span class="ic">⚙</span>Settings</a>
     <div class="sb-s">Terminal</div>
     <a href="clocking.html" class="nl"><span class="ic">⏱</span>Clocking Terminal</a>
   </nav>
@@ -272,6 +277,68 @@
 import{createClient}from'https://esm.sh/@supabase/supabase-js@2'
 import{SUPABASE_CONFIG}from'./config.js'
 const sb=createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey)
+
+// Notification helpers
+
+async function checkLowStockNotify(){
+  const{data}=await sb.from('inventory_lots_enriched_view').select('item_name,available_qty,min_qty,min_stock')
+  ;(data||[]).forEach(r=>{
+    const q=Number(r.available_qty||0),m=Number(r.min_qty||r.min_stock||0)
+    if(m>0&&q<=m&&q>=0){
+      const key='notified_low_'+r.item_name+'_'+new Date().toISOString().slice(0,10)
+      if(!sessionStorage.getItem(key)){
+        sessionStorage.setItem(key,'1')
+        notifyLowStock(r.item_name,q,m)
+      }
+    }
+  })
+}
+async function notifyLowStock(itemName,currentQty,minQty){
+  const{data:ss}=await sb.from('system_settings').select('*')
+  const smap={};(ss||[]).forEach(s=>smap[s.key]=s.value)
+  const apiKey=smap.brevo_api_key,senderEmail=smap.brevo_sender_email,senderName=smap.brevo_sender_name||'Cedarwings SAS'
+  if(!apiKey||!senderEmail)return
+  const{data:ns}=await sb.from('notification_settings').select('*').eq('is_active',true)
+  if(!ns?.length)return
+  const html=`<div style="font-family:sans-serif;max-width:560px;background:#fff;border-radius:12px;overflow:hidden"><div style="background:#dc2626;padding:20px;color:#fff"><h2 style="margin:0">⚠ Low Stock Alert</h2><p style="margin:4px 0 0;opacity:.8">Cedarwings SAS — Inventory System</p></div><div style="padding:24px"><p>The following item has dropped below minimum stock level:</p><div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:16px;margin:16px 0"><strong style="font-size:16px">${itemName}</strong><br><span style="color:#dc2626">Current: ${currentQty} | Minimum: ${minQty}</span></div><a href="${location.origin}/inventory.html" style="background:#dc2626;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">View Inventory →</a></div></div>`
+  const waMsg=`⚠ Low Stock Alert — Cedarwings SAS
+
+Item: ${itemName}
+Current qty: ${currentQty}
+Minimum: ${minQty}
+
+Please reorder immediately.`
+  for(const r of ns){
+    if(!r.notify_low_stock)continue
+    if(r.email)await fetch('https://api.brevo.com/v3/smtp/email',{method:'POST',headers:{'api-key':apiKey,'content-type':'application/json'},body:JSON.stringify({sender:{name:senderName,email:senderEmail},to:[{email:r.email}],subject:'⚠ Low Stock: '+itemName+' — Cedarwings SAS',htmlContent:html})}).catch(()=>{})
+    if(r.whatsapp_phone)await fetch('https://api.brevo.com/v3/whatsapp/sendMessage',{method:'POST',headers:{'api-key':apiKey,'content-type':'application/json'},body:JSON.stringify({receiverNumber:r.whatsapp_phone,type:'text',text:{body:waMsg}})}).catch(()=>{})
+  }
+  await sb.from('notification_log').insert([{type:'low_stock',channel:'both',recipient:'all managers',subject:'⚠ Low Stock: '+itemName,status:'sent'}])
+}
+
+async function notifyRequisition(itemName,qty){
+  const{data:ss}=await sb.from('system_settings').select('*')
+  const smap={};(ss||[]).forEach(s=>smap[s.key]=s.value)
+  const apiKey=smap.brevo_api_key,senderEmail=smap.brevo_sender_email,senderName=smap.brevo_sender_name||'Cedarwings SAS'
+  if(!apiKey||!senderEmail)return
+  const{data:ns}=await sb.from('notification_settings').select('*').eq('is_active',true)
+  if(!ns?.length)return
+  const html=`<div style="font-family:sans-serif;max-width:560px;background:#fff;border-radius:12px;overflow:hidden"><div style="background:#d97706;padding:20px;color:#fff"><h2 style="margin:0">📋 Approval Required</h2><p style="margin:4px 0 0;opacity:.8">Auto-Requisition Generated — Action Required</p></div><div style="padding:24px"><p>The system has automatically generated a purchase requisition that requires your approval:</p><div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:16px;margin:16px 0"><strong>${itemName}</strong><br><span style="color:#92400e">Quantity to order: ${qty}</span></div><a href="${location.origin}/inventory.html" style="background:#d97706;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">Approve Requisition →</a></div></div>`
+  const waMsg=`📋 Approval Required — Cedarwings SAS
+
+Auto-requisition generated:
+Item: ${itemName}
+Qty: ${qty}
+
+Please approve in the system.
+${location.origin}/inventory.html`
+  for(const r of ns){
+    if(!r.notify_requisition)continue
+    if(r.email)await fetch('https://api.brevo.com/v3/smtp/email',{method:'POST',headers:{'api-key':apiKey,'content-type':'application/json'},body:JSON.stringify({sender:{name:senderName,email:senderEmail},to:[{email:r.email}],subject:'📋 Action Required: New Requisition — '+itemName,htmlContent:html})}).catch(()=>{})
+    if(r.whatsapp_phone)await fetch('https://api.brevo.com/v3/whatsapp/sendMessage',{method:'POST',headers:{'api-key':apiKey,'content-type':'application/json'},body:JSON.stringify({receiverNumber:r.whatsapp_phone,type:'text',text:{body:waMsg}})}).catch(()=>{})
+  }
+  await sb.from('notification_log').insert([{type:'requisition',channel:'both',recipient:'all managers',subject:'📋 New Requisition: '+itemName,status:'sent'}])
+}
 const $=id=>document.getElementById(id)
 const money=n=>Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})
 const fmtD=v=>v?new Date(v).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'—'

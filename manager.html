@@ -144,6 +144,8 @@ tbody tr:hover{background:#f8fafc}
     <a href="qualite.html" class="nav-link"><span class="ic">✅</span>Quality Control</a>
     <div class="sb-sec">Resources</div>
     <a href="inventory.html" class="nav-link"><span class="ic">📦</span>Inventory</a>
+    <div class="sb-s">System</div>
+    <a href="settings.html" class="nl"><span class="ic">⚙</span>Settings</a>
     <div class="sb-sec">Terminal</div>
     <a href="clocking.html" class="nav-link"><span class="ic">⏱</span>Clocking Terminal</a>
   </nav>
@@ -344,6 +346,61 @@ tbody tr:hover{background:#f8fafc}
 import{createClient}from'https://esm.sh/@supabase/supabase-js@2'
 import{SUPABASE_CONFIG}from'./config.js'
 const sb=createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey)
+
+/* ===================== NOTIFICATIONS ===================== */
+async function sendBrevoEmail(toEmail,toName,subject,htmlContent,type){
+  const{data:ss}=await sb.from('system_settings').select('*')
+  const smap={};(ss||[]).forEach(s=>smap[s.key]=s.value)
+  const apiKey=smap.brevo_api_key,senderEmail=smap.brevo_sender_email,senderName=smap.brevo_sender_name||'Cedarwings SAS'
+  if(!apiKey||!senderEmail)return
+  try{
+    const r=await fetch('https://api.brevo.com/v3/smtp/email',{method:'POST',headers:{'api-key':apiKey,'content-type':'application/json','accept':'application/json'},body:JSON.stringify({sender:{name:senderName,email:senderEmail},to:[{email:toEmail,name:toName}],subject,htmlContent})})
+    await sb.from('notification_log').insert([{type,channel:'email',recipient:toEmail,subject,status:r.ok?'sent':'failed'}])
+  }catch(e){console.log('Email error:',e.message)}
+}
+async function sendBrevoWhatsApp(phone,message,type){
+  const{data:ss}=await sb.from('system_settings').select('*')
+  const smap={};(ss||[]).forEach(s=>smap[s.key]=s.value)
+  const apiKey=smap.brevo_api_key
+  if(!apiKey)return
+  try{
+    const r=await fetch('https://api.brevo.com/v3/whatsapp/sendMessage',{method:'POST',headers:{'api-key':apiKey,'content-type':'application/json','accept':'application/json'},body:JSON.stringify({receiverNumber:phone,type:'text',text:{body:message}})})
+    await sb.from('notification_log').insert([{type,channel:'whatsapp',recipient:phone,message:message.slice(0,200),status:r.ok?'sent':'failed'}])
+  }catch(e){console.log('WhatsApp error:',e.message)}
+}
+async function notifyAll(subject,htmlMsg,textMsg,type){
+  const{data:rs}=await sb.from('notification_settings').select('*').eq('is_active',true)
+  if(!rs?.length)return
+  for(const r of rs){
+    if(r.email)await sendBrevoEmail(r.email,r.employee_name,subject,htmlMsg,type)
+    if(r.whatsapp_phone)await sendBrevoWhatsApp(r.whatsapp_phone,textMsg,type)
+  }
+}
+// Daily report — check if it should be sent today
+async function checkDailyReport(totAl,totCa,sess,eff){
+  const todayKey='cw_daily_report_'+new Date().toISOString().slice(0,10)
+  if(localStorage.getItem(todayKey))return // already sent today
+  const{data:ss}=await sb.from('system_settings').select('value').eq('key','daily_report_time').limit(1)
+  const reportTime=ss?.[0]?.value||'18:00'
+  const[rh,rm]=reportTime.split(':').map(Number)
+  const now=new Date();const nh=now.getHours(),nm=now.getMinutes()
+  if(nh<rh||(nh===rh&&nm<rm))return // not yet time
+  const{data:ns}=await sb.from('notification_settings').select('notify_daily_report').eq('is_active',true).limit(1)
+  if(!ns?.[0]?.notify_daily_report)return // disabled
+  localStorage.setItem(todayKey,'sent')
+  const dateStr=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})
+  const html=`<div style="font-family:DM Sans,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden"><div style="background:linear-gradient(135deg,#3b5fe2,#6366f1);padding:24px;color:#fff"><h1 style="margin:0;font-size:22px">📊 Daily Production Report</h1><p style="margin:6px 0 0;opacity:.8">Cedarwings SAS — ${dateStr}</p></div><div style="padding:28px"><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:24px"><div style="background:#f0fdf4;border-radius:10px;padding:16px;text-align:center;border:1px solid #dcfce7"><div style="font-size:36px;font-weight:800;color:#16a34a;font-family:monospace">${totAl}</div><div style="font-size:11px;color:#64748b;margin-top:6px;text-transform:uppercase;letter-spacing:.5px;font-weight:700">Aligners Produced</div></div><div style="background:#f5f3ff;border-radius:10px;padding:16px;text-align:center;border:1px solid #ede9fe"><div style="font-size:36px;font-weight:800;color:#7c3aed;font-family:monospace">${totCa}</div><div style="font-size:11px;color:#64748b;margin-top:6px;text-transform:uppercase;letter-spacing:.5px;font-weight:700">Cases Completed</div></div><div style="background:#eef2ff;border-radius:10px;padding:16px;text-align:center;border:1px solid #e0e7ff"><div style="font-size:36px;font-weight:800;color:#3b5fe2;font-family:monospace">${eff}%</div><div style="font-size:11px;color:#64748b;margin-top:6px;text-transform:uppercase;letter-spacing:.5px;font-weight:700">Efficiency</div></div></div><div style="background:#f8fafc;border-radius:8px;padding:14px;margin-bottom:20px;font-size:13px;color:#64748b"><strong>${sess.length} sessions</strong> logged today by ${[...new Set(sess.map(s=>s.employee_name).filter(Boolean))].join(', ')||'—'}</div><a href="${location.origin}/manager.html" style="display:inline-block;background:#3b5fe2;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">View Full Dashboard →</a></div></div>`
+  const waTxt=`📊 Daily Report — Cedarwings SAS
+${dateStr}
+
+🦷 Aligners: ${totAl}
+📦 Cases: ${totCa}
+📈 Efficiency: ${eff}%
+👥 ${sess.length} sessions
+
+View dashboard: ${location.origin}/manager.html`
+  await notifyAll(`📊 Daily Production Report — ${dateStr}`,html,waTxt,'daily_report')
+}
 
 const COLORS=['#3b5fe2','#16a34a','#d97706','#dc2626','#7c3aed','#0d9488','#db2777','#ea580c','#0891b2','#65a30d']
 const avCol=n=>COLORS[(n||'').charCodeAt(0)%COLORS.length]
@@ -565,6 +622,17 @@ document.getElementById('sessFilter').addEventListener('change',renderSessions)
 document.getElementById('pageDate').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})
 load()
 setInterval(load,30000)
+// Check daily report trigger on open
+setTimeout(async()=>{
+  const{data:pr}=await sb.from('production_records').select('aligners_count,cases_count').gte('created_at',new Date().toISOString().slice(0,10))
+  const al=(pr||[]).reduce((a,r)=>a+(r.aligners_count||0),0)
+  const ca=(pr||[]).reduce((a,r)=>a+(r.cases_count||0),0)
+  const{data:sr}=await sb.from('time_sessions').select('employee_name,session_type,started_at,ended_at').gte('started_at',new Date().toISOString().slice(0,10))
+  const recs=sr||[];let pM=0,wM=0
+  recs.forEach(r=>{const m=r.ended_at?Math.round((new Date(r.ended_at)-new Date(r.started_at))/60000):0;if(r.session_type==='productive')pM+=m;if(r.session_type==='waste')wM+=m})
+  const eff=pM+wM>0?Math.round(pM/(pM+wM)*100):0
+  checkDailyReport(al,ca,recs,eff)
+},2000)
 </script>
 </body>
 </html>
