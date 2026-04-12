@@ -106,6 +106,9 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
     <div class="sb-s">Team</div>
     <a href="employees.html" class="nl"><span class="ic">&#128101;</span>Employees</a>
     <a href="time_report.html" class="nl"><span class="ic">&#128200;</span>Time Report</a>
+    <div class="sb-s">Qualité</div>
+    <a href="tracabilite.html" class="nl"><span class="ic">🔖</span>Traçabilité</a>
+    <a href="qualite.html" class="nl"><span class="ic">✅</span>Contrôle Qualité</a>
     <div class="sb-s">Resources</div>
     <a href="inventory.html" class="nl"><span class="ic">&#128230;</span>Inventory</a>
     <div class="sb-s">Terminal</div>
@@ -279,7 +282,7 @@ async function load(){
 <div class="str str-${st==='running'?'r':st==='maintenance'?'m':st==='offline'?'o':'i'}"></div>
 <div class="mb">
 <div class="mh">
-<div><div class="mn">${ICO[x.machine_type]||'⚙'} ${x.machine_name}</div><div class="mt">${x.machine_type||'Machine'}</div>${x.serial_number?`<div class="msn">S/N: ${x.serial_number}</div>`:''}</div>
+<div><div class="mn">${ICO[x.machine_type]||'⚙'} ${x.machine_name}</div><div class="mt">${x.machine_type||'Machine'}</div>${x.serial_number?`<div class="msn">S/N: ${x.serial_number}</div>`:''}<div id="step-link-${x.id}" style="margin-top:3px"></div></div>
 <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
 <div class="sb2 ${sbc}"><span class="${dc} ld"></span>${st.charAt(0).toUpperCase()+st.slice(1)}</div>
 <button class="btn bgh bs" onclick="openEdit('${x.id}')">✏ Edit</button>
@@ -315,6 +318,19 @@ ${cl.length?cl.map(c=>{const p=c.qty_installed>0?Math.round(c.qty_remaining/c.qt
 
   // Orders per machine — from order_step_tracking + session machine links
   const td2=new Date();td2.setHours(0,0,0,0)
+  // Show which step each machine is linked to
+  const{data:smData}=await sb.from('step_machines').select('*').eq('is_active',true)
+  const smByMachine={}
+  ;(smData||[]).forEach(s=>{if(!smByMachine[s.machine_id])smByMachine[s.machine_id]=[];smByMachine[s.machine_id].push(s.step)})
+  machines.forEach(x=>{
+    const el=document.getElementById('step-link-'+x.id)
+    if(!el)return
+    const steps=smByMachine[x.id]||[]
+    el.innerHTML=steps.length
+      ?steps.map(s=>`<span style="background:var(--b50);border:1px solid var(--b100);color:var(--blue);padding:1px 7px;border-radius:999px;font-size:9px;font-weight:700;margin-right:3px">${s}</span>`).join('')
+      :`<span style="background:#f1f5f9;color:var(--dim);padding:1px 7px;border-radius:999px;font-size:9px">No step linked</span>`
+  })
+
   const{data:ostAll}=await sb.from('order_step_tracking').select('*').order('first_started_at',{ascending:false})
   const machByStep={}
   sess.forEach(s=>{if(s.machine&&s.order_no&&s.work_type)machByStep[s.order_no+'||'+s.work_type]=s.machine})
@@ -422,8 +438,26 @@ document.getElementById('svMach').addEventListener('click',async()=>{
   const id=document.getElementById('eid').value
   const p={machine_name:name,machine_type:document.getElementById('eType').value,status:document.getElementById('eSt').value,serial_number:document.getElementById('eSN').value.trim()||null,purchase_date:document.getElementById('ePD').value||null,next_maintenance:document.getElementById('eNM').value||null,maintenance_interval_days:Number(document.getElementById('eInt').value||30),notes:document.getElementById('eNt').value.trim()||null,updated_at:new Date().toISOString()}
   try{
-    if(id){const{error}=await sb.from('machines').update(p).eq('id',id);if(error)throw error}
-    else{const{error}=await sb.from('machines').insert([p]);if(error)throw error}
+    let machineId=id
+    if(id){
+      const{error}=await sb.from('machines').update(p).eq('id',id)
+      if(error)throw error
+      // Update name in step_machines if changed
+      await sb.from('step_machines').update({machine_name:name}).eq('machine_id',id)
+    }else{
+      const{data:newMach,error}=await sb.from('machines').insert([p]).select().single()
+      if(error)throw error
+      machineId=newMach?.id
+      // Auto-link to step_machines based on machine type
+      if(machineId){
+        const typeToStep={'Printer':'Printing','Cleaning':'Cleaning','Thermoformer':'Thermoforming','Cutting':'Line Cut','Laser':'Laser Marking','Packaging':'Packaging'}
+        const step=typeToStep[document.getElementById('eType').value]
+        if(step){
+          await sb.from('step_machines').insert([{step,machine_id:machineId,machine_name:name,is_active:true}])
+          ntf('Machine added and linked to step: '+step)
+        }
+      }
+    }
     document.getElementById('mMach').classList.remove('on');ntf(id?'Machine updated':'Machine added');load()
   }catch(err){document.getElementById('eMachErr').textContent=err.message}
 })
