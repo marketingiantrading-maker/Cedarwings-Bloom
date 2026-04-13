@@ -684,17 +684,25 @@ async function saveCasesData(cases, filename) {
   var newCount = 0, updCount = 0;
   var batchSize = 50;
 
-  // Test with first case only to surface any error immediately
+  // Test INSERT of 1 row first
   var testCase = Object.assign({}, cases[0], { updated_at: new Date().toISOString() });
-  console.log('[Bloom] TEST upsert sample:', JSON.stringify(testCase));
-  var testR = await SB.from('bloom_cases').upsert([testCase], { onConflict: 'case_id' });
-  console.log('[Bloom] TEST upsert response:', JSON.stringify(testR));
+  console.log('[Bloom] TEST insert sample:', JSON.stringify(testCase));
+  
+  // Try INSERT first (ignore conflict if exists)
+  var testR = await SB.from('bloom_cases').upsert([testCase], { onConflict: 'case_id', ignoreDuplicates: false });
+  console.log('[Bloom] TEST result:', JSON.stringify(testR));
+  
   if (testR.error) {
-    var errMsg = testR.error.message || testR.error.hint || testR.error.details || testR.error.code || JSON.stringify(testR.error);
-    dbg('SAVE ERROR: ' + errMsg);
-    msg('❌ Save failed: ' + errMsg, 'var(--red)');
-    document.getElementById('progTitle').textContent = 'Error: ' + errMsg;
-    console.error('[Bloom] FULL ERROR:', JSON.stringify(testR.error));
+    // Show FULL error prominently on screen
+    var e = testR.error;
+    var errMsg = e.message || e.hint || e.details || e.code || JSON.stringify(e);
+    var fullErr = 'code=' + (e.code||'?') + ' msg=' + (e.message||'?') + ' hint=' + (e.hint||'?') + ' detail=' + (e.details||'?');
+    dbg('❌ ERROR: ' + errMsg);
+    msg('❌ ' + errMsg, 'var(--red)');
+    document.getElementById('progTitle').textContent = '❌ ' + fullErr;
+    document.getElementById('progSub').textContent = JSON.stringify(e);
+    console.error('[Bloom] FULL ERROR OBJECT:', e);
+    alert('Supabase Error:\n' + fullErr);
     return;
   }
 
