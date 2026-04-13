@@ -274,18 +274,27 @@ var SB = {
           .catch(function(e) { return { data: [], error: e }; });
       },
       insert: function(rows) {
+        var iHdrs = Object.assign({}, hdrs);
+        iHdrs['Prefer'] = 'return=representation';
         return fetch(base, {
-          method: 'POST', headers: hdrs,
+          method: 'POST', headers: iHdrs,
           body: JSON.stringify(Array.isArray(rows) ? rows : [rows])
-        }).then(function(r) { return r.json().then(function(d) { return { data: Array.isArray(d) ? d : [d], error: r.ok ? null : d }; }); })
+        }).then(function(r) {
+            if (r.status === 204) return { data: [], error: null };
+            return r.json().then(function(d) { return { data: Array.isArray(d) ? d : [d], error: r.ok ? null : d }; });
+          })
           .catch(function(e) { return { data: [], error: e }; });
       },
       upsert: function(rows, opts) {
         var h = Object.assign({}, hdrs);
         h['Prefer'] = 'resolution=merge-duplicates,return=representation';
-        if (opts && opts.onConflict) h['Prefer'] += ',resolution=merge-duplicates';
-        return fetch(base, { method: 'POST', headers: h, body: JSON.stringify(Array.isArray(rows) ? rows : [rows]) })
-          .then(function(r) { return r.json().then(function(d) { return { data: Array.isArray(d) ? d : [], error: r.ok ? null : d }; }); })
+        var url = base;
+        if (opts && opts.onConflict) url += '?on_conflict=' + opts.onConflict;
+        return fetch(url, { method: 'POST', headers: h, body: JSON.stringify(Array.isArray(rows) ? rows : [rows]) })
+          .then(function(r) {
+            if (r.status === 204) return { data: [], error: null };
+            return r.json().then(function(d) { return { data: Array.isArray(d) ? d : [], error: r.ok ? null : d }; });
+          })
           .catch(function(e) { return { data: [], error: e }; });
       },
       delete: function() {
@@ -746,7 +755,8 @@ async function saveCasesData(cases, filename) {
     var toSave = batch.map(function(c) {
       return Object.assign({}, c, { updated_at: new Date().toISOString() });
     });
-    await SB.from('bloom_cases').upsert(toSave, { onConflict: 'case_id' });
+    var ur = await SB.from('bloom_cases').upsert(toSave, { onConflict: 'case_id' });
+    if (ur.error) { console.error('[Bloom] Upsert error:', ur.error.message||ur.error.hint||JSON.stringify(ur.error)); }
 
     // History
     var histRows = [];
