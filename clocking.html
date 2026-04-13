@@ -41,6 +41,12 @@ body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh
 lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
 .fi{width:100%;padding:11px 14px;border:1.5px solid var(--bdr);border-radius:10px;font-family:var(--f);font-size:14px;color:var(--txt);background:#fff;outline:none;transition:border-color .15s}
 .fi:focus{border-color:var(--blue)}.fi::placeholder{color:var(--dim)}
+.ord-opt{padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--bdr);transition:background .1s}
+.ord-opt:last-child{border:none}
+.ord-opt:hover,.ord-opt.sel{background:var(--b50)}
+.ord-opt .ord-id{font-weight:800;color:var(--blue);font-family:var(--mono);font-size:12px}
+.ord-opt .ord-patient{font-weight:600;color:var(--txt);margin-top:1px}
+.ord-opt .ord-status{font-size:10px;color:var(--mu);margin-top:1px}
 .fg{margin-bottom:14px}
 /* PIPELINE */
 .pipe{display:flex;align-items:center;overflow-x:auto;padding-bottom:4px}
@@ -184,7 +190,21 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
         <div class="cs">Enter order number &rarr; tap a step to instantly clock in. Tapping a new step auto-closes the previous session. Use <strong>Pause</strong> to stop without completing the step.</div>
 
         <!-- ORDER NUMBER + PIPELINE -->
-        <div class="fg"><lbl>Order Number *</lbl><input class="fi" id="ord" placeholder="e.g. ORD-1052" autocomplete="off"/></div>
+        <div class="fg">
+          <lbl>Order Number *</lbl>
+          <div style="position:relative">
+            <input class="fi" id="ord" placeholder="Type to search orders…" autocomplete="off" 
+              oninput="window._filterOrders&&window._filterOrders(this.value)" 
+              onfocus="window._showOrderList&&window._showOrderList()" 
+              style="padding-right:36px"/>
+            <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none">🔍</span>
+          </div>
+          <!-- ORDER DROPDOWN -->
+          <div id="ordDropdown" style="display:none;position:absolute;z-index:200;background:#fff;border:1.5px solid var(--bdr);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);max-height:280px;overflow-y:auto;width:100%;margin-top:4px">
+            <div id="ordList"></div>
+          </div>
+        </div>
+        <div id="ordMsg" style="font-size:11px;margin:-10px 0 10px;padding:0 2px;min-height:14px"></div>
         <div style="background:var(--bg);border-radius:10px;padding:12px 14px;margin-bottom:14px">
           <div style="font-size:9px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Production Pipeline</div>
           <div class="pipe" id="pipe"></div>
@@ -906,6 +926,102 @@ async function loadToday(){
 
 /* ===================== ORDER INPUT ===================== */
 let pT=null
+// ── ORDER DROPDOWN ──────────────────────────────────────────────────────────
+let allOrders=[],ordDropTimeout=null
+
+async function loadAvailableOrders(){
+  // Load orders from bloom_cases (active/in-progress cases)
+  const{data}=await sb.from("bloom_cases")
+    .select("case_id,patient_name,doctor,current_status,overdue_for")
+    .not("current_status","in","(ARCHIVE,DELIVERED)")
+    .order("case_id",{ascending:false})
+    .limit(500)
+  allOrders=data||[]
+  
+  // Also load from order_step_tracking for production orders
+  const{data:trackOrders}=await sb.from("order_step_tracking")
+    .select("order_no")
+    .order("order_no",{ascending:false})
+    .limit(200)
+  
+  // Merge: add tracking orders not already in bloom_cases
+  const bloomIds=new Set(allOrders.map(o=>String(o.case_id)))
+  const extraOrders=(trackOrders||[])
+    .filter(t=>!bloomIds.has(String(t.order_no)))
+    .map(t=>({case_id:t.order_no,patient_name:"",doctor:"",current_status:"In Production",overdue_for:0}))
+  
+  allOrders=[...allOrders,...extraOrders]
+}
+
+window.showOrderList=window._showOrderList=()=>{
+  const dropdown=document.getElementById("ordDropdown")
+  dropdown.style.display="block"
+  filterOrders(document.getElementById("ord").value)
+  // Close on outside click
+  setTimeout(()=>{
+    document.addEventListener("click",function closeDD(e){
+      if(!e.target.closest(".fg")){
+        document.getElementById("ordDropdown").style.display="none"
+        document.removeEventListener("click",closeDD)
+      }
+    })
+  },100)
+}
+
+window.filterOrders=window._filterOrders=(term)=>{
+  clearTimeout(ordDropTimeout)
+  ordDropTimeout=setTimeout(()=>{
+    const t=(term||"").toLowerCase().trim()
+    const filtered=t?allOrders.filter(o=>
+      String(o.case_id).includes(t)||
+      (o.patient_name||"").toLowerCase().includes(t)||
+      (o.doctor||"").toLowerCase().includes(t)
+    ).slice(0,50):allOrders.slice(0,50)
+    
+    const list=document.getElementById("ordList")
+    if(!filtered.length){
+      list.innerHTML=`<div style="padding:12px 14px;font-size:12px;color:var(--mu);text-align:center">No orders found</div>`
+    }else{
+      list.innerHTML=filtered.map(o=>{
+        const statusColor=o.overdue_for>0?"color:var(--red)":"color:var(--mu)"
+        const overdueTag=o.overdue_for>0?` ⚠ ${o.overdue_for}d overdue`:"" 
+        return`<div class="ord-opt" onclick="window.selectOrder&&window.selectOrder('${o.case_id}')">
+          <div class="ord-id">#${o.case_id}</div>
+          <div class="ord-patient">${o.patient_name||"—"}</div>
+          <div class="ord-status" style="${statusColor}">${(o.current_status||"").replace(/_/g," ")}${overdueTag}</div>
+        </div>`
+      }).join("")
+    }
+    document.getElementById("ordDropdown").style.display="block"
+  },200)
+  
+  // Always trigger pipeline render
+  clearTimeout(pT);pT=setTimeout(()=>{
+    const ord=document.getElementById("ord").value.trim()
+    renderPipeline(ord)
+  },400)
+}
+
+window.selectOrder=window._selectOrder=(caseId)=>{
+  const ord=String(caseId)
+  document.getElementById("ord").value=ord
+  document.getElementById("ordDropdown").style.display="none"
+  
+  // Show order info
+  const o=allOrders.find(x=>String(x.case_id)===ord)
+  if(o){
+    const msg=document.getElementById("ordMsg")
+    msg.innerHTML=o.overdue_for>0
+      ?`<span style="color:var(--red)">⚠ ${o.patient_name} — ${o.overdue_for}d overdue</span>`
+      :`<span style="color:var(--green)">✓ ${o.patient_name||""} · ${(o.current_status||"").replace(/_/g," ")}</span>`
+  }
+  
+  renderPipeline(ord)
+}
+
+// Load orders on init
+loadAvailableOrders()
+
 document.getElementById("ord").addEventListener("input",()=>{
   clearTimeout(pT);pT=setTimeout(()=>{const ord=document.getElementById("ord").value.trim();renderPipeline(ord)},400)
 })
