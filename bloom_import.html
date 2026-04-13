@@ -123,10 +123,10 @@ tbody tr:hover{background:#f8fafc;cursor:pointer}
   <!-- DIAGNOSTIC CARD - shows on load, can be dismissed -->
   <div id="diagCard" style="background:#1e293b;color:#fff;padding:16px 28px;font-size:12px;font-family:monospace;border-bottom:2px solid #3b5fe2">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-      <div style="font-weight:700;font-size:13px">🔍 System Check</div>
+      <div style="font-weight:700;font-size:13px" id="diagTitle">🔍 System Check — Running…</div>
       <button onclick="document.getElementById('diagCard').style.display='none'" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px">✕ Dismiss</button>
     </div>
-    <div id="diagResults" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px"></div>
+    <div id="diagResults" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px"></div>
   </div>
 
   <div class="body">
@@ -384,9 +384,10 @@ async function runDiagnostics() {
       '</div>';
   }).join('');
   
-  // Auto-dismiss if all OK
+  // Show summary
   var allOk = results.every(function(r){ return r.ok; });
-  if (allOk) setTimeout(function(){ document.getElementById('diagCard').style.display='none'; }, 3000);
+  var titleEl = document.getElementById('diagTitle');
+  if (titleEl) titleEl.textContent = allOk ? '✅ System Check — All OK' : '⚠️ System Check — Issues Found';
 }
 
 // -- SETUP -------------------------------------------------------------
