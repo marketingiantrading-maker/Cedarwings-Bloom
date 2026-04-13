@@ -538,8 +538,8 @@ async function load(){
   })
 
   // Aligner totals: aligners PRODUCED in selected period (cases that completed Packaging)
-  // Aligners Produced = Bloom aligners for cases created in selected period
-  const totAl = periodTotalAl
+  // totAl set after bloom block below
+  let totAl = 0
   // Cases produced in period
   const totCs=allProd.reduce((a,r)=>a+(r.cases_count||0),0)
   const tot=pMin+wMin,eff=tot>0?Math.round(pMin/tot*100):0
@@ -596,6 +596,7 @@ async function load(){
   })
 
   // All-time totals
+  totAl = periodTotalAl  // now safe to assign
   const totalBloomAl = bloomAligners.reduce((a,r)=>a+(Number(r.number_of_aligners)||((Number(r.aligner_upper)||0)+(Number(r.aligner_lower)||0))),0)
   const upperAl = periodUpperAl
   const lowerAl = periodLowerAl
