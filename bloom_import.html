@@ -5,8 +5,90 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Cedarwings — Bloom Cases</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
-<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+// Tiny Supabase REST client — no SDK needed
+var SUPA_URL = 'https://oaauobugpbcixnbmlakc.supabase.co';
+var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hYXVvYnVncGJjaXhuYm1sYWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzYyNTksImV4cCI6MjA5MTQxMjI1OX0.EpOUpmwRx_LAUqpGQcVMyJFB5NqX_HM7aMZ2gWW9oAA';
+var supabase = {createClient: function(){return null;}};
+function mkHeaders(extra){
+  var h = {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
+  Object.assign(h, extra||{});
+  return h;
+}
+var SB = {
+  from: function(table){
+    var _t=table, _sel='*', _filters=[], _ord=null, _lim=null, _rng=null;
+    var q = {
+      select: function(s,opts){
+        if(opts&&opts.count==='exact'&&opts.head) _sel=''; 
+        else _sel=s||'*'; 
+        return q;
+      },
+      eq: function(col,val){_filters.push(col+'=eq.'+encodeURIComponent(val));return q;},
+      neq: function(col,val){_filters.push(col+'=neq.'+encodeURIComponent(val));return q;},
+      gte: function(col,val){_filters.push(col+'=gte.'+encodeURIComponent(val));return q;},
+      lte: function(col,val){_filters.push(col+'=lte.'+encodeURIComponent(val));return q;},
+      not: function(col,op,val){_filters.push(col+'='+op+'.'+val);return q;},
+      in: function(col,vals){_filters.push(col+'=in.('+vals.join(',')+')');return q;},
+      order: function(col,opts){_ord=col+(opts&&opts.ascending===false?'.desc':'.asc');return q;},
+      limit: function(n){_lim=n;return q;},
+      range: function(from,to){_rng=from+'-'+to;return q;},
+      then: function(resolve,reject){
+        var url=SUPA_URL+'/rest/v1/'+_t+'?select='+(_sel||'*');
+        _filters.forEach(function(f){url+='&'+f;});
+        if(_ord)url+='&order='+_ord;
+        if(_lim)url+='&limit='+_lim;
+        var headers = mkHeaders();
+        if(_rng){headers['Range']=_rng;headers['Range-Unit']='items';}
+        return fetch(url,{headers:headers})
+          .then(function(r){
+            if(!r.ok)return r.json().then(function(e){return {data:null,error:e,count:null};});
+            return r.json().then(function(d){return {data:d,error:null,count:d?d.length:0};});
+          })
+          .then(resolve,reject);
+      }
+    };
+    q.upsert = function(rows,opts){
+      var url=SUPA_URL+'/rest/v1/'+_t;
+      if(opts&&opts.onConflict)url+='?on_conflict='+opts.onConflict;
+      return fetch(url,{method:'POST',headers:mkHeaders({'Prefer':'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(rows)})
+        .then(function(r){return r.ok?r.json().then(function(d){return{data:d,error:null};}):r.json().then(function(e){return{data:null,error:e};});});
+    };
+    q.insert = function(rows){
+      return fetch(SUPA_URL+'/rest/v1/'+_t,{method:'POST',headers:mkHeaders(),body:JSON.stringify(rows)})
+        .then(function(r){return r.ok?r.json().then(function(d){return{data:d,error:null};}):r.json().then(function(e){return{data:null,error:e};});});
+    };
+    q.update = function(data){
+      return {eq:function(col,val){
+        var url=SUPA_URL+'/rest/v1/'+_t+'?'+col+'=eq.'+encodeURIComponent(val);
+        return fetch(url,{method:'PATCH',headers:mkHeaders(),body:JSON.stringify(data)})
+          .then(function(r){return r.ok?r.json().then(function(d){return{data:d,error:null};}):r.json().then(function(e){return{data:null,error:e};});});
+      }};
+    };
+    q.delete = function(){
+      return {eq:function(col,val){
+        var url=SUPA_URL+'/rest/v1/'+_t+'?'+col+'=eq.'+encodeURIComponent(val);
+        return fetch(url,{method:'DELETE',headers:mkHeaders()})
+          .then(function(r){return{data:null,error:r.ok?null:{message:'Delete failed'}};});
+      },
+      neq:function(col,val){
+        var url=SUPA_URL+'/rest/v1/'+_t+'?'+col+'=neq.'+encodeURIComponent(val);
+        return fetch(url,{method:'DELETE',headers:mkHeaders()})
+          .then(function(r){return{data:null,error:r.ok?null:{message:'Delete failed'}};});
+      },
+      gte:function(col,val){
+        return {then:function(res){
+          var url=SUPA_URL+'/rest/v1/'+_t+'?'+col+'=gte.'+encodeURIComponent(val);
+          return fetch(url,{method:'DELETE',headers:mkHeaders()})
+            .then(function(r){return{data:null,error:r.ok?null:{message:'Delete failed'}};}).then(res);
+        }};
+      }};
+    };
+    return q;
+  }
+};
+console.log('[Bloom] Native REST client ready — no CDN needed');
+</script>
 <style>
 :root{--bg:#f0f4f8;--card:#fff;--bdr:#e2e8f0;--txt:#0f172a;--mu:#64748b;--dim:#94a3b8;
   --blue:#3b5fe2;--b50:#eef2ff;--b100:#e0e7ff;--green:#16a34a;--g50:#f0fdf4;--g100:#dcfce7;
@@ -259,10 +341,29 @@ tbody tr:hover{background:#f8fafc;cursor:pointer}
 
 
 // -- SETUP -------------------------------------------------------------
-var SB = supabase.createClient('https://oaauobugpbcixnbmlakc.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hYXVvYnVncGJjaXhuYm1sYWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzYyNTksImV4cCI6MjA5MTQxMjI1OX0.EpOUpmwRx_LAUqpGQcVMyJFB5NqX_HM7aMZ2gWW9oAA');
+// SB is defined above as native REST client
 var PAGE = 100;
 var allCases = [], allHistory = [], allImports = [], allAligners = [];
 var casePg = 0, alPg = 0, parsedCSV = [], csvFilename = '';
+
+// -- XLSX LAZY LOADER --------------------------------------------------
+// XLSX loads only when user uploads Excel — does not block page load
+var XLSX = null;
+function loadXLSX(callback) {
+  if (XLSX) { callback(); return; }
+  var s = document.createElement('script');
+  s.src = 'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js';
+  s.onload = function() { XLSX = window.XLSX; callback(); };
+  s.onerror = function() {
+    // Try cdnjs fallback
+    var s2 = document.createElement('script');
+    s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s2.onload = function() { XLSX = window.XLSX; callback(); };
+    s2.onerror = function() { alert('Failed to load Excel library. Check your internet connection.'); };
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s);
+}
 
 // -- HELPERS -----------------------------------------------------------
 function ntf(msg, type) {
@@ -604,7 +705,11 @@ async function confirmImport() {
 
 // -- EXCEL UPLOAD ------------------------------------------------------
 document.getElementById('xlsxInput').addEventListener('change', function() {
-  var file = this.files[0];
+  var self = this;
+  loadXLSX(function() { handleExcelFile(self); });
+});
+function handleExcelFile(input) {
+  var file = input.files[0];
   if (!file) return;
   msg(' Reading ' + file.name + '...', 'var(--blue)');
   var reader = new FileReader();
@@ -647,8 +752,8 @@ document.getElementById('xlsxInput').addEventListener('change', function() {
     }
   };
   reader.readAsArrayBuffer(file);
-  this.value = '';
-});
+  input.value = '';
+}
 
 async function saveExcelData(shipRows, alRows, filename) {
   var BATCH = 500;
