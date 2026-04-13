@@ -309,7 +309,7 @@ function statusBadge(s) {
 }
 
 // ---- TABS ----
-window.switchTab = function switchTab(name) {
+function switchTab(name) {
   ['Cases','Changes','Aligners','Imports'].forEach(function(t) {
     document.getElementById('tab' + t).style.display = t.toLowerCase() === name ? 'block' : 'none';
     document.getElementById('tabBtn' + t).className = 'tab' + (t.toLowerCase() === name ? ' on' : '');
@@ -414,7 +414,7 @@ async function loadAll() {
 }
 
 // ---- RENDER CASES ----
-window.sortBy = function sortBy(col) {
+function sortBy(col) {
   if (sortCol === col) { sortDir *= -1; }
   else { sortCol = col; sortDir = (col === 'creation_date' || col === 'updated_at') ? -1 : 1; }
   ['case_id','patient_name','doctor','distributor','clinic','current_status','creation_date','action_required_for','overdue_for'].forEach(function(c) {
@@ -430,7 +430,7 @@ window.sortBy = function sortBy(col) {
   renderCases();
 }
 
-window.renderCases = function renderCases() {
+function renderCases() {
   var term = document.getElementById('caseSearch').value.toLowerCase();
   var statusF = document.getElementById('caseStatus').value;
   var doctorF = document.getElementById('caseDoctor').value;
@@ -491,7 +491,7 @@ async function renderChanges() {
 
 // ---- RENDER ALIGNERS ----
 var alSortCol = 'case_number', alSortDir = 1;
-window.sortAligners = function(col) {
+function sortAligners(col) {
   if (alSortCol === col) { alSortDir *= -1; }
   else { alSortCol = col; alSortDir = col === '_shipped' ? -1 : 1; }
   ['case_number','aligner_upper','aligner_lower','number_of_aligners','order_type','_shipped'].forEach(function(c) {
@@ -745,7 +745,7 @@ document.getElementById('btnCancelPreview').addEventListener('click', function()
 
 document.getElementById('btnConfirmImport').addEventListener('click', confirmImport);
 
-async window.confirmImport = function confirmImport() {
+async function confirmImport() {
   if (!pendingImport) return;
   var btn = document.getElementById('btnConfirmImport');
   btn.disabled = true; btn.textContent = 'Importing...';
@@ -884,6 +884,13 @@ document.getElementById('btnRefresh').addEventListener('click', loadAll);
 // ---- INIT ----
 dbg('Calling loadAll()...');
 loadAll();
+
+// ---- EXPOSE TO WINDOW (required for onclick in HTML with type=module) ----
+window.sortBy = sortBy;
+window.sortAligners = sortAligners;
+window.renderCases = renderCases;
+window.confirmImport = confirmImport;
+window.switchTab = switchTab;
 
 </script>
 </body>
