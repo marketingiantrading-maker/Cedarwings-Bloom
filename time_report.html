@@ -74,6 +74,8 @@
     <a href="qualite.html" class="nav-link"><span class="ic">✅</span>Quality Control</a>
     <div class="sb-sec">Resources</div>
     <a href="inventory.html" class="sb-link"><span class="icon">📦</span>Inventory</a>
+    <div class="sb-s">System</div>
+    <a href="settings.html" class="nl"><span class="ic">⚙</span>Settings</a>
     <div class="sb-sec">Terminal</div>
     <a href="clocking.html" class="sb-link"><span class="icon">⏱</span>Clocking Terminal</a>
   </nav>
@@ -226,7 +228,7 @@ function render(){
     const m=r.ended_at?dur(r):null
     const tc=r.session_type==='productive'?'b-green':r.session_type==='waste'?'b-amber':r.session_type==='overtime'?'b-purple':'b-gray'
     return`<tr>
-      <td><strong>${r.employee_name||'—'}</strong></td>
+      <td><strong>${r.<a href='employee_profile.html?emp='+encodeURIComponent(employee_name||'—')+\"' style='color:inherit'>\"+employee_name||'—'+\"</a>\"}</strong></td>
       <td><span class="badge ${tc}">${r.session_type||'—'}</span></td>
       <td style="font-size:12px">${r.work_type||r.waste_category||'—'}</td>
       <td style="font-size:12px">${r.machine||'—'}</td>

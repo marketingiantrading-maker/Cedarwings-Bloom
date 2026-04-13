@@ -293,7 +293,7 @@ function renderTable(){
     const pIcon=primaryRT?.icon||'👤'
     const pLabel=primaryRT?.label||(e.custom_role||e.role)
     const extraHtml=extras.map(rn=>{const rt=roleTemplates.find(x=>x.name===rn);if(!rt)return'';const c=rt.color||'#64748b';return`<span class="role-pill" style="color:${c};border-color:${c}30;background:${c}10">${rt.icon||'👤'} ${rt.label}</span>`}).join('')
-    return`<tr class="${blk?'blocked-row':''}">
+    return`<tr class="${blk?'blocked-row':''}" style="cursor:pointer" onclick="if(event.target.tagName!=='BUTTON'&&event.target.tagName!=='A')location.href='employee_profile.html?emp='+encodeURIComponent('${e.name}')">
       <td><div class="emp-inf">
         <div class="emp-av" style="background:${colorFor(e.name)}">${inits(e.name)}</div>
         <div><div class="emp-nm">${e.name}</div><div class="emp-sub">${isOn?'<span style="color:#16a34a;font-weight:700">● Active now</span>':'Not clocked in'}</div></div>

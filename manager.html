@@ -55,7 +55,8 @@ body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh
 .body{padding:22px 28px 60px}
 /* KPI GRID */
 .kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:22px}
-.kpi{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:20px 18px 16px;position:relative;overflow:hidden;transition:box-shadow .2s;cursor:default}
+.kpi{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:20px 18px 16px;position:relative;overflow:hidden;transition:box-shadow .2s;cursor:default;cursor:pointer;transition:box-shadow .15s,transform .12s;text-decoration:none;display:block;color:inherit}
+.kpi:hover{box-shadow:var(--sh2);transform:translateY(-2px)}
 .kpi:hover{box-shadow:var(--sh2);transform:translateY(-1px)}
 .kpi-stripe{position:absolute;top:0;left:0;right:0;height:3px}
 .kpi-ico{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px}
@@ -176,13 +177,13 @@ tbody tr:hover{background:#f8fafc}
 
     <!-- KPI CARDS -->
     <div class="kpi-grid">
-      <div class="kpi">
+      <a href="clocking.html" class="kpi">
         <div class="kpi-stripe" style="background:linear-gradient(90deg,#3b5fe2,#6366f1)"></div>
         <div class="kpi-ico" style="background:var(--b50)">⏱</div>
         <div class="kpi-val" id="kSess">—</div>
         <div class="kpi-lbl">Total Sessions</div>
         <div class="kpi-sub" id="kSessSub">Loading…</div>
-      </div>
+      </a>
       <div class="kpi">
         <div class="kpi-stripe" style="background:linear-gradient(90deg,#16a34a,#059669)"></div>
         <div class="kpi-ico" style="background:var(--g50)">✅</div>
@@ -190,34 +191,34 @@ tbody tr:hover{background:#f8fafc}
         <div class="kpi-lbl">Efficiency</div>
         <div class="kpi-sub" id="kEffSub">Loading…</div>
       </div>
-      <div class="kpi">
+      <a href="production.html" class="kpi">
         <div class="kpi-stripe" style="background:linear-gradient(90deg,#d97706,#f59e0b)"></div>
         <div class="kpi-ico" style="background:var(--a50)">🦷</div>
         <div class="kpi-val" id="kAl">—</div>
         <div class="kpi-lbl">Aligners Produced</div>
         <div class="kpi-sub" id="kAlSub">Loading…</div>
-      </div>
-      <div class="kpi">
+      </a>
+      <a href="production.html" class="kpi">
         <div class="kpi-stripe" style="background:linear-gradient(90deg,#7c3aed,#8b5cf6)"></div>
         <div class="kpi-ico" style="background:var(--p50)">📁</div>
         <div class="kpi-val" id="kCs">—</div>
         <div class="kpi-lbl">Cases Completed</div>
         <div class="kpi-sub" id="kCsSub">Loading…</div>
-      </div>
-      <div class="kpi">
+      </a>
+      <a href="inventory.html" class="kpi">
         <div class="kpi-stripe" style="background:linear-gradient(90deg,#dc2626,#ef4444)"></div>
         <div class="kpi-ico" style="background:var(--r50)">⚠</div>
         <div class="kpi-val" id="kLow">—</div>
         <div class="kpi-lbl">Stock Alerts</div>
         <div class="kpi-sub" id="kLowSub">Loading…</div>
-      </div>
-      <div class="kpi">
+      </a>
+      <a href="inventory.html#requisitions" class="kpi">
         <div class="kpi-stripe" style="background:linear-gradient(90deg,#0d9488,#14b8a6)"></div>
         <div class="kpi-ico" style="background:var(--t50)">📋</div>
         <div class="kpi-val" id="kReq">—</div>
         <div class="kpi-lbl">Open Requisitions</div>
         <div class="kpi-sub" id="kReqSub">Loading…</div>
-      </div>
+      </a>
     </div>
 
     <!-- CHARTS ROW 1: trend + doughnut -->
@@ -268,13 +269,13 @@ tbody tr:hover{background:#f8fafc}
     <div class="g3">
       <div class="card">
         <div class="section-hdr">
-          <div><div class="section-title">🟢 Active Sessions</div><div class="section-sub">Currently clocked in</div></div>
+          <div><a href="clocking.html" style="text-decoration:none;color:inherit"><div class="section-title" style="cursor:pointer">🟢 Active Sessions</div></a><div class="section-sub">Currently clocked in</div></div>
           <span class="bdg b-g" id="activeCount">0 active</span>
         </div>
         <div id="activeList"><div style="color:var(--dim);font-size:13px;text-align:center;padding:20px">No active sessions right now.</div></div>
       </div>
       <div class="card">
-        <div class="section-hdr"><div><div class="section-title">⚠ Stock Alerts</div><div class="section-sub">Low stock &amp; near expiry</div></div></div>
+        <div class="section-hdr"><div><div class="section-title">⚠ Stock Alerts</div><div class="section-sub">Low stock &amp; near expiry</div></div><a href="inventory.html" style="font-size:12px;color:var(--blue);text-decoration:none;font-weight:600">View All →</a></div>
         <div id="alertList"><div style="color:var(--dim);font-size:13px;text-align:center;padding:16px">Loading…</div></div>
       </div>
       <div class="card">
@@ -512,8 +513,8 @@ async function load(){
   document.getElementById('activeCount').textContent=`${active.length} active${overHour.length>0?' · ⚠ '+overHour.length+' over 1h':''}`
   if(overHour.length>0)document.getElementById('activeCount').style.background='#fee2e2';else document.getElementById('activeCount').style.background=''
   document.getElementById('activeList').innerHTML=active.length
-    ?active.map(r=>`<div class="ac">
-        <div class="ac-av" style="background:${avCol(r.employee_name||'?')}">${init(r.employee_name||'?')}</div>
+    ?active.map(r=>`<div class="ac" style="cursor:pointer" onclick="location.href='employee_profile.html?emp='+encodeURIComponent(r.employee_name||'')">
+        <a href="employee_profile.html?emp=${encodeURIComponent(r.employee_name||'')}" onclick="event.stopPropagation()" style="text-decoration:none"><div class="ac-av" style="background:${avCol(r.employee_name||'?')}">${init(r.employee_name||'?')}</div></a>
         <div style="flex:1;min-width:0">
           <div class="ac-name">${r.employee_name||'—'}</div>
           <div class="ac-meta">${r.work_type||r.session_type||'—'} · ${r.machine||'—'}<br>Order: <strong>${r.order_no||'—'}</strong></div>
@@ -522,7 +523,7 @@ async function load(){
           <div class="ac-time ${r.session_type==='waste'?'waste':''}" id="act-${r.id}">${r.started_at?hms(Date.now()-new Date(r.started_at).getTime()):'—'}</div>
           <div class="ac-type">${r.session_type==='productive'?'<span style="color:#16a34a">● Productive</span>':r.session_type==='waste'?'<span style="color:#d97706">● Non-Prod</span>':'<span style="color:var(--mu)">● '+r.session_type+'</span>'}</div>
         </div>
-      </div>`).join('')
+      </div></a>`).join('')
     :`<div style="color:var(--dim);font-size:13px;text-align:center;padding:20px">No employees clocked in right now.</div>`
   active.forEach(r=>{if(r.started_at){const el=document.getElementById('act-'+r.id);if(el)setInterval(()=>{el.textContent=hms(Date.now()-new Date(r.started_at).getTime())},1000)}})
 
@@ -536,12 +537,12 @@ async function load(){
     if(d!==null&&d<0)alerts.push({t:'d',i:'☠',h:`Expired: ${r.item_name}`,d:`Lot ${r.lot_no||'—'} · ${Math.abs(d)}d ago`})
   })
   document.getElementById('alertList').innerHTML=alerts.slice(0,5).length
-    ?alerts.slice(0,5).map(a=>`<div class="ali ali-${a.t}"><div class="ali-i">${a.i}</div><div><div class="ali-title">${a.h}</div><div class="ali-desc">${a.d}</div></div></div>`).join('')
+    ?alerts.slice(0,5).map(a=>`<a href="inventory.html" style="text-decoration:none;color:inherit"><div class="ali ali-${a.t}" style="cursor:pointer"><div class="ali-i">${a.i}</div><div><div class="ali-title">${a.h}</div><div class="ali-desc">${a.d}</div></div></div></a>`).join('')
     :`<div style="background:var(--g50);border:1px solid var(--g100);border-radius:10px;padding:12px;font-size:13px;color:var(--green);font-weight:600;text-align:center">✅ All stock levels healthy</div>`
 
   // Requisitions
   document.getElementById('reqList').innerHTML=reqs.length
-    ?reqs.slice(0,5).map(r=>`<div class="req-i">
+    ?reqs.slice(0,5).map(r=>`<a href="inventory.html#requisitions" style="text-decoration:none;color:inherit"><div class="req-i" style="cursor:pointer">
         <div style="flex:1">
           <div class="req-name">${r.item_name}</div>
           <div class="req-meta">Qty: ${r.quantity_requested} · ${r.requester_name||'—'}</div>
@@ -556,7 +557,7 @@ async function load(){
   // Emp table
   document.getElementById('empTable').innerHTML=[...byEmp.values()].slice(0,10).map(e=>{
     const t=e.p+e.w,pct=t>0?Math.round(e.p/t*100):0,bc=pct>=70?'var(--green)':pct>=40?'var(--amber)':'var(--red)'
-    return`<tr>
+    return`<tr style="cursor:pointer" onclick="location.href='employee_profile.html?emp='+encodeURIComponent('${e.name}')">
       <td><div style="display:flex;align-items:center;gap:8px">
         <div style="width:32px;height:32px;border-radius:9px;background:${avCol(e.name)};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0">${init(e.name)}</div>
         <strong>${e.name}</strong>
@@ -569,8 +570,7 @@ async function load(){
   }).join('')||'<tr><td colspan="5" class="empty-cell">No sessions in this period.</td></tr>'
 
   // Production table
-  document.getElementById('prodTable').innerHTML=allProd.slice(0,8).map(r=>`<tr>
-    <td class="mono">${r.order_no||'—'}</td>
+  document.getElementById('prodTable').innerHTML=allProd.slice(0,8).map(r=>`<tr style="cursor:pointer" onclick="location.href='tracabilite.html?order='+encodeURIComponent(r.order_no||'')">\n    <td class="mono">${r.order_no||'—'}</td>
     <td><span style="font-weight:700;color:var(--amber);font-family:var(--mono)">${r.aligners_count||0}</span></td>
     <td><span style="font-weight:700;color:var(--purple);font-family:var(--mono)">${r.cases_count||0}</span></td>
     <td>${r.employee_name||'—'}</td>
