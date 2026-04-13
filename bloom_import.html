@@ -221,7 +221,7 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc;cursor:poin
         </div>
         <div class="tw"><table>
           <thead><tr>
-            <th class="sortable" onclick="sortAligners('case_number')">Case # <span class="sarr" id="ash_case_number">↑</span></th>
+            <th class="sortable" onclick="sortAligners('case_number')">Case # <span class="sarr" id="ash_case_number">↓</span></th>
             <th class="sortable" onclick="sortAligners('aligner_upper')">Upper <span class="sarr" id="ash_aligner_upper"></span></th>
             <th class="sortable" onclick="sortAligners('aligner_lower')">Lower <span class="sarr" id="ash_aligner_lower"></span></th>
             <th class="sortable" onclick="sortAligners('number_of_aligners')">Total <span class="sarr" id="ash_number_of_aligners"></span></th>
@@ -278,8 +278,8 @@ const PAGE = 50;
 // ── STATE ──────────────────────────────────────────────────────────────────
 var allCases = [], allAligners = [];
 var casesPage = 0, alPage = 0;
-var cSort = { col: 'creation_date', dir: -1 };  // -1=desc, 1=asc
-var aSort = { col: 'case_number',   dir:  1 };
+var cSort = { col: 'creation_date', dir: -1 };  // -1=desc newest first
+var aSort = { col: 'case_number',   dir: -1 };  // -1=desc highest first
 var pendingImport = null, csvFilename = '', XLSX = null;
 
 // ── HELPERS ────────────────────────────────────────────────────────────────
@@ -358,6 +358,9 @@ async function loadAll() {
   // KPIs
   document.getElementById('kTotal').textContent    = allCases.length;
   document.getElementById('kAligners').textContent = allAligners.length;
+  // Update tab counters
+  document.getElementById('tabCountCases').textContent    = allCases.length;
+  document.getElementById('tabCountAligners').textContent = allAligners.length;
   var now = new Date();
   var overdue = allCases.filter(function(c) {
     if (c.overdue_for && c.overdue_for.trim()) return true;
@@ -466,6 +469,8 @@ function renderCases() {
     : '<tr><td colspan="9" class="ec">No cases found.</td></tr>';
   var totalPages = Math.ceil(total / PAGE);
   document.getElementById('casesPagerInfo').textContent = total + ' cases (page ' + (casesPage+1) + '/' + (totalPages||1) + ')';
+  var tcEl = document.getElementById('tabCountCases');
+  if (tcEl) tcEl.textContent = total;
   document.getElementById('casesPrev').disabled = casesPage === 0;
   document.getElementById('casesNext').disabled = casesPage >= totalPages - 1;
 }
