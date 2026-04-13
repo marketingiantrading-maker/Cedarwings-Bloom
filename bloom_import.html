@@ -399,7 +399,7 @@ function sBadge(s){
     RETAINER_ALIGNERS_ARE_MADE:"s-retainer",RETAINER_ORDER_PROCESSED:"s-retainer",
     RETAINER_ORDER_CREATED:"s-retainer",PLAN_WITH_BLOOM_ADDED:"s-plan",PLAN_WITH_BLOOM_PROCESSED:"s-plan"}
   const cls=map[s]||"s-other"
-  const label=s.replace(/_/g," ").toLowerCase().replace(/\w/g,c=>c.toUpperCase())
+  const label=s.replace(/_/g," ").toLowerCase().replace(/\b\w/g,c=>c.toUpperCase())
   return`<span class="badge ${cls}" title="${s}">${label}</span>`
 }
 
@@ -764,9 +764,7 @@ window.cancelPreview=()=>{
 }
 
 function parseCSV(text,filename){
-  const lines=text.split(/
-?
-/).filter(l=>l.trim())
+  const lines=text.replace(/\r\n/g,"\n").replace(/\r/g,"\n").split("\n").filter(l=>l.trim())
   if(lines.length<2){ntf("CSV empty","err");return}
   
   const sep=lines[0].split(",").length>lines[0].split(";").length?",":";"
