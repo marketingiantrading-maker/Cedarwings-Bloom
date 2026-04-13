@@ -244,7 +244,7 @@ tbody tr:hover{background:#f8fafc}
         <div class="kpi-stripe" style="background:linear-gradient(90deg,#7c3aed,#a855f7)"></div>
         <div class="kpi-ico" style="background:var(--p50)">🦷</div>
         <div class="kpi-val" id="kBloomA">—</div>
-        <div class="kpi-lbl">Bloom Aligners</div>
+        <div class="kpi-lbl">Bloom Aligners Today</div>
         <div class="kpi-sub" id="kBloomASub">Total planned</div>
       </a>
     </div>
@@ -551,16 +551,22 @@ async function load(){
   document.getElementById('kLowSub').style.color=lowItems.length>0?'var(--red)':'var(--green)'
   document.getElementById('kReq').textContent=reqs.length
 
-  // Bloom KPIs - total cases and total aligners
+  // Bloom KPIs
+  const todayStr=new Date().toISOString().slice(0,10)
   const totalBloomCases=bloomCases.length
   const activeBloom=bloomCases.filter(r=>r.current_status&&!['DELIVERED','ARCHIVE','delivered','archive'].includes((r.current_status||'').toLowerCase())).length
+  // TODAY's cases = cases imported or updated today
+  const todayCaseIds=new Set(bloomCases.filter(r=>(r.last_updated_at||r.creation_date||'').slice(0,10)===todayStr).map(r=>r.case_id||r.case_number||r.id))
+  // Today's aligners = aligners belonging to today's cases
+  const todayAl=bloomAligners.filter(r=>todayCaseIds.has(r.case_number)).reduce((a,r)=>a+(r.number_of_aligners||0),0)
   const totalBloomAl=bloomAligners.reduce((a,r)=>a+(r.number_of_aligners||0),0)
-  const upperAl=bloomAligners.filter(r=>r.order_type==='TreatmentPlan').reduce((a,r)=>a+(r.aligner_upper||0),0)
-  const lowerAl=bloomAligners.filter(r=>r.order_type==='TreatmentPlan').reduce((a,r)=>a+(r.aligner_lower||0),0)
+  const upperAl=bloomAligners.filter(r=>r.order_type==='TreatmentPlan'&&todayCaseIds.has(r.case_number)).reduce((a,r)=>a+(r.aligner_upper||0),0)
+  const lowerAl=bloomAligners.filter(r=>r.order_type==='TreatmentPlan'&&todayCaseIds.has(r.case_number)).reduce((a,r)=>a+(r.aligner_lower||0),0)
   document.getElementById('kBloomC').textContent=totalBloomCases.toLocaleString()
   document.getElementById('kBloomCSub').textContent=`${activeBloom} active · ${totalBloomCases-activeBloom} delivered`
-  document.getElementById('kBloomA').textContent=totalBloomAl.toLocaleString()
-  document.getElementById('kBloomASub').textContent=`↑${upperAl} upper · ↓${lowerAl} lower`
+  // Show TODAY's aligners prominently, total as sub
+  document.getElementById('kBloomA').textContent=todayAl>0?todayAl.toLocaleString():totalBloomAl.toLocaleString()
+  document.getElementById('kBloomASub').textContent=todayAl>0?`Today: ↑${upperAl} upper · ↓${lowerAl} lower · Total: ${totalBloomAl.toLocaleString()}`:`All time total · ↑${bloomAligners.filter(r=>r.order_type==='TreatmentPlan').reduce((a,r)=>a+(r.aligner_upper||0),0)} upper`
   document.getElementById('kReqSub').textContent=`${reqs.filter(r=>r.status==='approved').length} approved`
   document.getElementById('kReqSub').style.color=reqs.length>0?'var(--amber)':'var(--dim)'
 

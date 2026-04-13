@@ -194,6 +194,7 @@ tbody tr:hover{background:#f8fafc;cursor:pointer}
         <button class="tab" onclick="switchTab('changes')">🔄 History (<span id="tcChanges">—</span>)</button>
         <button class="tab" onclick="switchTab('aligners')">🦷 Aligners (<span id="tcAligners">—</span>)</button>
         <button class="tab" onclick="switchTab('imports')">📥 Imports</button>
+        <button class="tab" onclick="switchTab('project')" style="margin-left:auto;background:var(--b50);color:var(--blue)">🗂 Project State</button>
       </div>
       <!-- CASES -->
       <div id="tabCases">
@@ -237,6 +238,66 @@ tbody tr:hover{background:#f8fafc;cursor:pointer}
           <tbody id="tImports"><tr><td colspan="6" class="ec">No imports yet</td></tr></tbody>
         </table></div>
       </div>
+
+      <!-- PROJECT STATE TAB -->
+      <div id="tabProject" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+          <div>
+            <div style="font-size:15px;font-weight:800">🗂 Project State</div>
+            <div style="font-size:12px;color:var(--mu);margin-top:3px">Last updated: <strong id="psLastUpdate">—</strong> · Saved in Supabase system_settings</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn bgh" onclick="loadProjectState()">↻ Reload</button>
+            <button class="btn bb" onclick="saveProjectState()">💾 Save to DB</button>
+          </div>
+        </div>
+
+        <!-- DEPLOYMENT INFO -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+          <div style="background:var(--b50);border:1.5px solid var(--b100);border-radius:12px;padding:16px">
+            <div style="font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">🌐 Deployment</div>
+            <div style="font-size:12px;line-height:2">
+              <div>GitHub: <a href="https://github.com/marketingiantrading-maker/Cedarwings-Bloom" target="_blank" style="color:var(--blue);font-weight:600">Cedarwings-Bloom</a></div>
+              <div>Live: <a href="https://marketingiantrading-maker.github.io/Cedarwings-Bloom/" target="_blank" style="color:var(--blue);font-weight:600">GitHub Pages</a></div>
+              <div>Supabase: <span style="font-family:monospace;font-size:10px">oaauobugpbcixnbmlakc</span></div>
+            </div>
+          </div>
+          <div style="background:var(--g50);border:1.5px solid var(--g100);border-radius:12px;padding:16px">
+            <div style="font-size:11px;font-weight:700;color:#15803d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">🔑 Credentials</div>
+            <div style="font-size:12px;line-height:2">
+              <div>IMAD: imad / cedarwings123 (Manager)</div>
+              <div>Kamal: kamal / cedarwings123 (Employee)</div>
+              <div>Brevo: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d4bdb9b5b0b5b1bcba94b3b9b5bdb8fab7bbb9">[email&#160;protected]</a></div>
+              <div>Nicolas: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5b35323834373a28353a31361b3c363a323775383436">[email&#160;protected]</a></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGES STATUS -->
+        <div style="background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:16px;margin-bottom:14px">
+          <div style="font-size:12px;font-weight:800;margin-bottom:12px">📄 All Pages</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px" id="psPages">
+          </div>
+        </div>
+
+        <!-- SQL TO RUN -->
+        <div style="background:#1e293b;border-radius:12px;padding:16px;margin-bottom:14px">
+          <div style="font-size:12px;font-weight:800;color:#fff;margin-bottom:12px">📝 SQL Files — Run in Supabase SQL Editor</div>
+          <div id="psSql"></div>
+        </div>
+
+        <!-- TODAY'S CHANGES -->
+        <div style="background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:16px;margin-bottom:14px">
+          <div style="font-size:12px;font-weight:800;margin-bottom:12px">✅ Today's Changes — April 13, 2026</div>
+          <div style="display:grid;gap:8px" id="psChanges"></div>
+        </div>
+
+        <!-- PENDING -->
+        <div style="background:var(--a50);border:1.5px solid var(--a100);border-radius:12px;padding:16px">
+          <div style="font-size:12px;font-weight:800;color:#92400e;margin-bottom:12px">⏳ Pending / Next Steps</div>
+          <div id="psPending"></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -254,7 +315,7 @@ tbody tr:hover{background:#f8fafc;cursor:pointer}
 
 <div class="notif" id="notif"></div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 
 // -- DIAGNOSTICS -------------------------------------------------------
 async function runDiagnostics() {
@@ -404,6 +465,8 @@ async function loadAll() {
   document.getElementById('tcChanges').textContent = allHistory.length.toLocaleString();
   renderCases(); renderHistory(); renderImports();
   await loadAligners();
+  // Auto-sync today's aligner data to production_records
+  await syncBloomToProduction(alRows, shipRows);
 }
 
 // -- CASES -------------------------------------------------------------
@@ -531,7 +594,8 @@ function renderImports() {
 
 // -- TAB SWITCH --------------------------------------------------------
 function switchTab(tab) {
-  var tabs = ['cases','changes','aligners','imports'];
+  if(tab==='project'){loadProjectState();}
+  var tabs = ['cases','changes','aligners','imports','project'];
   tabs.forEach(function(t) {
     document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).style.display = t===tab?'block':'none';
   });
@@ -786,9 +850,142 @@ function showCase(caseId) {
 }
 function closeModal() { document.getElementById('modal').classList.remove('on'); }
 
+// -- SYNC BLOOM → PRODUCTION RECORDS ------------------------------------
+async function syncBloomToProduction(alRows, shipRows) {
+  if (!alRows.length) return;
+  var today = new Date().toISOString().slice(0,10);
+
+  // Build production rows: one per case from bloom_aligner_details
+  var prodRows = [];
+  alRows.forEach(function(r) {
+    if (!r.case_number) return;
+    var al = parseInt(r.number_of_aligners) || 0;
+    if (al <= 0) return;
+    prodRows.push({
+      order_no: String(r.case_number),
+      batch_id: 'BLOOM-' + String(r.case_number),
+      aligners_count: al,
+      cases_count: 1,
+      employee_name: 'Bloom Import',
+      inventory_deducted: false,
+      notes: 'Auto-synced from Bloom · Upper:' + (r.aligner_upper||0) + ' Lower:' + (r.aligner_lower||0) + ' Type:' + (r.order_type||''),
+      created_at: new Date().toISOString()
+    });
+  });
+
+  if (!prodRows.length) { ntf('[INFO] No aligner records to sync', 'ok'); return; }
+
+  try {
+    // Delete any previous Bloom auto-records for TODAY to avoid duplicates on re-import
+    await SB.from('production_records')
+      .delete()
+      .eq('employee_name', 'Bloom Import')
+      .gte('created_at', today + 'T00:00:00.000Z');
+
+    // Insert fresh records in batches
+    var BATCH = 100;
+    for (var i = 0; i < prodRows.length; i += BATCH) {
+      var res = await SB.from('production_records').insert(prodRows.slice(i, i+BATCH));
+      if (res.error) { console.error('Sync error:', res.error.message); break; }
+    }
+    console.log('[Bloom Sync] ' + prodRows.length + ' production records saved');
+    ntf('[OK] ' + prodRows.length + ' cases synced to production ✅', 'ok');
+  } catch(e) {
+    console.error('[Bloom Sync Error]', e.message);
+  }
+}
+
 // -- START -------------------------------------------------------------
 runDiagnostics();
 loadAll();
-</script>
-</body>
-</html>
+
+// =================== PROJECT STATE ===================
+var PS_STATE = {
+  lastUpdate: 'April 13, 2026',
+  pages: [
+    {file:'index.html', desc:'Login — role-based routing', status:'ok', updated:'Previous'},
+    {file:'manager.html', desc:'Dashboard — 6 KPIs, 4 charts, CSV export', status:'ok', updated:'Apr 13'},
+    {file:'production.html', desc:'Production — FEFO deduct, machine linking', status:'ok', updated:'Apr 13'},
+    {file:'production_materials.html', desc:'Material lots per machine', status:'ok', updated:'Previous'},
+    {file:'machines.html', desc:'Machines — maintenance, install materials, stock', status:'ok', updated:'Apr 13'},
+    {file:'clocking.html', desc:'Clocking — pipeline, one-tap clock-in', status:'ok', updated:'Apr 13'},
+    {file:'inventory.html', desc:'Inventory — FEFO, stock, requisitions', status:'ok', updated:'Previous'},
+    {file:'employees.html', desc:'Employees — roles, step assignment', status:'ok', updated:'Apr 13'},
+    {file:'employee_profile.html', desc:'Employee profile — history, schedule, admin edit', status:'new', updated:'Apr 13 NEW'},
+    {file:'time_report.html', desc:'Time report — charts fixed', status:'ok', updated:'Apr 13'},
+    {file:'tracabilite.html', desc:'Fiche de Traçabilité', status:'ok', updated:'Previous'},
+    {file:'qualite.html', desc:'Contrôle Qualité ISO 13485', status:'ok', updated:'Previous'},
+    {file:'settings.html', desc:'Brevo config, notifications', status:'ok', updated:'Previous'},
+    {file:'roles.html', desc:'Role Manager', status:'ok', updated:'Previous'},
+    {file:'bloom_import.html', desc:'Bloom cases import — CSV + Excel', status:'ok', updated:'Previous'}
+  ],
+  sql: [
+    {file:'fix_machines_v2.sql', desc:'maintenance_log + consumable_loads tables', status:'pending'},
+    {file:'employee_profile.sql', desc:'employee_calendar table for schedule', status:'pending'},
+    {file:'fix_employee_rls.sql', desc:'Allow anon reads on employees + time_sessions', status:'run_if_needed'},
+    {file:'fix_all_rls.sql', desc:'Disable RLS on all tables', status:'done'},
+    {file:'materials_system.sql', desc:'Material tracking tables', status:'done'}
+  ],
+  changes: [
+    {icon:'📊', title:'manager.html rebuilt', detail:'Chart bug fixed, sidebar fix, 6 KPIs, 4 charts, CSV export'},
+    {icon:'📈', title:'time_report.html chart fixed', detail:'Canvas height container bug fixed'},
+    {icon:'⚙', title:'machines.html complete rebuild', detail:'Add/edit, maintenance tracking, install materials, FEFO stock link'},
+    {icon:'🏭', title:'production.html machine linking', detail:'Machine dropdown added, updates consumable load counters'},
+    {icon:'⏱', title:'clocking.html redesigned', detail:'Visual pipeline, one-tap clock-in, auto session management, waste W1-W6'},
+    {icon:'👤', title:'employee_profile.html NEW', detail:'4 tabs: Work History, By Step, Schedule Calendar, Admin Edit timing'},
+    {icon:'👥', title:'employees.html updated', detail:'Step assignment dropdown + Profile button added'}
+  ],
+  pending: [
+    {priority:'high', text:'Run fix_machines_v2.sql in Supabase — enables machine maintenance + material install'},
+    {priority:'high', text:'Run employee_profile.sql in Supabase — enables schedule calendar'},
+    {priority:'medium', text:'Upload all modified HTML files to GitHub'},
+    {priority:'low', text:'Purchase cedarwings.com + authenticate in Brevo for professional email'}
+  ]
+};
+
+function loadProjectState(){
+  document.getElementById('psLastUpdate').textContent = PS_STATE.lastUpdate;
+  // Pages
+  document.getElementById('psPages').innerHTML = PS_STATE.pages.map(p=>{
+    var color = p.status==='new' ? 'var(--blue)' : p.status==='ok' ? 'var(--green)' : 'var(--amber)';
+    var bg = p.status==='new' ? 'var(--b50)' : p.status==='ok' ? 'var(--g50)' : 'var(--a50)';
+    var border = p.status==='new' ? 'var(--b100)' : p.status==='ok' ? 'var(--g100)' : 'var(--a100)';
+    return '<div style="background:'+bg+';border:1px solid '+border+';border-radius:9px;padding:10px;cursor:pointer" onclick="window.open(\''+p.file+'\',\'_blank\')">'
+      +'<div style="font-size:11px;font-weight:700;color:'+color+'">'+p.file+'</div>'
+      +'<div style="font-size:10px;color:var(--mu);margin-top:2px">'+p.desc+'</div>'
+      +'<div style="font-size:9px;font-weight:700;color:'+color+';margin-top:4px">'+p.updated+'</div>'
+      +'</div>';
+  }).join('');
+  // SQL
+  document.getElementById('psSql').innerHTML = PS_STATE.sql.map(s=>{
+    var icon = s.status==='done' ? '✅' : s.status==='pending' ? '⚠️' : 'ℹ️';
+    var color = s.status==='done' ? '#4ade80' : s.status==='pending' ? '#fbbf24' : '#94a3b8';
+    return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.07)">'
+      +'<span style="font-size:14px">'+icon+'</span>'
+      +'<div><div style="font-size:11px;font-weight:700;color:'+color+';font-family:monospace">'+s.file+'</div>'
+      +'<div style="font-size:10px;color:#94a3b8">'+s.desc+'</div></div>'
+      +'</div>';
+  }).join('');
+  // Changes
+  document.getElementById('psChanges').innerHTML = PS_STATE.changes.map(c=>{
+    return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px;background:var(--g50);border:1px solid var(--g100);border-radius:9px">'
+      +'<div style="font-size:20px">'+c.icon+'</div>'
+      +'<div><div style="font-size:12px;font-weight:700">'+c.title+'</div>'
+      +'<div style="font-size:11px;color:var(--mu);margin-top:2px">'+c.detail+'</div></div>'
+      +'</div>';
+  }).join('');
+  // Pending
+  document.getElementById('psPending').innerHTML = PS_STATE.pending.map(p=>{
+    var color = p.priority==='high' ? '#dc2626' : p.priority==='medium' ? '#d97706' : '#64748b';
+    var badge = p.priority==='high' ? 'URGENT' : p.priority==='medium' ? 'TODO' : 'LATER';
+    return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--a100)">'
+      +'<span style="background:'+color+';color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:999px">'+badge+'</span>'
+      +'<span style="font-size:12px">'+p.text+'</span>'
+      +'</div>';
+  }).join('');
+}
+
+async function saveProjectState(){
+  try{
+    var stateStr = JSON.stringify({state:PS_STATE, savedAt: new Date().toISOString()});
+ 

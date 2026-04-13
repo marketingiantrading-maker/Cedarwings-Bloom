@@ -156,6 +156,30 @@ lbl{display:block;font-size:11px;font-weight:700;color:var(--mu);text-transform:
       <div class="kpi"><div class="kpi-icon">⏳</div><div class="kpi-lbl">Aligneurs estimés restants</div><div class="kpi-val" id="kpiEstim" style="color:var(--green)">—</div></div>
     </div>
 
+    <!-- BLOOM TODAY PANEL -->
+    <div style="background:var(--card);border-radius:14px;box-shadow:var(--sh);margin-bottom:18px;overflow:hidden">
+      <div style="background:linear-gradient(135deg,#1e3a8a,#2563eb);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-size:14px;font-weight:800;color:#fff">🔵 Today's Bloom Cases</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:2px" id="bloomTodayTotal">Upload Excel on Bloom Import page to see today's cases</div>
+        </div>
+        <a href="bloom_import.html" style="background:rgba(255,255,255,.15);color:#fff;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;border:1px solid rgba(255,255,255,.3)">📥 Go to Bloom Import →</a>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr style="background:#f8fafc">
+            <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;border-bottom:1px solid var(--bdr)">Case #</th>
+            <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;border-bottom:1px solid var(--bdr)">Aligners</th>
+            <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;border-bottom:1px solid var(--bdr)">Details</th>
+            <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;border-bottom:1px solid var(--bdr)">Synced</th>
+          </tr></thead>
+          <tbody id="bloomTodayBody">
+            <tr><td colspan="4" style="text-align:center;color:var(--dim);padding:24px">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- YIELD RULES + LOT LIST -->
     <div class="grid">
       <!-- LEFT: YIELD RULES -->
@@ -302,6 +326,30 @@ async function load(){
   renderYieldRules()
   renderRecentLots()
   renderLots()
+  renderBloomToday()
+}
+
+async function renderBloomToday(){
+  const today=new Date().toISOString().slice(0,10)
+  const{data:rows}=await sb.from("production_records")
+    .select("order_no,aligners_count,notes,created_at")
+    .eq("employee_name","Bloom Import")
+    .gte("created_at",today+"T00:00:00")
+    .order("created_at",{ascending:false})
+  const el=document.getElementById("bloomTodayBody")
+  if(!el)return
+  if(!rows||!rows.length){
+    el.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--dim);padding:20px">No Bloom cases imported today yet.<br><a href="bloom_import.html" style="color:var(--blue);font-weight:600">→ Go to Bloom Import to upload Excel</a></td></tr>'
+    return
+  }
+  const totalAl=rows.reduce((a,r)=>a+(r.aligners_count||0),0)
+  el.innerHTML=rows.map(r=>`<tr>
+    <td><strong style="font-family:var(--mono)">${r.order_no}</strong></td>
+    <td><span style="font-size:16px;font-weight:800;color:var(--amber);font-family:var(--mono)">${r.aligners_count||0}</span></td>
+    <td style="font-size:11px;color:var(--mu)">${(r.notes||'').replace('Auto-synced from Bloom · ','')}</td>
+    <td style="font-size:11px;color:var(--mu);font-family:var(--mono)">${new Date(r.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</td>
+  </tr>`).join('')
+  document.getElementById("bloomTodayTotal").textContent=`${rows.length} cases · ${totalAl.toLocaleString()} aligners today`
 }
 
 function renderKPIs(){
@@ -327,23 +375,32 @@ function renderKPIs(){
 
 async function loadBloomKPIs(){
   try{
-    // Total cases
-    const{count:cCount}=await sb.from("bloom_cases").select("*",{count:"exact",head:true})
-    // Total aligners from treatment plans
-    const{data:alData}=await sb.from("bloom_aligner_details").select("number_of_aligners").eq("order_type","TreatmentPlan").limit(10000)
-    const totalAl=(alData||[]).reduce((a,r)=>a+(r.number_of_aligners||0),0)
-    // Active cases (not delivered/archive)
-    const{data:activeCases}=await sb.from("bloom_cases").select("current_status").not("current_status","in","(DELIVERED,ARCHIVE,delivered,archive)").limit(5000)
-    const activeCount=(activeCases||[]).length
-    
-    document.getElementById("kpiBloomCases").textContent=(cCount||0).toLocaleString()
-    document.getElementById("kpiBloomCasesSub").textContent=`${activeCount} active · ${(cCount||0)-activeCount} delivered`
-    document.getElementById("kpiBloomAl").textContent=totalAl.toLocaleString()
-    document.getElementById("kpiBloomAlSub").textContent="Total planned aligners"
+    const todayStr=new Date().toISOString().slice(0,10)
+    // All cases
+    const{data:allCases}=await sb.from("bloom_cases").select("case_id,current_status,last_updated_at,creation_date").limit(10000)
+    const cases=allCases||[]
+    const totalCases=cases.length
+    const activeCount=cases.filter(r=>!["DELIVERED","ARCHIVE","delivered","archive"].includes((r.current_status||"").toUpperCase())).length
+    // Today's cases (imported or updated today)
+    const todayCaseIds=new Set(cases.filter(r=>(r.last_updated_at||r.creation_date||"").slice(0,10)===todayStr).map(r=>r.case_id||r.id))
+    const todayCasesCount=todayCaseIds.size
+    // Aligners for today's cases
+    const{data:alData}=await sb.from("bloom_aligner_details").select("case_number,number_of_aligners,aligner_upper,aligner_lower").eq("order_type","TreatmentPlan").limit(10000)
+    const al=alData||[]
+    const todayAl=al.filter(r=>todayCaseIds.has(r.case_number)).reduce((a,r)=>a+(r.number_of_aligners||0),0)
+    const totalAl=al.reduce((a,r)=>a+(r.number_of_aligners||0),0)
+    const todayUpper=al.filter(r=>todayCaseIds.has(r.case_number)).reduce((a,r)=>a+(r.aligner_upper||0),0)
+    const todayLower=al.filter(r=>todayCaseIds.has(r.case_number)).reduce((a,r)=>a+(r.aligner_lower||0),0)
+
+    document.getElementById("kpiBloomCases").textContent=totalCases.toLocaleString()
+    document.getElementById("kpiBloomCasesSub").textContent=todayCasesCount>0?`Today: ${todayCasesCount} new/updated`:`${activeCount} active`
+    document.getElementById("kpiBloomAl").textContent=todayAl>0?todayAl.toLocaleString():totalAl.toLocaleString()
+    document.getElementById("kpiBloomAlSub").textContent=todayAl>0?`Today ↑${todayUpper} ↓${todayLower} | Total: ${totalAl}`:(`Total all time`)
   }catch(e){
     document.getElementById("kpiBloomCases").textContent="—"
     document.getElementById("kpiBloomAl").textContent="—"
-    document.getElementById("kpiBloomCasesSub").textContent="Check bloom_cases table"
+    document.getElementById("kpiBloomCasesSub").textContent="bloom_cases not found"
+    console.error("Bloom KPI error:",e)
   }
 }
 
