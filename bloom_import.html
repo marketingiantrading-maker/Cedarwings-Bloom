@@ -62,6 +62,14 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc;cursor:poin
   .sortable:hover { background:rgba(99,102,241,.08); }
   .sarr { font-size:11px; margin-left:3px; color:var(--blue,#6366f1); }
 </style>
+<script type="importmap">
+{
+  "imports": {
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2",
+    "https://esm.sh/@supabase/supabase-js@2": "https://esm.sh/@supabase/supabase-js@2"
+  }
+}
+</script>
 </head>
 <body>
 <aside class="sb">
@@ -96,7 +104,7 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc;cursor:poin
   </div>
 
   <div class="body">
-    <div class="debug-bar" id="debugBar">&#128309; Loading bloom_import_app.js...</div>
+    <div class="debug-bar" id="debugBar">&#128309; Connecting...</div>
 
     <div class="kpi-grid">
       <div class="kpi" style="border-top-color:#3b5fe2"><div class="kpi-val" id="kTotal" style="color:var(--blue)">&#8212;</div><div class="kpi-lbl">Total Cases</div></div>
@@ -229,9 +237,16 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { SUPABASE_CONFIG } from './config.js';
 
 const sb = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
-console.log('[Bloom] Supabase SDK ready');
+console.log('[Bloom] Supabase SDK ready - URL:', SUPABASE_CONFIG.url);
 
 var SB = { from: function(t){ return sb.from(t); } };
+
+// ---- ERROR HANDLER ----
+window.addEventListener('error', function(e) {
+  console.error('[Bloom] Window error:', e.message, e.filename);
+  var el = document.getElementById('debugBar');
+  if (el) el.innerHTML = '&#9888;&#65039; Error: ' + e.message;
+});
 
 // ---- DEBUG BAR ----
 function dbg(m) {
