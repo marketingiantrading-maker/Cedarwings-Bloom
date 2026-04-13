@@ -58,6 +58,9 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc;cursor:poin
 .s-delivered{background:#e0e7ff;color:#3730a3}.s-refinement{background:#fef3c7;color:#92400e}
 .s-replacement{background:#fee2e2;color:#991b1b}.s-other{background:#f8fafc;color:#475569}
 @media(max-width:768px){.sb{display:none}.content{margin-left:0}.kpi-grid{grid-template-columns:repeat(3,1fr)}.upload-grid{grid-template-columns:1fr}}
+  .sortable { cursor:pointer; user-select:none; white-space:nowrap; }
+  .sortable:hover { background:rgba(99,102,241,.08); }
+  .sarr { font-size:11px; margin-left:3px; color:var(--blue,#6366f1); }
 </style>
 </head>
 <body>
@@ -163,7 +166,14 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc;cursor:poin
           <select class="fi" id="caseDoctor"><option value="">All Doctors</option></select>
         </div>
         <div class="tw"><table>
-          <thead><tr><th>Case ID</th><th>Patient</th><th>Doctor</th><th>Status</th><th>Created</th><th>Updated</th></tr></thead>
+          <thead><tr>
+            <th class="sortable" onclick="sortBy('case_id')">Case ID <span class="sarr" id="sh_case_id"></span></th>
+            <th class="sortable" onclick="sortBy('patient_name')">Patient <span class="sarr" id="sh_patient_name"></span></th>
+            <th class="sortable" onclick="sortBy('doctor')">Doctor <span class="sarr" id="sh_doctor"></span></th>
+            <th>Status</th>
+            <th class="sortable" onclick="sortBy('creation_date')">Created <span class="sarr" id="sh_creation_date">↓</span></th>
+            <th class="sortable" onclick="sortBy('updated_at')">Updated <span class="sarr" id="sh_updated_at"></span></th>
+          </tr></thead>
           <tbody id="tCases"><tr><td colspan="6" class="ec">Loading...</td></tr></tbody>
         </table></div>
         <div class="pager">
@@ -302,6 +312,7 @@ var pendingImport = null;
 var allCases = [];
 var allAligners = [];
 var casesPage = 0;
+var sortCol = "creation_date", sortDir = -1;
 
 function msg(text, color) {
   var el = document.getElementById('uploadMsg');
@@ -401,25 +412,16 @@ async function loadAll() {
 
 // ---- RENDER CASES ----
 function sortBy(col) {
-  if (sortCol === col) {
-    sortDir *= -1;
-  } else {
-    sortCol = col;
-    sortDir = (col === 'creation_date' || col === 'updated_at') ? -1 : 1;
-  }
-  // Update arrows
+  if (sortCol === col) { sortDir *= -1; }
+  else { sortCol = col; sortDir = (col === 'creation_date' || col === 'updated_at') ? -1 : 1; }
   ['case_id','patient_name','doctor','creation_date','updated_at'].forEach(function(c) {
     var el = document.getElementById('sh_' + c);
-    if (!el) return;
-    el.textContent = (c === sortCol) ? (sortDir === 1 ? ' ↑' : ' ↓') : '';
+    if (el) el.textContent = (c === sortCol) ? (sortDir === 1 ? '↑' : '↓') : '';
   });
-  // Sort
   allCases.sort(function(a, b) {
-    var av = a[sortCol] || '', bv = b[sortCol] || '';
-    if (sortCol === 'case_id') { av = parseInt(av)||0; bv = parseInt(bv)||0; }
-    if (av < bv) return -sortDir;
-    if (av > bv) return sortDir;
-    return 0;
+    var av = a[col] || '', bv = b[col] || '';
+    if (col === 'case_id') { av = parseInt(av)||0; bv = parseInt(bv)||0; return sortDir*(av-bv); }
+    if (av < bv) return -sortDir; if (av > bv) return sortDir; return 0;
   });
   casesPage = 0;
   renderCases();
