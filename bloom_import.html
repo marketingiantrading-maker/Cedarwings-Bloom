@@ -319,85 +319,93 @@ tbody tr:hover{background:#f8fafc;cursor:pointer}
 
 // -- DIAGNOSTICS -------------------------------------------------------
 async function runDiagnostics() {
-  var results = [];
 
-  // Timeout helper — prevents hanging forever on network calls
-  function withTimeout(promise, ms, label) {
-    return Promise.race([
-      promise,
-      new Promise(function(_, reject) {
-        setTimeout(function() { reject(new Error('Timeout after ' + ms + 'ms')); }, ms);
-      })
-    ]);
+  function addResult(ok, label, detail) {
+    var el = document.getElementById('diagResults');
+    if (!el) return;
+    var div = document.createElement('div');
+    div.style.cssText = 'background:'+(ok?'rgba(22,163,74,.3)':'rgba(220,38,38,.3)')+';border:1px solid '+(ok?'#16a34a':'#dc2626')+';border-radius:6px;padding:8px 10px';
+    div.innerHTML = '<div style="font-weight:700;font-size:11px;margin-bottom:2px">'+(ok?'✅':'❌')+' '+label+'</div><div style="font-size:10px;opacity:.8">'+detail+'</div>';
+    el.appendChild(div);
   }
 
-  // 1. Supabase SDK loaded?
-  results.push(typeof supabase !== 'undefined'
-    ? {ok:true, label:'Supabase SDK', detail:'Loaded OK'}
-    : {ok:false, label:'Supabase SDK', detail:'NOT LOADED — CDN failed'});
-
-  // 2. Excel (XLSX) loaded?
-  results.push(typeof XLSX !== 'undefined'
-    ? {ok:true, label:'Excel (XLSX)', detail:'Loaded OK'}
-    : {ok:false, label:'Excel (XLSX)', detail:'NOT LOADED — CDN failed'});
-
-  // 3. Database connection (with 5s timeout)
-  try {
-    var res = await withTimeout(
-      SB.from('bloom_cases').select('id').limit(1),
-      5000, 'Database'
-    );
-    results.push(res.error
-      ? {ok:false, label:'Database', detail:'Error: ' + res.error.message}
-      : {ok:true,  label:'Database', detail:'Connected OK — ' + (res.data ? res.data.length : 0) + ' row(s) read'});
-  } catch(e) {
-    results.push({ok:false, label:'Database', detail:'Failed: ' + e.message});
+  function setTitle(text) {
+    var el = document.getElementById('diagTitle');
+    if (el) el.textContent = text;
   }
 
-  // 4. Tables exist? (combined check with timeout)
-  try {
-    var checks = await withTimeout(Promise.all([
-      SB.from('bloom_cases').select('id').limit(1),
-      SB.from('bloom_aligner_details').select('case_number').limit(1),
-      SB.from('bloom_aligners').select('case_number').limit(1)
-    ]), 5000, 'Tables');
-    var missing = [];
-    var names = ['bloom_cases','bloom_aligner_details','bloom_aligners'];
-    checks.forEach(function(r, i) {
-      if (r.error && r.error.message.includes('exist')) missing.push(names[i]);
-    });
-    results.push(missing.length
-      ? {ok:false, label:'Tables', detail:'MISSING: '+missing.join(', ')+' — Run SETUP_ONE_TIME_ONLY.sql'}
-      : {ok:true,  label:'Tables', detail:'All 3 tables exist OK'});
-  } catch(e) {
-    results.push({ok:false, label:'Tables', detail:'Check failed: ' + e.message});
+  // Clear previous results
+  var diagEl = document.getElementById('diagResults');
+  if (diagEl) diagEl.innerHTML = '';
+
+  // 1. Supabase SDK — instant
+  var hasSB = typeof supabase !== 'undefined';
+  addResult(hasSB, 'Supabase SDK', hasSB ? 'Loaded OK' : 'NOT LOADED — CDN failed');
+
+  // 2. Excel XLSX — instant
+  var hasXL = typeof XLSX !== 'undefined';
+  addResult(hasXL, 'Excel (XLSX)', hasXL ? 'Loaded OK' : 'NOT LOADED — CDN failed');
+
+  // 3. File inputs — instant
+  var hasCsv = !!document.getElementById('csvInput');
+  var hasXls = !!document.getElementById('xlsxInput');
+  addResult(hasCsv && hasXls, 'File Inputs', (hasCsv && hasXls) ? 'CSV + Excel inputs ready' : 'Missing inputs');
+
+  // 4. Database — async with 6s timeout
+  setTitle('🔍 System Check — Testing database…');
+  var dbOk = false, dbMsg = '';
+  if (!SB) {
+    dbMsg = 'Supabase SDK not loaded — check CDN';
+  } else {
+    try {
+      var timeout = new Promise(function(_, rej){ setTimeout(function(){ rej(new Error('No response after 6s — check connection')); }, 6000); });
+      var query = SB.from('bloom_cases').select('case_id').limit(1);
+      var res = await Promise.race([query, timeout]);
+      if (res.error) { dbMsg = 'Error: ' + res.error.message; }
+      else { dbOk = true; dbMsg = 'Connected OK'; }
+    } catch(e) {
+      dbMsg = e.message;
+    }
+  }
+  addResult(dbOk, 'Database', dbMsg);
+
+  // 5. Tables — only if DB connected and SB initialized
+  if (dbOk && SB) {
+    try {
+      var timeout2 = new Promise(function(_, rej){ setTimeout(function(){ rej(new Error('Timeout')); }, 6000); });
+      var checks = await Promise.race([
+        Promise.all([
+          SB.from('bloom_cases').select('case_id').limit(1),
+          SB.from('bloom_aligner_details').select('case_number').limit(1),
+          SB.from('bloom_aligners').select('case_number').limit(1)
+        ]), timeout2
+      ]);
+      var missing = [];
+      ['bloom_cases','bloom_aligner_details','bloom_aligners'].forEach(function(n,i){
+        if (checks[i].error && checks[i].error.message.includes('exist')) missing.push(n);
+      });
+      addResult(!missing.length, 'Tables', missing.length ? 'MISSING: '+missing.join(', ') : 'All 3 tables exist OK');
+    } catch(e) {
+      addResult(false, 'Tables', 'Check failed: '+e.message);
+    }
+  } else {
+    addResult(false, 'Tables', 'Skipped — fix database first');
   }
 
-  // 5. File inputs exist?
-  var hasCsv  = !!document.getElementById('csvInput');
-  var hasXlsx = !!document.getElementById('xlsxInput');
-  results.push((hasCsv && hasXlsx)
-    ? {ok:true,  label:'File Inputs', detail:'CSV + Excel inputs ready'}
-    : {ok:false, label:'File Inputs', detail:'Missing: ' + (!hasCsv?'csvInput ':'')+(!hasXlsx?'xlsxInput':'')});
-
-  // Render results
-  var el = document.getElementById('diagResults');
-  if (!el) return;
-  el.innerHTML = results.map(function(r) {
-    return '<div style="background:'+(r.ok?'rgba(22,163,74,.3)':'rgba(220,38,38,.3)')+
-      ';border:1px solid '+(r.ok?'#16a34a':'#dc2626')+';border-radius:6px;padding:8px 10px">' +
-      '<div style="font-weight:700;font-size:11px;margin-bottom:2px">'+(r.ok?'✅':'❌')+' '+r.label+'</div>' +
-      '<div style="font-size:10px;opacity:.8">'+r.detail+'</div></div>';
-  }).join('');
-
-  // Update title
-  var allOk = results.every(function(r){ return r.ok; });
-  var titleEl = document.getElementById('diagTitle');
-  if (titleEl) titleEl.textContent = allOk ? '✅ System Check — All OK' : '⚠️ System Check — Issues Found';
+  // Final title
+  var allDivs = document.querySelectorAll('#diagResults div[style]');
+  var allOk = Array.from(allDivs).every(function(d){ return d.style.borderColor === 'rgb(22, 163, 74)'; });
+  setTitle(allOk ? '✅ System Check — All OK' : '⚠️ System Check — Issues Found');
 }
 
 // -- SETUP -------------------------------------------------------------
-var SB = supabase.createClient('https://oaauobugpbcixnbmlakc.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hYXVvYnVncGJjaXhuYm1sYWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzYyNTksImV4cCI6MjA5MTQxMjI1OX0.EpOUpmwRx_LAUqpGQcVMyJFB5NqX_HM7aMZ2gWW9oAA');
+// Safe Supabase init — if CDN fails, SB stays null and page still works
+var SB = null;
+try {
+  SB = supabase.createClient('https://oaauobugpbcixnbmlakc.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hYXVvYnVncGJjaXhuYm1sYWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzYyNTksImV4cCI6MjA5MTQxMjI1OX0.EpOUpmwRx_LAUqpGQcVMyJFB5NqX_HM7aMZ2gWW9oAA');
+} catch(e) {
+  console.error('Supabase init failed:', e.message);
+}
 var PAGE = 100;
 var allCases = [], allHistory = [], allImports = [], allAligners = [];
 var casePg = 0, alPg = 0, parsedCSV = [], csvFilename = '';
@@ -860,8 +868,12 @@ function showCase(caseId) {
 function closeModal() { document.getElementById('modal').classList.remove('on'); }
 
 // -- START -------------------------------------------------------------
-runDiagnostics();
-loadAll();
+// Small delay ensures DOM is fully ready before running
+setTimeout(function(){ runDiagnostics(); }, 100);
+if (SB) { loadAll(); } else {
+  var tC = document.getElementById('tCases');
+  if (tC) tC.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#dc2626;padding:20px">⚠️ Supabase SDK failed to load. Check your internet connection and refresh the page.</td></tr>';
+}
 
 // =================== PROJECT STATE ===================
 var PS_STATE = {
