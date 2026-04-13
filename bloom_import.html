@@ -182,16 +182,35 @@ tbody tr:hover{background:#f8fafc;cursor:pointer}
         </div>
         <div id="lastImportBadge" style="font-size:11px;color:var(--mu)"></div>
       </div>
-      <div class="drop-zone" id="dropZone"
-        onclick="document.getElementById('csvFile').click()"
-        ondragover="event.preventDefault();this.classList.add('drag')"
-        ondragleave="this.classList.remove('drag')"
-        ondrop="handleDrop(event)">
-        <div style="font-size:28px;margin-bottom:8px">📂</div>
-        <div style="font-size:14px;font-weight:700;margin-bottom:3px">Drop Bloom CSV here or click to browse</div>
-        <div style="font-size:11px;color:var(--mu)">Supports 2000-3000+ cases · Detects new cases & status changes automatically</div>
-        <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="handleFile(this.files[0])"/>
+      <!-- TWO UPLOAD BUTTONS — reliable click to browse -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px">
+        
+        <!-- CSV UPLOAD -->
+        <div style="background:var(--b50);border:2px dashed var(--blue);border-radius:14px;padding:22px;text-align:center">
+          <div style="font-size:30px;margin-bottom:8px">📄</div>
+          <div style="font-size:14px;font-weight:800;color:var(--blue);margin-bottom:4px">Cases CSV</div>
+          <div style="font-size:11px;color:var(--mu);margin-bottom:14px">bloomaligner.fr → Cases → Export CSV</div>
+          <button onclick="document.getElementById('csvFile').click()" 
+                  style="background:var(--blue);color:#fff;border:none;border-radius:9px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--f);width:100%">
+            📂 Choose CSV File
+          </button>
+          <input type="file" id="csvFile" accept=".csv,.CSV" style="display:none" onchange="handleFile(this.files[0])"/>
+        </div>
+        
+        <!-- EXCEL UPLOAD -->
+        <div style="background:var(--g50);border:2px dashed var(--green);border-radius:14px;padding:22px;text-align:center">
+          <div style="font-size:30px;margin-bottom:8px">📊</div>
+          <div style="font-size:14px;font-weight:800;color:var(--green);margin-bottom:4px">Aligners Excel</div>
+          <div style="font-size:11px;color:var(--mu);margin-bottom:14px">Extended Excel with aligner counts</div>
+          <button onclick="document.getElementById('alignerFileMain').click()" 
+                  style="background:var(--green);color:#fff;border:none;border-radius:9px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--f);width:100%">
+            📂 Choose Excel File
+          </button>
+          <input type="file" id="alignerFileMain" accept=".xlsx,.xls,.XLSX,.XLS" style="display:none" onchange="handleAlignerFile(this.files[0])"/>
+        </div>
+        
       </div>
+      <div id="dropZone" style="display:none"></div>
       <div id="uploadMsg" style="margin-top:10px;font-size:13px;min-height:16px"></div>
     </div>
 
@@ -721,9 +740,23 @@ window.handleDrop=(e)=>{
 window.handleFile=(file)=>{
   if(!file)return
   currentFilename=file.name
+  const msg=document.getElementById("uploadMsg")
+  msg.innerHTML=`<span style="color:var(--blue)">⏳ Reading ${file.name} (${(file.size/1024).toFixed(0)} KB)…</span>`
+  
   const reader=new FileReader()
-  reader.onload=e=>parseCSV(e.target.result,file.name)
-  reader.readAsText(file)
+  reader.onprogress=(e)=>{
+    if(e.lengthComputable){
+      const pct=Math.round(e.loaded/e.total*100)
+      msg.innerHTML=`<span style="color:var(--blue)">⏳ Reading file… ${pct}%</span>`
+    }
+  }
+  reader.onload=e=>{
+    msg.innerHTML=`<span style="color:var(--mu)">⏳ Parsing CSV…</span>`
+    // Use setTimeout to let UI update before heavy parsing
+    setTimeout(()=>parseCSV(e.target.result,file.name),50)
+  }
+  reader.onerror=()=>msg.innerHTML=`<span style="color:var(--red)">❌ Error reading file. Try again.</span>`
+  reader.readAsText(file,"UTF-8")
 }
 window.cancelPreview=()=>{
   document.getElementById("previewCard").style.display="none"
@@ -889,7 +922,14 @@ window.confirmImport=async()=>{
     await sb.from("bloom_cases").upsert(upsertRows,{onConflict:"case_id"})
     
     // Update progress
-    btn.textContent=`⏳ ${Math.min(i+BATCH,parsedCSV.length)}/${parsedCSV.length}…`
+    btn.textContent=`⏳ Saving ${Math.min(i+BATCH,parsedCSV.length).toLocaleString()}/${parsedCSV.length.toLocaleString()}…`
+    // Show progress bar
+    const pct=Math.round(Math.min(i+BATCH,parsedCSV.length)/parsedCSV.length*100)
+    document.getElementById("uploadMsg").innerHTML=`
+      <div style="background:var(--bdr);border-radius:999px;height:8px;margin-bottom:4px">
+        <div style="background:var(--blue);height:8px;border-radius:999px;width:${pct}%;transition:width .3s"></div>
+      </div>
+      <span style="color:var(--mu);font-size:11px">Saving to database… ${Math.min(i+BATCH,parsedCSV.length).toLocaleString()} of ${parsedCSV.length.toLocaleString()} cases (${pct}%)</span>`
   }
   
   // Save history
