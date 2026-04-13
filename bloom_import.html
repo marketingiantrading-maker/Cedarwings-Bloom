@@ -1049,67 +1049,121 @@ window.sortAligners=(col)=>{
 // HANDLE EXCEL UPLOAD
 window.handleAlignerFile=async(file)=>{
   if(!file)return
-  document.getElementById("alignerUploadMsg").innerHTML='<span style="color:var(--blue)">⏳ Reading Excel file…</span>'
+  const msgEl=document.getElementById("alignerUploadMsg")
+  msgEl.innerHTML=`<span style="color:var(--blue)">⏳ Loading ${file.name}…</span>`
   
-  // Use SheetJS to parse xlsx
-  const script=document.createElement("script")
-  script.src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"
-  document.head.appendChild(script)
-  
-  await new Promise(resolve=>script.onload=resolve)
-  
-  const buf=await file.arrayBuffer()
-  const wb=XLSX.read(buf,{type:"array"})
-  const ws=wb.Sheets[wb.SheetNames[0]]
-  const rows=XLSX.utils.sheet_to_json(ws)
-  
-  if(!rows.length){document.getElementById("alignerUploadMsg").innerHTML='<span style="color:var(--red)">❌ No data found in Excel</span>';return}
-  
-  // Map columns (flexible)
-  const sample=rows[0]
-  const keys=Object.keys(sample)
-  const findCol=(names)=>keys.find(k=>names.some(n=>k.toLowerCase().includes(n.toLowerCase())))||keys[0]
-  
-  const caseCol=findCol(["Case number","case","id"])
-  const labelCol=findCol(["Label","label"])
-  const boxNumCol=findCol(["Box number","box num"])
-  const alignersCol=findCol(["Aligners per box","aligners","count"])
-  const detailsCol=findCol(["Box details","details"])
-  const dateCol=findCol(["Date","shipment","shipped"])
-  const shippingCol=findCol(["Shipping number","tracking","ship num"])
-  
-  const parsed=rows.map(r=>({
-    case_number:String(r[caseCol]||"").trim(),
-    label_printed:String(r[labelCol]||"").trim(),
-    box_number:parseInt(r[boxNumCol])||1,
-    aligners_per_box:parseInt(r[alignersCol])||0,
-    box_details:String(r[detailsCol]||"").trim(),
-    date_of_shipment:String(r[dateCol]||"").trim(),
-    shipping_number:String(r[shippingCol]||"").trim()
-  })).filter(r=>r.case_number&&r.case_number!=="undefined")
-  
-  document.getElementById("alignerUploadMsg").innerHTML=`<span style="color:var(--mu)">📊 ${parsed.length.toLocaleString()} rows found · Saving to database…</span>`
-  
-  // Clear existing and insert in batches
-  await sb.from("bloom_aligners").delete().neq("id","00000000-0000-0000-0000-000000000000")
-  
-  const BATCH=500
-  let saved=0
-  for(let i=0;i<parsed.length;i+=BATCH){
-    const{error}=await sb.from("bloom_aligners").insert(parsed.slice(i,i+BATCH).map(r=>({...r,imported_at:new Date().toISOString()})))
-    if(error){document.getElementById("alignerUploadMsg").innerHTML=`<span style="color:var(--red)">❌ Error: ${error.message}</span>`;return}
-    saved+=Math.min(BATCH,parsed.length-i)
-    document.getElementById("alignerUploadMsg").innerHTML=`<span style="color:var(--mu)">⏳ Saving… ${saved}/${parsed.length}</span>`
+  // Load SheetJS if not already loaded
+  if(!window.XLSX){
+    await new Promise((resolve,reject)=>{
+      const s=document.createElement("script")
+      s.src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"
+      s.onload=resolve; s.onerror=reject
+      document.head.appendChild(s)
+    })
   }
   
-  document.getElementById("alignerUploadMsg").innerHTML=`<span style="color:var(--green);font-weight:600">✅ ${parsed.length.toLocaleString()} rows imported from ${file.name}</span>`
-  ntf(`✅ ${parsed.length.toLocaleString()} aligner records saved!`)
-  await loadAligners()
-  renderAligners()
+  try{
+    const buf=await file.arrayBuffer()
+    const wb=XLSX.read(buf,{type:"array"})
+    
+    msgEl.innerHTML=`<span style="color:var(--mu)">📑 Sheets found: ${wb.SheetNames.join(", ")}</span>`
+    
+    // Read SHIPPING sheet
+    const shippingData=[]
+    const shipSheet=wb.Sheets["SHIPPING"]||wb.Sheets[wb.SheetNames[0]]
+    if(shipSheet){
+      const rows=XLSX.utils.sheet_to_json(shipSheet)
+      rows.forEach(r=>{
+        const caseNum=String(r["Case number"]||r["case_number"]||"").trim()
+        if(!caseNum)return
+        shippingData.push({
+          case_number:caseNum,
+          label_printed:String(r["Label printed"]||"").trim(),
+          box_number:parseInt(r["Box number"]||1)||1,
+          aligners_per_box:parseInt(r["Aligners per box"]||0)||0,
+          box_details:String(r["Box details"]||"").trim(),
+          date_of_shipment:String(r["Date of shipment"]||"").trim(),
+          shipping_number:String(r["Shipping number"]||"").trim(),
+          imported_at:new Date().toISOString()
+        })
+      })
+    }
+    
+    // Read ALIGNER sheet
+    const alignerData=[]
+    const alignSheet=wb.Sheets["ALIGNER"]||wb.Sheets[wb.SheetNames[1]]
+    if(alignSheet){
+      const rows=XLSX.utils.sheet_to_json(alignSheet)
+      rows.forEach(r=>{
+        const caseNum=String(r["Case number"]||"").trim()
+        if(!caseNum)return
+        alignerData.push({
+          case_number:caseNum,
+          aligner_upper:parseInt(r["Aligner Upper"]||0)||0,
+          aligner_lower:parseInt(r["Aligner lower"]||0)||0,
+          number_of_aligners:parseInt(r["Number of aligners"]||0)||0,
+          package_type:String(r["Package type"]||"").trim(),
+          order_type:String(r["Order type"]||"").trim(),
+          imported_at:new Date().toISOString()
+        })
+      })
+    }
+    
+    msgEl.innerHTML=`<span style="color:var(--mu)">📦 Shipping: ${shippingData.length} rows · 🦷 Aligners: ${alignerData.length} rows · Saving…</span>`
+    
+    const BATCH=500
+    let saved=0
+    
+    // Clear and save SHIPPING data
+    if(shippingData.length){
+      await sb.from("bloom_aligners").delete().neq("id","00000000-0000-0000-0000-000000000000")
+      for(let i=0;i<shippingData.length;i+=BATCH){
+        const{error}=await sb.from("bloom_aligners").insert(shippingData.slice(i,i+BATCH))
+        if(error){msgEl.innerHTML=`<span style="color:var(--red)">❌ Shipping error: ${error.message}</span>`;return}
+        saved+=Math.min(BATCH,shippingData.length-i)
+        const pct=Math.round(saved/shippingData.length*50)
+        msgEl.innerHTML=`
+          <div style="background:var(--bdr);border-radius:999px;height:6px;margin-bottom:4px">
+            <div style="background:var(--blue);height:6px;border-radius:999px;width:${pct}%;transition:width .2s"></div>
+          </div>
+          <span style="font-size:11px;color:var(--mu)">Saving shipping data… ${saved}/${shippingData.length}</span>`
+      }
+    }
+    
+    // Clear and save ALIGNER details
+    if(alignerData.length){
+      await sb.from("bloom_aligner_details").delete().neq("id","00000000-0000-0000-0000-000000000000")
+      saved=0
+      for(let i=0;i<alignerData.length;i+=BATCH){
+        const{error}=await sb.from("bloom_aligner_details").insert(alignerData.slice(i,i+BATCH))
+        if(error){
+          // Table might not exist yet — show clear message
+          if(error.message.includes("does not exist")){
+            msgEl.innerHTML=`<span style="color:var(--red)">❌ Table missing! Run bloom_aligner_setup.sql in Supabase first.</span>`
+          }else{
+            msgEl.innerHTML=`<span style="color:var(--red)">❌ Aligner error: ${error.message}</span>`
+          }
+          return
+        }
+        saved+=Math.min(BATCH,alignerData.length-i)
+        const pct=Math.round(50+saved/alignerData.length*50)
+        msgEl.innerHTML=`
+          <div style="background:var(--bdr);border-radius:999px;height:6px;margin-bottom:4px">
+            <div style="background:var(--green);height:6px;border-radius:999px;width:${pct}%;transition:width .2s"></div>
+          </div>
+          <span style="font-size:11px;color:var(--mu)">Saving aligner details… ${saved}/${alignerData.length}</span>`
+      }
+    }
+    
+    msgEl.innerHTML=`<span style="color:var(--green);font-weight:700">✅ Import complete! Shipping: ${shippingData.length} rows · Aligners: ${alignerData.length} rows from ${file.name}</span>`
+    ntf(\`✅ Excel imported: ${shippingData.length} shipping + ${alignerData.length} aligner rows\`)
+    await loadAligners()
+    renderAligners()
+    
+  }catch(err){
+    msgEl.innerHTML=\`<span style="color:var(--red)">❌ Error: \${err.message}</span>\`
+    console.error("Excel import error:",err)
+  }
 }
 
-loadData()
-loadAligners()
-</script>
-</body>
-</html>
+>
