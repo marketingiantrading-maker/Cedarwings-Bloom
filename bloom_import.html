@@ -122,7 +122,11 @@ tbody tr:hover{background:#f8fafc;cursor:pointer}
 
 
 
-  <div class="body">
+  <div id="debugBar" style="background:#fef3c7;border:2px solid #f59e0b;padding:12px 20px;font-family:monospace;font-size:12px;display:block">
+  <strong>🔍 Debug:</strong> <span id="debugMsg">Page loaded — waiting for JS...</span>
+  <button onclick="document.getElementById('debugBar').style.display='none'" style="float:right;background:#f59e0b;border:none;padding:3px 8px;border-radius:4px;cursor:pointer">✕</button>
+</div>
+<div class="body">
     <!-- KPIs -->
     <div class="kpi-grid">
       <div class="kpi" style="border-top-color:#3b5fe2"><div class="kpi-val" id="kTotal" style="color:var(--blue)">—</div><div class="kpi-lbl">Total Cases</div></div>
@@ -295,16 +299,20 @@ function msg(html, color) {
 
 // -- LOAD DATA ---------------------------------------------------------
 async function loadAll() {
+  function dbg(m){var el=document.getElementById('debugMsg');if(el)el.textContent=m;console.log('[Bloom]',m);}
+  dbg('loadAll started — connecting to Supabase...');
   document.getElementById('tCases').innerHTML = '<tr><td colspan="10" class="ec">Loading...</td></tr>';
   var all = [], from = 0;
   while (true) {
     var res = await SB.from('bloom_cases').select('*').order('case_id', {ascending:false}).range(from, from+999);
-    if (res.error || !res.data || !res.data.length) break;
+    if(res.error){dbg('ERROR: '+res.error.message);break;}
+    if(!res.data||!res.data.length){dbg('Query OK — '+all.length+' cases loaded');break;}
     all = all.concat(res.data);
     if (res.data.length < 1000) break;
     from += 1000;
   }
   allCases = all;
+  dbg(allCases.length+" cases loaded from bloom_cases");
   var hr = await SB.from('bloom_case_history').select('*').order('changed_at',{ascending:false}).limit(2000);
   var ir = await SB.from('bloom_imports').select('*').order('imported_at',{ascending:false}).limit(100);
   allHistory = hr.data || [];
