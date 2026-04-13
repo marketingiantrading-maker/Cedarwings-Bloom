@@ -653,10 +653,16 @@ async function saveExcelData(shipRows, alRows, filename) {
   document.getElementById('progFill').style.width = '20%';
   document.getElementById('uploadProg').style.display = 'block';
 
+  // Deduplicate alRows by case_number (keep last occurrence)
+  var alMap = {};
+  alRows.forEach(function(r){ alMap[r.case_number] = r; });
+  var alDeduped = Object.values(alMap);
+  console.log('[Bloom] aligner_details: '+alRows.length+' rows → '+alDeduped.length+' after dedup');
+
   // Save aligner details (upsert by case_number)
-  if (alRows.length) {
-    for (var i = 0; i < alRows.length; i += 100) {
-      var ar = await sb.from('bloom_aligner_details').upsert(alRows.slice(i,i+100), { onConflict:'case_number' });
+  if (alDeduped.length) {
+    for (var i = 0; i < alDeduped.length; i += 100) {
+      var ar = await sb.from('bloom_aligner_details').upsert(alDeduped.slice(i,i+100), { onConflict:'case_number' });
       if (ar.error) {
         var em = ar.error.message||ar.error.hint||ar.error.details||JSON.stringify(ar.error);
         ntf('Aligner details error: '+em,'err');
