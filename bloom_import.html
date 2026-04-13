@@ -320,71 +320,77 @@ tbody tr:hover{background:#f8fafc;cursor:pointer}
 // -- DIAGNOSTICS -------------------------------------------------------
 async function runDiagnostics() {
   var results = [];
-  
-  // 1. Supabase loaded?
-  if (typeof supabase !== 'undefined') {
-    results.push({ok:true, label:'Supabase SDK', detail:'Loaded OK'});
-  } else {
-    results.push({ok:false, label:'Supabase SDK', detail:'NOT LOADED - CDN failed'});
+
+  // Timeout helper — prevents hanging forever on network calls
+  function withTimeout(promise, ms, label) {
+    return Promise.race([
+      promise,
+      new Promise(function(_, reject) {
+        setTimeout(function() { reject(new Error('Timeout after ' + ms + 'ms')); }, ms);
+      })
+    ]);
   }
-  
-  // 2. XLSX loaded?
-  if (typeof XLSX !== 'undefined') {
-    results.push({ok:true, label:'Excel (XLSX)', detail:'Loaded OK'});
-  } else {
-    results.push({ok:false, label:'Excel (XLSX)', detail:'NOT LOADED - CDN failed'});
-  }
-  
-  // 3. Database connection?
+
+  // 1. Supabase SDK loaded?
+  results.push(typeof supabase !== 'undefined'
+    ? {ok:true, label:'Supabase SDK', detail:'Loaded OK'}
+    : {ok:false, label:'Supabase SDK', detail:'NOT LOADED — CDN failed'});
+
+  // 2. Excel (XLSX) loaded?
+  results.push(typeof XLSX !== 'undefined'
+    ? {ok:true, label:'Excel (XLSX)', detail:'Loaded OK'}
+    : {ok:false, label:'Excel (XLSX)', detail:'NOT LOADED — CDN failed'});
+
+  // 3. Database connection (with 5s timeout)
   try {
-    var res = await SB.from('bloom_cases').select('count').limit(1);
-    if (res.error) {
-      results.push({ok:false, label:'Database', detail:'Error: '+res.error.message});
-    } else {
-      results.push({ok:true, label:'Database', detail:'Connected OK'});
-    }
+    var res = await withTimeout(
+      SB.from('bloom_cases').select('id').limit(1),
+      5000, 'Database'
+    );
+    results.push(res.error
+      ? {ok:false, label:'Database', detail:'Error: ' + res.error.message}
+      : {ok:true,  label:'Database', detail:'Connected OK — ' + (res.data ? res.data.length : 0) + ' row(s) read'});
   } catch(e) {
-    results.push({ok:false, label:'Database', detail:'Failed: '+e.message});
+    results.push({ok:false, label:'Database', detail:'Failed: ' + e.message});
   }
-  
-  // 4. Tables exist?
+
+  // 4. Tables exist? (combined check with timeout)
   try {
-    var t1 = await SB.from('bloom_cases').select('count').limit(1);
-    var t2 = await SB.from('bloom_aligner_details').select('count').limit(1);
-    var t3 = await SB.from('bloom_aligners').select('count').limit(1);
+    var checks = await withTimeout(Promise.all([
+      SB.from('bloom_cases').select('id').limit(1),
+      SB.from('bloom_aligner_details').select('case_number').limit(1),
+      SB.from('bloom_aligners').select('case_number').limit(1)
+    ]), 5000, 'Tables');
     var missing = [];
-    if (t1.error && t1.error.message.includes('exist')) missing.push('bloom_cases');
-    if (t2.error && t2.error.message.includes('exist')) missing.push('bloom_aligner_details');
-    if (t3.error && t3.error.message.includes('exist')) missing.push('bloom_aligners');
-    if (missing.length) {
-      results.push({ok:false, label:'Tables', detail:'MISSING: '+missing.join(', ')+'<br>-> Run SETUP_ONE_TIME_ONLY.sql!'});
-    } else {
-      results.push({ok:true, label:'Tables', detail:'All tables exist OK'});
-    }
+    var names = ['bloom_cases','bloom_aligner_details','bloom_aligners'];
+    checks.forEach(function(r, i) {
+      if (r.error && r.error.message.includes('exist')) missing.push(names[i]);
+    });
+    results.push(missing.length
+      ? {ok:false, label:'Tables', detail:'MISSING: '+missing.join(', ')+' — Run SETUP_ONE_TIME_ONLY.sql'}
+      : {ok:true,  label:'Tables', detail:'All 3 tables exist OK'});
   } catch(e) {
-    results.push({ok:false, label:'Tables', detail:'Check failed'});
+    results.push({ok:false, label:'Tables', detail:'Check failed: ' + e.message});
   }
-  
-  // 5. File inputs?
-  var csv = document.getElementById('csvInput');
-  var xlsx = document.getElementById('xlsxInput');
-  if (csv && xlsx) {
-    results.push({ok:true, label:'File Inputs', detail:'CSV + Excel ready OK'});
-  } else {
-    results.push({ok:false, label:'File Inputs', detail:'MISSING inputs: '+(csv?'':'csvInput ')+(xlsx?'':'xlsxInput')});
-  }
-  
-  // Render
+
+  // 5. File inputs exist?
+  var hasCsv  = !!document.getElementById('csvInput');
+  var hasXlsx = !!document.getElementById('xlsxInput');
+  results.push((hasCsv && hasXlsx)
+    ? {ok:true,  label:'File Inputs', detail:'CSV + Excel inputs ready'}
+    : {ok:false, label:'File Inputs', detail:'Missing: ' + (!hasCsv?'csvInput ':'')+(!hasXlsx?'xlsxInput':'')});
+
+  // Render results
   var el = document.getElementById('diagResults');
   if (!el) return;
   el.innerHTML = results.map(function(r) {
-    return '<div style="background:'+(r.ok?'rgba(22,163,74,.3)':'rgba(220,38,38,.3)')+';border:1px solid '+(r.ok?'#16a34a':'#dc2626')+';border-radius:6px;padding:8px 10px">' +
-      '<div style="font-weight:700;font-size:11px;margin-bottom:2px">'+(r.ok?'[OK]':'[ERR]')+' '+r.label+'</div>' +
-      '<div style="font-size:10px;opacity:.8">'+r.detail+'</div>' +
-      '</div>';
+    return '<div style="background:'+(r.ok?'rgba(22,163,74,.3)':'rgba(220,38,38,.3)')+
+      ';border:1px solid '+(r.ok?'#16a34a':'#dc2626')+';border-radius:6px;padding:8px 10px">' +
+      '<div style="font-weight:700;font-size:11px;margin-bottom:2px">'+(r.ok?'✅':'❌')+' '+r.label+'</div>' +
+      '<div style="font-size:10px;opacity:.8">'+r.detail+'</div></div>';
   }).join('');
-  
-  // Show summary
+
+  // Update title
   var allOk = results.every(function(r){ return r.ok; });
   var titleEl = document.getElementById('diagTitle');
   if (titleEl) titleEl.textContent = allOk ? '✅ System Check — All OK' : '⚠️ System Check — Issues Found';
