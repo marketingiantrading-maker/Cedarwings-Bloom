@@ -503,14 +503,6 @@ function renderMaterials(o){
   }
 }
 
-window.selectOrder=(o)=>{
-  selOrder=o
-  renderList()
-  renderDetail(o)
-  // Load materials async after render
-  setTimeout(()=>renderMaterials(o),50)
-}
-
 document.getElementById('srch').addEventListener('input',renderList)
 document.getElementById('fltStatus').addEventListener('change',renderList)
 load()

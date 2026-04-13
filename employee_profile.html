@@ -171,6 +171,8 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
     <div class="sb-s">Resources</div>
     <a href="inventory.html" class="nl"><span class="ic">&#128230;</span>Inventory</a>
     <div class="sb-s">Terminal</div>
+    <a href="roles.html" class="nl"><span class="ic">🔑</span>Roles</a>
+    <a href="settings.html" class="nl"><span class="ic">⚙</span>Settings</a>
     <a href="clocking.html" class="nl"><span class="ic">&#9201;</span>Clocking Terminal</a>
   </nav>
   <div class="sb-foot"><a href="index.html" class="nl"><span class="ic">&#8592;</span>Switch Role</a></div>
@@ -646,7 +648,7 @@ async function loadCalendar(){
   const cells=[]
   for(let i=0;i<startDow;i++)cells.push(null)
   for(let d=1;d<=lastDay;d++){const dt=`${y}-${String(m2+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;cells.push({d,dt})}
-  document.getElementById("calBody").outerHTML=`<div id="calBody" style="grid-column:1/-1;display:grid;grid-template-columns:repeat(7,1fr);gap:4px">${cells.map(c=>{if(!c)return`<div></div>`;const cd=calData[c.dt],act=actDays[c.dt];const t=cd?cd.day_type:"";const isWe=new Date(c.dt).getDay()===0||new Date(c.dt).getDay()===6;const cls=t?`cd-${t}`:isWe?"cd-off":"";return`<div class="cal-day ${cls}" onclick="openDay('${c.dt}')"><div class="cal-num">${c.d}</div>${act?`<div class="cal-sub" style="color:var(--green);font-weight:700">${Math.round(act/60)}h</div>`:""}${t?`<div class="cal-sub">${t==="working"?"work":t==="vacation"?"vac":t==="sick"?"sick":t==="holiday"?"hol":t==="half"?"½":"off"}</div>`:""}`;}).join("")}</div>`
+  document.getElementById("calBody").outerHTML=`<div id="calBody2" style="grid-column:1/-1;display:grid;grid-template-columns:repeat(7,1fr);gap:4px">${cells.map(c=>{if(!c)return`<div></div>`;const cd=calData[c.dt],act=actDays[c.dt];const t=cd?cd.day_type:"";const isWe=new Date(c.dt).getDay()===0||new Date(c.dt).getDay()===6;const cls=t?`cd-${t}`:isWe?"cd-off":"";return`<div class="cal-day ${cls}" onclick="openDay('${c.dt}')"><div class="cal-num">${c.d}</div>${act?`<div class="cal-sub" style="color:var(--green);font-weight:700">${Math.round(act/60)}h</div>`:""}${t?`<div class="cal-sub">${t==="working"?"work":t==="vacation"?"vac":t==="sick"?"sick":t==="holiday"?"hol":t==="half"?"½":"off"}</div>`:""}`;}).join("")}</div>`
   // Summary
   const wk=Object.values(calData).filter(r=>r.day_type==="working").length
   const off=Object.values(calData).filter(r=>r.day_type==="off").length
