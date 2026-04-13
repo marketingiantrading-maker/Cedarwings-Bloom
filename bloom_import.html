@@ -62,6 +62,209 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc;cursor:poin
   .sortable:hover { background:rgba(99,102,241,.08); }
   .sarr { font-size:11px; margin-left:3px; color:var(--blue,#6366f1); }
 </style>
+<script type="importmap">
+{"imports":{"https://esm.sh/@supabase/supabase-js@2":"https://esm.sh/@supabase/supabase-js@2"}}
+</script>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sb">
+  <div class="sb-top">
+    <div class="logo">🌿</div>
+    <div><div class="sb-nm">Cedarwings</div><div class="sb-role">Bloom</div></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-s">Navigation</div>
+    <a class="nl" href="manager.html"><span class="ic">📊</span>Dashboard</a>
+    <a class="nl" href="production.html"><span class="ic">⚙️</span>Production</a>
+    <a class="nl" href="inventory.html"><span class="ic">📦</span>Inventory</a>
+    <a class="nl" href="clocking.html"><span class="ic">⏱️</span>Clocking</a>
+    <a class="nl on" href="bloom_import.html"><span class="ic">🦷</span>Bloom Cases</a>
+  </nav>
+  <div class="sb-foot">
+    <a class="nl" href="index.html"><span class="ic">🚪</span>Logout</a>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="content">
+  <div class="topbar">
+    <div style="font-size:15px;font-weight:800">🦷 Bloom Cases Import</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn bgh" id="btnRefresh">🔄 Refresh</button>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="debug-bar" id="debugBar">⏳ Connecting...</div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi" style="border-top-color:#3b5fe2">
+        <div class="kpi-val" id="kTotal">0</div><div class="kpi-lbl">Total Cases</div>
+      </div>
+      <div class="kpi" style="border-top-color:#16a34a">
+        <div class="kpi-val" id="kNew" style="color:var(--green)">—</div><div class="kpi-lbl">New (last import)</div>
+      </div>
+      <div class="kpi" style="border-top-color:#d97706">
+        <div class="kpi-val" id="kChanged" style="color:var(--amber)">0</div><div class="kpi-lbl">Status Changes</div>
+      </div>
+      <div class="kpi" style="border-top-color:#dc2626">
+        <div class="kpi-val" id="kOverdue" style="color:var(--red)">0</div><div class="kpi-lbl">Overdue</div>
+      </div>
+      <div class="kpi" style="border-top-color:#7c3aed">
+        <div class="kpi-val" id="kAligners" style="color:var(--purple)">0</div><div class="kpi-lbl">Total Aligners</div>
+      </div>
+      <div class="kpi" style="border-top-color:#0891b2">
+        <div class="kpi-val" id="kImports" style="color:#0891b2">0</div><div class="kpi-lbl">Imports</div>
+      </div>
+    </div>
+
+    <!-- UPLOAD -->
+    <div class="card">
+      <div style="font-size:15px;font-weight:800;margin-bottom:4px">🚀 Daily Upload</div>
+      <div style="font-size:12px;color:var(--mu);margin-bottom:14px">Upload files exported from bloomaligner.fr</div>
+      <div class="upload-grid">
+        <div class="upload-box">
+          <div style="font-size:32px;margin-bottom:8px">📄</div>
+          <div style="font-weight:700;color:var(--blue);margin-bottom:4px">Cases CSV</div>
+          <div style="font-size:11px;color:var(--mu);margin-bottom:14px">bloomaligner.fr → Cases → EXPORT CSV</div>
+          <button class="btn bb" style="width:100%;justify-content:center" id="btnChooseCSV">📁 Choose CSV File</button>
+          <input type="file" id="csvInput" accept=".csv,.txt" style="display:none"/>
+        </div>
+        <div class="upload-box">
+          <div style="font-size:32px;margin-bottom:8px">📊</div>
+          <div style="font-weight:700;color:var(--green);margin-bottom:4px">Aligners Excel</div>
+          <div style="font-size:11px;color:var(--mu);margin-bottom:14px">Reads SHIPPING + ALIGNER sheets automatically</div>
+          <button class="btn bg2" style="width:100%;justify-content:center" id="btnChooseXLSX">📁 Choose Excel File</button>
+          <input type="file" id="xlsxInput" accept=".xlsx,.xls" style="display:none"/>
+        </div>
+      </div>
+      <div id="uploadProg" style="display:none;padding:12px;background:var(--b50);border-radius:10px;border:1px solid var(--b100);margin-bottom:10px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:6px" id="progTitle">Processing...</div>
+        <div class="prog-wrap"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+        <div style="font-size:11px;color:var(--mu);margin-top:4px" id="progSub"></div>
+      </div>
+      <div id="uploadMsg" style="font-size:13px;min-height:18px"></div>
+    </div>
+
+    <!-- PREVIEW -->
+    <div id="previewCard" class="card" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-size:15px;font-weight:800" id="prevTitle">Preview</div>
+          <div style="font-size:12px;color:var(--mu)" id="prevSub"></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn bgh" id="btnCancelPreview">✕ Cancel</button>
+          <button class="btn bg2" id="btnConfirmImport">⚡ Confirm Import</button>
+        </div>
+      </div>
+      <div class="tw"><table>
+        <thead><tr><th>Type</th><th>ID</th><th>Patient</th><th>Doctor</th><th>Status</th><th>Created</th></tr></thead>
+        <tbody id="prevRows"></tbody>
+      </table></div>
+    </div>
+
+    <!-- TABS -->
+    <div class="card">
+      <div class="tab-bar">
+        <button class="tab on" id="tabBtnCases"   data-tab="cases">📋 Cases (<span id="tabCountCases">0</span>)</button>
+        <button class="tab"    id="tabBtnChanges" data-tab="changes">🔄 History (—)</button>
+        <button class="tab"    id="tabBtnAligners" data-tab="aligners">🦷 Aligners (<span id="tabCountAligners">0</span>)</button>
+        <button class="tab"    id="tabBtnImports" data-tab="imports">🚀 Imports</button>
+      </div>
+
+      <!-- CASES TAB -->
+      <div id="tabCases">
+        <div class="filters">
+          <input class="fi" id="caseSearch" placeholder="Search ID, patient, doctor..." style="flex:1;min-width:180px"/>
+          <select class="fi" id="caseStatus"><option value="">All Statuses</option></select>
+          <select class="fi" id="caseDoctor"><option value="">All Doctors</option></select>
+        </div>
+        <div class="tw"><table>
+          <thead><tr>
+            <th class="sortable" onclick="sortBy('case_id')">ID <span class="sarr" id="sh_case_id"></span></th>
+            <th class="sortable" onclick="sortBy('patient_name')">Patient <span class="sarr" id="sh_patient_name"></span></th>
+            <th class="sortable" onclick="sortBy('doctor')">Doctor <span class="sarr" id="sh_doctor"></span></th>
+            <th class="sortable" onclick="sortBy('distributor')">Distributor <span class="sarr" id="sh_distributor"></span></th>
+            <th class="sortable" onclick="sortBy('clinic')">Clinic <span class="sarr" id="sh_clinic"></span></th>
+            <th class="sortable" onclick="sortBy('current_status')">Status <span class="sarr" id="sh_current_status"></span></th>
+            <th class="sortable" onclick="sortBy('creation_date')">Created <span class="sarr" id="sh_creation_date">↓</span></th>
+            <th class="sortable" onclick="sortBy('action_required_for')">Action Required <span class="sarr" id="sh_action_required_for"></span></th>
+            <th class="sortable" onclick="sortBy('overdue_for')">Overdue For <span class="sarr" id="sh_overdue_for"></span></th>
+          </tr></thead>
+          <tbody id="tCases"><tr><td colspan="9" class="ec">Loading...</td></tr></tbody>
+        </table></div>
+        <div class="pager">
+          <span id="casesPagerInfo"></span>
+          <div style="display:flex;gap:6px">
+            <button class="btn bgh" id="casesPrev" style="padding:5px 12px;font-size:12px">&#8249;</button>
+            <button class="btn bgh" id="casesNext" style="padding:5px 12px;font-size:12px">&#8250;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- HISTORY TAB -->
+      <div id="tabChanges" style="display:none">
+        <div class="tw"><table>
+          <thead><tr><th>Case ID</th><th>Patient</th><th>Old Status</th><th>New Status</th><th>Changed At</th></tr></thead>
+          <tbody id="tChanges"><tr><td colspan="5" class="ec">No history yet.</td></tr></tbody>
+        </table></div>
+      </div>
+
+      <!-- ALIGNERS TAB -->
+      <div id="tabAligners" style="display:none">
+        <div class="filters">
+          <input class="fi" id="alSearch" placeholder="Search case number..." style="width:220px"/>
+        </div>
+        <div class="tw"><table>
+          <thead><tr>
+            <th class="sortable" onclick="sortAligners('case_number')">Case # <span class="sarr" id="ash_case_number">↑</span></th>
+            <th class="sortable" onclick="sortAligners('aligner_upper')">Upper <span class="sarr" id="ash_aligner_upper"></span></th>
+            <th class="sortable" onclick="sortAligners('aligner_lower')">Lower <span class="sarr" id="ash_aligner_lower"></span></th>
+            <th class="sortable" onclick="sortAligners('number_of_aligners')">Total <span class="sarr" id="ash_number_of_aligners"></span></th>
+            <th class="sortable" onclick="sortAligners('order_type')">Order Type <span class="sarr" id="ash_order_type"></span></th>
+            <th>Boxes</th>
+            <th class="sortable" onclick="sortAligners('_shipped')">Last Shipped <span class="sarr" id="ash__shipped"></span></th>
+          </tr></thead>
+          <tbody id="tAligners"><tr><td colspan="7" class="ec">Loading...</td></tr></tbody>
+        </table></div>
+        <div class="pager">
+          <span id="alPagerInfo"></span>
+          <div style="display:flex;gap:6px">
+            <button class="btn bgh" id="alPrev" style="padding:5px 12px;font-size:12px">&#8249;</button>
+            <button class="btn bgh" id="alNext" style="padding:5px 12px;font-size:12px">&#8250;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- IMPORTS TAB -->
+      <div id="tabImports" style="display:none">
+        <div class="tw"><table>
+          <thead><tr><th>Import ID</th><th>Filename</th><th>Type</th><th>New</th><th>Updated</th><th>Date</th></tr></thead>
+          <tbody id="tImports"><tr><td colspan="6" class="ec">No imports yet.</td></tr></tbody>
+        </table></div>
+      </div>
+
+    </div><!-- end card -->
+  </div><!-- end body -->
+</div><!-- end content -->
+
+<!-- CASE MODAL -->
+<div class="modal-bg" id="caseModal">
+  <div class="modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:17px;font-weight:800" id="modalTitle">Case Details</div>
+      <button class="btn bgh" style="padding:5px 12px" id="btnCloseModal">✕</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<div class="notif" id="notif"></div>
+
 <script type="module">
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { SUPABASE_CONFIG } from './config.js';
