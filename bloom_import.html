@@ -683,24 +683,39 @@ async function saveCasesData(cases, filename) {
   document.getElementById('progTitle').textContent = 'Saving ' + cases.length + ' cases...';
   var newCount = 0, updCount = 0;
   var batchSize = 50;
+
+  // Test with first case only to surface any error immediately
+  var testCase = Object.assign({}, cases[0], { updated_at: new Date().toISOString() });
+  console.log('[Bloom] TEST upsert sample:', JSON.stringify(testCase));
+  var testR = await SB.from('bloom_cases').upsert([testCase], { onConflict: 'case_id' });
+  console.log('[Bloom] TEST upsert response:', JSON.stringify(testR));
+  if (testR.error) {
+    var errMsg = testR.error.message || testR.error.hint || testR.error.details || testR.error.code || JSON.stringify(testR.error);
+    dbg('SAVE ERROR: ' + errMsg);
+    msg('❌ Save failed: ' + errMsg, 'var(--red)');
+    document.getElementById('progTitle').textContent = 'Error: ' + errMsg;
+    console.error('[Bloom] FULL ERROR:', JSON.stringify(testR.error));
+    return;
+  }
+
   for (var i = 0; i < cases.length; i += batchSize) {
     var batch = cases.slice(i, i + batchSize);
     document.getElementById('progFill').style.width = Math.round(i / cases.length * 100) + '%';
     document.getElementById('progSub').textContent = (i + batch.length) + ' / ' + cases.length;
 
-    // Check existing
     var existIds = batch.map(function(c) { return c.case_id; });
     var ex = await SB.from('bloom_cases').select('case_id,current_status').in('case_id', existIds);
     var existMap = {};
     (ex.data || []).forEach(function(e) { existMap[e.case_id] = e.current_status; });
 
-    // Upsert
     var toSave = batch.map(function(c) {
       return Object.assign({}, c, { updated_at: new Date().toISOString() });
     });
-    console.log('[Bloom] Upserting batch', i, '-', i+toSave.length, 'sample:', JSON.stringify(toSave[0]));
     var ur = await SB.from('bloom_cases').upsert(toSave, { onConflict: 'case_id' });
-    console.log('[Bloom] Upsert result:', JSON.stringify(ur));
+    if (ur.error) {
+      var errMsg = ur.error.message || ur.error.hint || JSON.stringify(ur.error);
+      console.error('[Bloom] Batch upsert error:', errMsg);
+    }
 
     // History
     var histRows = [];
