@@ -34,6 +34,11 @@ body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh
 .nav-link.active{background:var(--b50);color:var(--blue);font-weight:700}
 .nav-link .ic{font-size:15px;width:18px;text-align:center;flex-shrink:0}
 .sb-foot{padding:12px 10px;border-top:1px solid var(--bdr)}
+.sb-s{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;padding:14px 8px 6px}
+.nl{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13px;font-weight:500;color:var(--mu);text-decoration:none;transition:all .12s}
+.nl:hover{background:var(--bg);color:var(--txt)}
+.nl.on{background:var(--b50);color:var(--blue);font-weight:700}
+.nl .ic{font-size:15px;width:18px;text-align:center;flex-shrink:0}
 /* MAIN CONTENT */
 .content{margin-left:240px;min-height:100vh}
 .topbar{background:var(--card);border-bottom:1px solid var(--bdr);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:50;box-shadow:0 1px 4px rgba(0,0,0,.04)}
@@ -136,9 +141,11 @@ tbody tr:hover{background:#f8fafc}
     <div class="sb-s">Operations</div>
     <a href="manager.html" class="nl on"><span class="ic">📊</span>Dashboard</a>
     <a href="production.html" class="nl"><span class="ic">🏭</span>Production</a>
+    <a href="production_materials.html" class="nl"><span class="ic">🧪</span>Materials & Lots</a>
     <a href="machines.html" class="nl"><span class="ic">⚙</span>Machines</a>
     <div class="sb-s">Team</div>
     <a href="employees.html" class="nl"><span class="ic">👥</span>Employees</a>
+    <a href="employee_profile.html" class="nl"><span class="ic">👤</span>Employee Profile</a>
     <a href="time_report.html" class="nl"><span class="ic">📈</span>Time Report</a>
     <div class="sb-s">Quality</div>
     <a href="tracabilite.html" class="nl"><span class="ic">🔖</span>Traceability</a>
