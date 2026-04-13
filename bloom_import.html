@@ -240,69 +240,61 @@ dbg('JS file loaded OK! Connecting to Supabase...');
 
 // ---- SUPABASE REST CLIENT ----
 var SB = {
+  _req: function(method, url, body, headers) {
+    return new Promise(function(resolve) {
+      var xhr = new XMLHttpRequest();
+      xhr.open(method, url, true);
+      var h = {
+        'apikey': SUPA_KEY,
+        'Authorization': 'Bearer ' + SUPA_KEY,
+        'Content-Type': 'application/json'
+      };
+      if (headers) Object.keys(headers).forEach(function(k){ h[k]=headers[k]; });
+      Object.keys(h).forEach(function(k){ xhr.setRequestHeader(k, h[k]); });
+      xhr.onload = function() {
+        var d;
+        try { d = JSON.parse(xhr.responseText); } catch(e) { d = []; }
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve({ data: Array.isArray(d) ? d : (d && d.length !== undefined ? d : []), error: null });
+        } else {
+          resolve({ data: [], error: d });
+        }
+      };
+      xhr.onerror = function() { resolve({ data: [], error: { message: 'Network error' } }); };
+      xhr.send(body ? JSON.stringify(body) : null);
+    });
+  },
   from: function(table) {
-    var base = SUPA_URL + '/rest/v1/' + table;
-    var hdrs = {
-      'apikey': SUPA_KEY,
-      'Authorization': 'Bearer ' + SUPA_KEY,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=representation'
-    };
-    var _filters = [];
-    var _select = '*';
-    var _order = null;
-    var _limit = null;
-    var _offset = null;
+    var BASE = SUPA_URL + '/rest/v1/' + table;
+    var _sel='*', _filters=[], _order=null;
     var q = {
-      select: function(s) { _select = s; return q; },
-      order: function(col, opts) { _order = col + '.' + ((opts && opts.ascending === false) ? 'desc' : 'asc'); return q; },
-      limit: function(n) { _limit = n; return q; },
-      range: function(from, to) { _offset = from; _limit = (to - from + 1); return q; },
-      eq: function(col, val) { _filters.push(col + '=eq.' + encodeURIComponent(val)); return q; },
-      ilike: function(col, val) { _filters.push(col + '=ilike.' + encodeURIComponent(val)); return q; },
-      in: function(col, vals) { _filters.push(col + '=in.(' + vals.join(',') + ')'); return q; },
-      then: function(cb) { return q._run().then(cb); },
-      _run: function() {
-        var url = base + '?select=' + encodeURIComponent(_select);
-        _filters.forEach(function(f) { url += '&' + f; });
-        if (_order) url += '&order=' + _order;
-        if (_limit) url += '&limit=' + _limit;
-        if (_offset) url += '&offset=' + _offset;
-        var getHdrs = Object.assign({}, hdrs, {'Range':'0-9999','Range-Unit':'items'});
-        return fetch(url, { headers: getHdrs })
-          .then(function(r) { return r.json().then(function(d) { return { data: Array.isArray(d) ? d : [], error: r.ok ? null : d }; }); })
-          .catch(function(e) { return { data: [], error: e }; });
+      select: function(s){ _sel=s; return q; },
+      order: function(col,opts){ _order=col+'.'+(opts&&opts.ascending===false?'desc':'asc'); return q; },
+      eq: function(col,val){ _filters.push(col+'=eq.'+encodeURIComponent(val)); return q; },
+      ilike: function(col,val){ _filters.push(col+'=ilike.'+encodeURIComponent(val)); return q; },
+      in: function(col,vals){ _filters.push(col+'=in.('+vals.map(function(v){return encodeURIComponent(v);}).join(',')+')'); return q; },
+      then: function(cb){ return q._run().then(cb); },
+      _run: function(){
+        var p = 'select='+encodeURIComponent(_sel);
+        _filters.forEach(function(f){ p+='&'+f; });
+        if(_order) p+='&order='+_order;
+        var url = BASE + '?' + p;
+        return SB._req('GET', url, null, {'Range':'0-9999','Range-Unit':'items'});
       },
-      insert: function(rows) {
-        var iHdrs = Object.assign({}, hdrs);
-        iHdrs['Prefer'] = 'return=representation';
-        return fetch(base, {
-          method: 'POST', headers: iHdrs,
-          body: JSON.stringify(Array.isArray(rows) ? rows : [rows])
-        }).then(function(r) {
-            if (r.status === 204) return { data: [], error: null };
-            return r.json().then(function(d) { return { data: Array.isArray(d) ? d : [d], error: r.ok ? null : d }; });
-          })
-          .catch(function(e) { return { data: [], error: e }; });
+      insert: function(rows){
+        var arr = Array.isArray(rows)?rows:[rows];
+        return SB._req('POST', BASE, arr, {'Prefer':'return=minimal'});
       },
-      upsert: function(rows, opts) {
-        var h = Object.assign({}, hdrs);
-        h['Prefer'] = 'resolution=merge-duplicates,return=representation';
-        var url = base;
-        if (opts && opts.onConflict) url += '?on_conflict=' + opts.onConflict;
-        return fetch(url, { method: 'POST', headers: h, body: JSON.stringify(Array.isArray(rows) ? rows : [rows]) })
-          .then(function(r) {
-            if (r.status === 204) return { data: [], error: null };
-            return r.json().then(function(d) { return { data: Array.isArray(d) ? d : [], error: r.ok ? null : d }; });
-          })
-          .catch(function(e) { return { data: [], error: e }; });
+      upsert: function(rows,opts){
+        var arr = Array.isArray(rows)?rows:[rows];
+        var conflict = (opts&&opts.onConflict) ? '?on_conflict='+opts.onConflict : '';
+        return SB._req('POST', BASE+conflict, arr, {'Prefer':'resolution=merge-duplicates,return=minimal'});
       },
-      delete: function() {
+      delete: function(){
         return {
-          eq: function(col, val) {
-            var url = base + '?' + col + '=eq.' + encodeURIComponent(val);
-            return fetch(url, { method: 'DELETE', headers: hdrs })
-              .then(function(r) { return { data: null, error: r.ok ? null : { message: 'Delete failed' } }; });
+          eq: function(col,val){
+            var url = BASE+'?'+col+'=eq.'+encodeURIComponent(val);
+            return SB._req('DELETE', url, null, {});
           }
         };
       }
@@ -372,9 +364,10 @@ document.getElementById('tabBtnImports').addEventListener('click', function() { 
 async function loadAll() {
   dbg('Fetching cases from Supabase...');
   var r = await SB.from('bloom_cases').select('*').order('creation_date', { ascending: false });
+  console.log('[Bloom] loadAll result - error:', JSON.stringify(r.error), 'rows:', r.data ? r.data.length : 'null');
   if (r.error) {
-    dbg('ERROR: ' + JSON.stringify(r.error));
-    document.getElementById('tCases').innerHTML = '<tr><td colspan="6" class="ec">Error loading: ' + JSON.stringify(r.error) + '</td></tr>';
+    dbg('ERROR: ' + (r.error.message||r.error.hint||JSON.stringify(r.error)));
+    document.getElementById('tCases').innerHTML = '<tr><td colspan="6" class="ec">Error: ' + (r.error.message||JSON.stringify(r.error)) + '</td></tr>';
     return;
   }
   allCases = r.data || [];
@@ -755,8 +748,9 @@ async function saveCasesData(cases, filename) {
     var toSave = batch.map(function(c) {
       return Object.assign({}, c, { updated_at: new Date().toISOString() });
     });
+    console.log('[Bloom] Upserting batch', i, '-', i+toSave.length, 'sample:', JSON.stringify(toSave[0]));
     var ur = await SB.from('bloom_cases').upsert(toSave, { onConflict: 'case_id' });
-    if (ur.error) { console.error('[Bloom] Upsert error:', ur.error.message||ur.error.hint||JSON.stringify(ur.error)); }
+    console.log('[Bloom] Upsert result:', JSON.stringify(ur));
 
     // History
     var histRows = [];
@@ -793,19 +787,21 @@ async function saveExcelData(shipRows, alRows, filename) {
   document.getElementById('progFill').style.width = '30%';
 
   if (alRows.length) {
-    await SB.from('bloom_aligner_details').upsert(
+    var ar = await SB.from('bloom_aligner_details').upsert(
       alRows.map(function(r) { return Object.assign({}, r, { updated_at: new Date().toISOString() }); }),
       { onConflict: 'case_number' }
     );
+    console.log('[Bloom] aligner_details upsert:', ar.error ? 'ERROR: '+(ar.error.message||ar.error.hint||JSON.stringify(ar.error)) : 'OK rows='+alRows.length);
   }
   document.getElementById('progFill').style.width = '60%';
 
   if (shipRows.length) {
     for (var i = 0; i < shipRows.length; i += 50) {
-      await SB.from('bloom_aligners').upsert(
+      var sr = await SB.from('bloom_aligners').upsert(
         shipRows.slice(i, i + 50).map(function(r) { return Object.assign({}, r, { updated_at: new Date().toISOString() }); }),
         { onConflict: 'case_number' }
       );
+      console.log('[Bloom] aligners upsert batch '+i+':', sr.error ? 'ERROR: '+(sr.error.message||sr.error.hint||JSON.stringify(sr.error)) : 'OK');
     }
   }
   document.getElementById('progFill').style.width = '90%';
