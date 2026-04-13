@@ -295,13 +295,14 @@ let allLots=[],allItems=[],yieldRules=[],activeLots=[]
 
 /* ─── LOAD ─── */
 async function load(){
+  const safe=async(p)=>{try{return await p}catch(e){return{data:[],error:e}}}
   const[lr,ir,yr,lmr,mr,er]=await Promise.all([
-    sb.from("production_lots").select("*").order("produced_at",{ascending:false}).limit(100),
-    sb.from("inventory_items").select("id,name,unit_of_measure,current_stock").order("name"),
-    sb.from("material_yield_rules").select("*").order("item_name"),
-    sb.from("machine_lot_assignments").select("*").eq("is_active",true),
-    sb.from("machines").select("machine_name").order("machine_name"),
-    sb.from("employees").select("name").eq("is_active",true).order("name")
+    safe(sb.from("production_lots").select("*").order("produced_at",{ascending:false}).limit(100)),
+    safe(sb.from("inventory_items").select("id,name,unit_of_measure,current_stock").order("name")),
+    safe(sb.from("material_yield_rules").select("*").order("item_name")),
+    safe(sb.from("machine_lot_assignments").select("*").eq("is_active",true)),
+    safe(sb.from("machines").select("machine_name").order("machine_name")),
+    safe(sb.from("employees").select("name").eq("is_active",true).order("name"))
   ])
   allLots=lr.data||[]
   allItems=ir.data||[]
