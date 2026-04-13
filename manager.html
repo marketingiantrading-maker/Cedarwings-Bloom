@@ -553,15 +553,6 @@ async function load(){
   document.getElementById('kEff').textContent=eff+'%'
   document.getElementById('kEffSub').textContent=`${hm(pMin)} productive`
   document.getElementById('kEffSub').style.color=eff>=70?'var(--green)':eff>=40?'var(--amber)':'var(--red)'
-  document.getElementById('kAl').textContent=totAl.toLocaleString()
-  document.getElementById('kAlSub').textContent=`↑${periodUpperAl} upper · ↓${periodLowerAl} lower · ${periodCaseIds.size} cases`
-  document.getElementById('kCs').textContent=totCs.toLocaleString()
-  document.getElementById('kCsSub').textContent=`${fullyCompletedOrders.length} fully produced all-time · ${bloomCases.filter(r=>r.current_status&&!["DELIVERED","ARCHIVE"].includes(r.current_status)).length} active in Bloom`
-  document.getElementById('kLow').textContent=lowItems.length
-  document.getElementById('kLowSub').textContent=lowItems.length>0?`⏰ ${nearExp.length} near expiry`:'All stock OK'
-  document.getElementById('kLowSub').style.color=lowItems.length>0?'var(--red)':'var(--green)'
-  document.getElementById('kReq').textContent=reqs.length
-
   // ── BLOOM KPIs (rule: match case creation_date to selected range) ──────────
   const {s:rS, e:rE} = getRange()  // use existing date range filter
   const totalBloomCases = bloomCases.length
@@ -596,7 +587,17 @@ async function load(){
   })
 
   // All-time totals
-  totAl = periodTotalAl  // now safe to assign
+  totAl = periodTotalAl
+  document.getElementById('kAl').textContent=totAl.toLocaleString()
+  document.getElementById('kAlSub').textContent=`↑${periodUpperAl} upper · ↓${periodLowerAl} lower · ${periodCaseIds.size} cases`
+  document.getElementById('kCs').textContent=totCs.toLocaleString()
+  document.getElementById('kCsSub').textContent=`${fullyCompletedOrders.length} fully produced all-time · ${bloomCases.filter(r=>r.current_status&&!["DELIVERED","ARCHIVE"].includes(r.current_status)).length} active in Bloom`
+  document.getElementById('kLow').textContent=lowItems.length
+  document.getElementById('kLowSub').textContent=lowItems.length>0?`⏰ ${nearExp.length} near expiry`:'All stock OK'
+  document.getElementById('kLowSub').style.color=lowItems.length>0?'var(--red)':'var(--green)'
+  document.getElementById('kReq').textContent=reqs.length
+
+  // now safe to assign
   const totalBloomAl = bloomAligners.reduce((a,r)=>a+(Number(r.number_of_aligners)||((Number(r.aligner_upper)||0)+(Number(r.aligner_lower)||0))),0)
   const upperAl = periodUpperAl
   const lowerAl = periodLowerAl
