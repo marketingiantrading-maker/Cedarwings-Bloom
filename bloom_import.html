@@ -650,15 +650,43 @@ async function saveCasesData(cases, filename) {
 // ── SAVE EXCEL ─────────────────────────────────────────────────────────────
 async function saveExcelData(shipRows, alRows, filename) {
   document.getElementById('progTitle').textContent = 'Saving Excel...';
-  document.getElementById('progFill').style.width = '30%';
+  document.getElementById('progFill').style.width = '20%';
+  document.getElementById('uploadProg').style.display = 'block';
+
+  // Save aligner details (upsert by case_number)
   if (alRows.length) {
-    var ar = await sb.from('bloom_aligner_details').upsert(alRows, { onConflict:'case_number' });
-    if (ar.error) { ntf('Aligner details error: '+(ar.error.message||JSON.stringify(ar.error)),'err'); }
+    for (var i = 0; i < alRows.length; i += 100) {
+      var ar = await sb.from('bloom_aligner_details').upsert(alRows.slice(i,i+100), { onConflict:'case_number' });
+      if (ar.error) {
+        var em = ar.error.message||ar.error.hint||ar.error.details||JSON.stringify(ar.error);
+        ntf('Aligner details error: '+em,'err');
+        document.getElementById('progTitle').textContent = '❌ '+em;
+        console.error('[Bloom] aligner_details error:', ar.error);
+        return;
+      }
+    }
   }
   document.getElementById('progFill').style.width = '60%';
-  for (var i = 0; i < shipRows.length; i += 100) {
-    var sr = await sb.from('bloom_aligners').upsert(shipRows.slice(i,i+100), { onConflict:'case_number' });
-    if (sr.error) { ntf('Shipping error: '+(sr.error.message||JSON.stringify(sr.error)),'err'); break; }
+
+  // Save shipping rows — delete old then insert fresh (avoids unique constraint issues)
+  if (shipRows.length) {
+    // Get unique case numbers in this batch
+    var caseNums = [...new Set(shipRows.map(function(r){ return r.case_number; }))];
+    // Delete existing shipping for these cases
+    for (var j = 0; j < caseNums.length; j += 50) {
+      await sb.from('bloom_aligners').delete().in('case_number', caseNums.slice(j,j+50));
+    }
+    // Insert fresh
+    for (var k = 0; k < shipRows.length; k += 100) {
+      var sr = await sb.from('bloom_aligners').insert(shipRows.slice(k,k+100));
+      if (sr.error) {
+        var em2 = sr.error.message||sr.error.hint||sr.error.details||JSON.stringify(sr.error);
+        ntf('Shipping error: '+em2,'err');
+        document.getElementById('progTitle').textContent = '❌ '+em2;
+        console.error('[Bloom] aligners error:', sr.error);
+        return;
+      }
+    }
   }
   document.getElementById('progFill').style.width = '90%';
   await sb.from('bloom_imports').insert([{filename:filename,import_type:'excel',new_cases:alRows.length,updated_cases:0,imported_at:new Date().toISOString()}]);
