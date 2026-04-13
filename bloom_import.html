@@ -298,10 +298,13 @@ tbody tr:hover{background:#f8fafc;cursor:pointer}
         <div style="background:var(--g50);border:1px solid var(--g100);border-radius:12px;padding:16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
           <div>
             <div style="font-size:13px;font-weight:700;color:#15803d">📥 Upload Aligner Excel File</div>
-            <div style="font-size:11px;color:#16a34a;margin-top:2px">bloomaligner.fr → Export extended Excel · Links case numbers to aligner counts automatically</div>
+            <div style="font-size:11px;color:#16a34a;margin-top:2px">bloomaligner.fr → Export extended Excel · Reads SHIPPING + ALIGNER sheets · Replaces previous data</div>
+            <div style="font-size:11px;color:#16a34a;margin-top:2px" id="lastAlignerImport"></div>
           </div>
           <div style="display:flex;gap:8px">
-            <button class="btn bgh" onclick="document.getElementById('alignerFile').click()">📂 Upload Excel (.xlsx)</button>
+            <button class="btn bg" onclick="document.getElementById('alignerFile').click()" style="gap:8px">
+              📂 Upload Excel (.xlsx)
+            </button>
             <input type="file" id="alignerFile" accept=".xlsx,.xls" style="display:none" onchange="handleAlignerFile(this.files[0])"/>
           </div>
         </div>
@@ -980,7 +983,7 @@ async function loadAligners(){
     if(!c.first_shipment||r.date_of_shipment<c.first_shipment)c.first_shipment=r.date_of_shipment
     if(r.shipping_number&&!c.shipping_numbers.includes(r.shipping_number))c.shipping_numbers.push(r.shipping_number)
   })
-  allAligners=[...caseMap.values()]
+  allAligners=[...caseMap.values()].sort((a,b)=>Number(b.case_number)-Number(a.case_number))
   
   // Update KPIs
   const totalAligners=allAligners.reduce((s,c)=>s+c.total_aligners,0)
@@ -990,6 +993,13 @@ async function loadAligners(){
   document.getElementById("akLinked").textContent=linkedCases.toLocaleString()
   document.getElementById("akAvg").textContent=allAligners.length?Math.round(totalAligners/allAligners.length):0
   document.getElementById("tabAlignerCount").textContent=allAligners.length.toLocaleString()
+  
+  // Show last import date
+  if(allA.length){
+    const lastDate=allA.reduce((max,r)=>r.imported_at>max?r.imported_at:max,"")
+    const el=document.getElementById("lastAlignerImport")
+    if(el&&lastDate) el.textContent=`Last upload: ${new Date(lastDate).toLocaleString("en-GB",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}`
+  }
 }
 
 window.renderAligners=()=>{
