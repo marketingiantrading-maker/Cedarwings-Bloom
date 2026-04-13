@@ -83,6 +83,8 @@ tbody tr:hover{background:#f8fafc;cursor:pointer}
 .notif.on{display:flex}.notif.ok{background:#15803d;color:#fff}.notif.err{background:var(--red);color:#fff}
 @media(max-width:768px){.sb{display:none}.content{margin-left:0}.kpi-grid{grid-template-columns:repeat(3,1fr)}}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -380,10 +382,8 @@ tbody tr:hover{background:#f8fafc;cursor:pointer}
 
 <div class="notif" id="notif"></div>
 
-<script type="module">
-import{createClient}from"https://esm.sh/@supabase/supabase-js@2"
-import{SUPABASE_CONFIG}from"./config.js"
-const sb=createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey)
+<script>
+const sb=supabase.createClient("https://oaauobugpbcixnbmlakc.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hYXVvYnVncGJjaXhuYm1sYWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzYyNTksImV4cCI6MjA5MTQxMjI1OX0.EpOUpmwRx_LAUqpGQcVMyJFB5NqX_HM7aMZ2gWW9oAA")
 
 const ntf=(m,t="ok")=>{const e=document.getElementById("notif");e.textContent=(t==="ok"?"✅ ":"❌ ")+m;e.className="notif on "+t;setTimeout(()=>e.classList.remove("on"),4000)}
 const fdt=v=>v?new Date(v).toLocaleString("en-GB",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):"—"
