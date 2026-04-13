@@ -161,7 +161,7 @@ lbl{display:block;font-size:11px;font-weight:700;color:var(--mu);text-transform:
       <div style="background:linear-gradient(135deg,#1e3a8a,#2563eb);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
         <div>
           <div style="font-size:14px;font-weight:800;color:#fff">🔵 Today's Bloom Cases</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:2px" id="bloomTodayTotal">Upload Excel on Bloom Import page to see today's cases</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:2px" id="bloomTodayTotal">Cases created today with aligner counts</div>
         </div>
         <a href="bloom_import.html" style="background:rgba(255,255,255,.15);color:#fff;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;border:1px solid rgba(255,255,255,.3)">📥 Go to Bloom Import →</a>
       </div>
@@ -331,25 +331,65 @@ async function load(){
 
 async function renderBloomToday(){
   const today=new Date().toISOString().slice(0,10)
-  const{data:rows}=await sb.from("production_records")
-    .select("order_no,aligners_count,notes,created_at")
-    .eq("employee_name","Bloom Import")
-    .gte("created_at",today+"T00:00:00")
-    .order("created_at",{ascending:false})
   const el=document.getElementById("bloomTodayBody")
   if(!el)return
-  if(!rows||!rows.length){
-    el.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--dim);padding:20px">No Bloom cases imported today yet.<br><a href="bloom_import.html" style="color:var(--blue);font-weight:600">→ Go to Bloom Import to upload Excel</a></td></tr>'
+
+  // Rule: cases with creation_date = today that have aligner data
+  const[{data:cases},{data:aligners}]=await Promise.all([
+    sb.from("bloom_cases")
+      .select("case_id,patient_name,doctor,current_status,creation_date")
+      .gte("creation_date",today+"T00:00:00")
+      .lte("creation_date",today+"T23:59:59")
+      .order("creation_date",{ascending:false})
+      .limit(500),
+    sb.from("bloom_aligner_details")
+      .select("case_number,aligner_upper,aligner_lower,number_of_aligners,order_type")
+      .limit(10000)
+  ])
+
+  const caseList=cases||[]
+  const alMap={}
+  ;(aligners||[]).forEach(a=>{
+    alMap[String(a.case_number)]={
+      upper:Number(a.aligner_upper)||0,
+      lower:Number(a.aligner_lower)||0,
+      total:Number(a.number_of_aligners)||((Number(a.aligner_upper)||0)+(Number(a.aligner_lower)||0)),
+      type:a.order_type||''
+    }
+  })
+
+  if(!caseList.length){
+    el.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--dim);padding:20px">No Bloom cases created today yet.<br><a href="bloom_import.html" style="color:var(--blue);font-weight:600">→ Go to Bloom Import to upload CSV</a></td></tr>'
+    document.getElementById("bloomTodayTotal").textContent='Upload CSV on Bloom Import page to see today\'s cases'
     return
   }
-  const totalAl=rows.reduce((a,r)=>a+(r.aligners_count||0),0)
-  el.innerHTML=rows.map(r=>`<tr>
-    <td><strong style="font-family:var(--mono)">${r.order_no}</strong></td>
-    <td><span style="font-size:16px;font-weight:800;color:var(--amber);font-family:var(--mono)">${r.aligners_count||0}</span></td>
-    <td style="font-size:11px;color:var(--mu)">${(r.notes||'').replace('Auto-synced from Bloom · ','')}</td>
-    <td style="font-size:11px;color:var(--mu);font-family:var(--mono)">${new Date(r.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</td>
-  </tr>`).join('')
-  document.getElementById("bloomTodayTotal").textContent=`${rows.length} cases · ${totalAl.toLocaleString()} aligners today`
+
+  let totalAl=0, totalUpper=0, totalLower=0
+  el.innerHTML=caseList.map(c=>{
+    const al=alMap[String(c.case_id)]||{}
+    const upper=al.upper||0, lower=al.lower||0, total=al.total||(upper+lower)
+    totalAl+=total; totalUpper+=upper; totalLower+=lower
+    const statusColor=
+      (c.current_status||'').toUpperCase().includes('RECEIVED')?'#16a34a':
+      (c.current_status||'').toUpperCase().includes('OVERDUE')?'#dc2626':
+      (c.current_status||'').toUpperCase().includes('DELIVERED')?'#3b5fe2':'#d97706'
+    return \`<tr>
+      <td><strong style="font-family:var(--mono);font-size:13px">\${c.case_id}</strong>
+          <div style="font-size:10px;color:var(--mu)">\${c.patient_name||''}</div></td>
+      <td>
+        <span style="font-size:14px;font-weight:800;color:var(--amber);font-family:var(--mono)">\${total||'—'}</span>
+        \${total?'<span style="font-size:10px;color:var(--mu);margin-left:4px">↑'+upper+' ↓'+lower+'</span>':''}
+      </td>
+      <td style="font-size:11px">
+        <span style="color:\${statusColor};font-weight:700">\${c.current_status||'—'}</span>
+        <div style="font-size:10px;color:var(--mu)">\${c.doctor||''}</div>
+      </td>
+      <td style="font-size:11px;color:var(--mu);font-family:var(--mono)">\${(c.creation_date||'').slice(0,10)}</td>
+    </tr>\`
+  }).join('')
+
+  document.getElementById("bloomTodayTotal").textContent=
+    \`\${caseList.length} cases today · ↑\${totalUpper} upper · ↓\${totalLower} lower · \${totalAl.toLocaleString()} total aligners\`
 }
 
 function renderKPIs(){
