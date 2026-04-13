@@ -1,104 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Cedarwings — Bloom Cases</title>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Cedarwings - Bloom Cases</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
-<script>
-// Tiny Supabase REST client — no SDK needed
-var SUPA_URL = 'https://oaauobugpbcixnbmlakc.supabase.co';
-var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hYXVvYnVncGJjaXhuYm1sYWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzYyNTksImV4cCI6MjA5MTQxMjI1OX0.EpOUpmwRx_LAUqpGQcVMyJFB5NqX_HM7aMZ2gWW9oAA';
-var supabase = {createClient: function(){return null;}};
-function mkHeaders(extra){
-  var h = {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
-  Object.assign(h, extra||{});
-  return h;
-}
-var SB = {
-  from: function(table){
-    var _t=table, _sel='*', _filters=[], _ord=null, _lim=null, _rng=null;
-    var q = {
-      select: function(s,opts){
-        if(opts&&opts.count==='exact'&&opts.head) _sel=''; 
-        else _sel=s||'*'; 
-        return q;
-      },
-      eq: function(col,val){_filters.push(col+'=eq.'+encodeURIComponent(val));return q;},
-      neq: function(col,val){_filters.push(col+'=neq.'+encodeURIComponent(val));return q;},
-      gte: function(col,val){_filters.push(col+'=gte.'+encodeURIComponent(val));return q;},
-      lte: function(col,val){_filters.push(col+'=lte.'+encodeURIComponent(val));return q;},
-      not: function(col,op,val){_filters.push(col+'='+op+'.'+val);return q;},
-      in: function(col,vals){_filters.push(col+'=in.('+vals.join(',')+')');return q;},
-      order: function(col,opts){_ord=col+(opts&&opts.ascending===false?'.desc':'.asc');return q;},
-      limit: function(n){_lim=n;return q;},
-      range: function(from,to){_rng=from+'-'+to;return q;},
-      then: function(resolve,reject){
-        var url=SUPA_URL+'/rest/v1/'+_t+'?select='+(_sel||'*');
-        _filters.forEach(function(f){url+='&'+f;});
-        if(_ord)url+='&order='+_ord;
-        if(_lim)url+='&limit='+_lim;
-        var headers = mkHeaders();
-        if(_rng){headers['Range']=_rng;headers['Range-Unit']='items';}
-        return fetch(url,{headers:headers})
-          .then(function(r){
-            if(!r.ok)return r.json().then(function(e){return {data:null,error:e,count:null};});
-            return r.json().then(function(d){return {data:d,error:null,count:d?d.length:0};});
-          })
-          .then(resolve,reject);
-      }
-    };
-    q.upsert = function(rows,opts){
-      var url=SUPA_URL+'/rest/v1/'+_t;
-      if(opts&&opts.onConflict)url+='?on_conflict='+opts.onConflict;
-      return fetch(url,{method:'POST',headers:mkHeaders({'Prefer':'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(rows)})
-        .then(function(r){return r.ok?r.json().then(function(d){return{data:d,error:null};}):r.json().then(function(e){return{data:null,error:e};});});
-    };
-    q.insert = function(rows){
-      return fetch(SUPA_URL+'/rest/v1/'+_t,{method:'POST',headers:mkHeaders(),body:JSON.stringify(rows)})
-        .then(function(r){return r.ok?r.json().then(function(d){return{data:d,error:null};}):r.json().then(function(e){return{data:null,error:e};});});
-    };
-    q.update = function(data){
-      return {eq:function(col,val){
-        var url=SUPA_URL+'/rest/v1/'+_t+'?'+col+'=eq.'+encodeURIComponent(val);
-        return fetch(url,{method:'PATCH',headers:mkHeaders(),body:JSON.stringify(data)})
-          .then(function(r){return r.ok?r.json().then(function(d){return{data:d,error:null};}):r.json().then(function(e){return{data:null,error:e};});});
-      }};
-    };
-    q.delete = function(){
-      return {eq:function(col,val){
-        var url=SUPA_URL+'/rest/v1/'+_t+'?'+col+'=eq.'+encodeURIComponent(val);
-        return fetch(url,{method:'DELETE',headers:mkHeaders()})
-          .then(function(r){return{data:null,error:r.ok?null:{message:'Delete failed'}};});
-      },
-      neq:function(col,val){
-        var url=SUPA_URL+'/rest/v1/'+_t+'?'+col+'=neq.'+encodeURIComponent(val);
-        return fetch(url,{method:'DELETE',headers:mkHeaders()})
-          .then(function(r){return{data:null,error:r.ok?null:{message:'Delete failed'}};});
-      },
-      gte:function(col,val){
-        return {then:function(res){
-          var url=SUPA_URL+'/rest/v1/'+_t+'?'+col+'=gte.'+encodeURIComponent(val);
-          return fetch(url,{method:'DELETE',headers:mkHeaders()})
-            .then(function(r){return{data:null,error:r.ok?null:{message:'Delete failed'}};}).then(res);
-        }};
-      }};
-    };
-    return q;
-  }
-};
-console.log('[Bloom] Native REST client ready — no CDN needed');
-</script>
 <style>
-:root{--bg:#f0f4f8;--card:#fff;--bdr:#e2e8f0;--txt:#0f172a;--mu:#64748b;--dim:#94a3b8;
-  --blue:#3b5fe2;--b50:#eef2ff;--b100:#e0e7ff;--green:#16a34a;--g50:#f0fdf4;--g100:#dcfce7;
-  --amber:#d97706;--a50:#fffbeb;--a100:#fef3c7;--red:#dc2626;--r50:#fef2f2;--r100:#fee2e2;
-  --purple:#7c3aed;--p50:#f5f3ff;--f:"DM Sans",sans-serif;--mono:"JetBrains Mono",monospace;
-  --sh:0 1px 3px rgba(0,0,0,.07),0 0 0 1px rgba(0,0,0,.04)}
+:root{--bg:#f0f4f8;--card:#fff;--bdr:#e2e8f0;--txt:#0f172a;--mu:#64748b;--dim:#94a3b8;--blue:#3b5fe2;--b50:#eef2ff;--b100:#e0e7ff;--green:#16a34a;--g50:#f0fdf4;--g100:#dcfce7;--amber:#d97706;--a50:#fffbeb;--a100:#fef3c7;--red:#dc2626;--r50:#fef2f2;--r100:#fee2e2;--purple:#7c3aed;--p50:#f5f3ff;--f:"DM Sans",sans-serif;--mono:"JetBrains Mono",monospace;--sh:0 1px 3px rgba(0,0,0,.07),0 0 0 1px rgba(0,0,0,.04)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--f);background:var(--bg);color:var(--txt)}
 .sb{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--card);border-right:1px solid var(--bdr);display:flex;flex-direction:column;z-index:100;overflow-y:auto}
-.sb-top{display:flex;flex-direction:column;align-items:flex-start;padding:16px 18px;border-bottom:1px solid var(--bdr)}
+.sb-top{display:flex;align-items:center;gap:12px;padding:18px 16px;border-bottom:1px solid var(--bdr)}
 .logo{width:38px;height:38px;background:linear-gradient(135deg,#3b5fe2,#6366f1);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
 .sb-nm{font-weight:800;font-size:14px}.sb-role{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;margin-top:3px;background:var(--b50);color:var(--blue)}
 .sb-nav{flex:1;padding:10px}.sb-s{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;padding:14px 8px 6px}
@@ -108,9 +19,9 @@ body{font-family:var(--f);background:var(--bg);color:var(--txt)}
 .content{margin-left:240px;min-height:100vh}
 .topbar{background:var(--card);border-bottom:1px solid var(--bdr);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:50}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;font-size:13px;font-weight:700;border:none;border-radius:9px;cursor:pointer;font-family:var(--f);transition:all .12s}
-.bb{background:var(--blue);color:#fff}.bg{background:var(--green);color:#fff}
-.bgh{background:var(--card);border:1.5px solid var(--bdr);color:var(--mu)}
+.bb{background:var(--blue);color:#fff}.bg2{background:var(--green);color:#fff}.bgh{background:var(--card);border:1.5px solid var(--bdr);color:var(--mu)}
 .body{padding:20px 28px 60px}
+.debug-bar{background:#1e293b;color:#a3e635;font-family:var(--mono);font-size:11px;padding:8px 14px;border-radius:8px;margin-bottom:14px}
 .card{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:20px;margin-bottom:16px}
 .kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px}
 .kpi{background:var(--card);border-radius:12px;box-shadow:var(--sh);padding:14px;border-top:3px solid var(--bdr)}
@@ -128,15 +39,13 @@ body{font-family:var(--f);background:var(--bg);color:var(--txt)}
 table{width:100%;border-collapse:collapse;font-size:12px}
 thead th{padding:8px 12px;font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;background:#f8fafc;border-bottom:1px solid var(--bdr);text-align:left;white-space:nowrap}
 tbody td{padding:9px 12px;border-bottom:1px solid var(--bdr);vertical-align:middle}
-tbody tr:last-child td{border:none}
-tbody tr:hover{background:#f8fafc;cursor:pointer}
+tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc;cursor:pointer}
 .ec{color:var(--dim)!important;text-align:center!important;padding:28px!important}
 .mono{font-family:var(--mono);font-size:11px}
 .badge{display:inline-flex;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:700;white-space:nowrap}
 .b-g{background:var(--g100);color:#15803d}.b-a{background:var(--a100);color:#92400e}
 .b-b{background:var(--b100);color:#1e40af}.b-gray{background:#f1f5f9;color:#475569}
 .b-r{background:var(--r100);color:#991b1b}
-.row-new td{background:#f0fdf4!important}.row-changed td{background:#fffbeb!important}
 .pager{display:flex;align-items:center;justify-content:space-between;margin-top:10px;font-size:12px;color:var(--mu)}
 .modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.7);z-index:600;display:none;align-items:center;justify-content:center;padding:20px}
 .modal-bg.on{display:flex}
@@ -147,107 +56,81 @@ tbody tr:hover{background:#f8fafc;cursor:pointer}
 .notif.on{display:block}.notif.ok{background:#15803d;color:#fff}.notif.err{background:var(--red);color:#fff}
 .s-aligners{background:#dcfce7;color:#15803d}.s-draft{background:#f1f5f9;color:#475569}
 .s-delivered{background:#e0e7ff;color:#3730a3}.s-refinement{background:#fef3c7;color:#92400e}
-.s-replacement{background:#fee2e2;color:#991b1b}.s-retainer{background:#f0fdfa;color:#0f766e}
-.s-plan{background:#f5f3ff;color:#6d28d9}.s-other{background:#f8fafc;color:#475569}
+.s-replacement{background:#fee2e2;color:#991b1b}.s-other{background:#f8fafc;color:#475569}
+@media(max-width:768px){.sb{display:none}.content{margin-left:0}.kpi-grid{grid-template-columns:repeat(3,1fr)}.upload-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-
 <aside class="sb">
-  <div class="sb-top">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-      <div class="logo">⚙</div>
-      <div><div class="sb-nm">Cedarwings SAS</div><div class="sb-role">Manager</div></div>
-    </div>
-    <div style="width:100%;background:#f8fafc;border-radius:8px;padding:6px 8px;display:flex;align-items:center;gap:6px;border:1px solid var(--bdr)">
-      
-      <span style="font-size:9px;color:var(--mu);font-weight:600">Bloom Aligner Partner</span>
-    </div>
-  </div>
+  <div class="sb-top"><div class="logo">&#9881;</div><div><div class="sb-nm">Cedarwings SAS</div><div class="sb-role">Manager</div></div></div>
   <nav class="sb-nav">
     <div class="sb-s">Operations</div>
-    <a href="manager.html" class="nl"><span class="ic">📊</span>Dashboard</a>
-    <a href="production.html" class="nl"><span class="ic">🏭</span>Production</a>
-    <a href="production_materials.html" class="nl"><span class="ic">🧪</span>Materials &amp; Lots</a>
-    <a href="machines.html" class="nl"><span class="ic">⚙</span>Machines</a>
+    <a href="manager.html" class="nl"><span class="ic">&#128202;</span>Dashboard</a>
+    <a href="production.html" class="nl"><span class="ic">&#127981;</span>Production</a>
+    <a href="machines.html" class="nl"><span class="ic">&#9881;</span>Machines</a>
     <div class="sb-s">Team</div>
-    <a href="employees.html" class="nl"><span class="ic">👥</span>Employees</a>
-    <a href="employee_profile.html" class="nl"><span class="ic">👤</span>Employee Profile</a>
-    <a href="time_report.html" class="nl"><span class="ic">📈</span>Time Report</a>
-    <div class="sb-s">Quality</div>
-    <a href="tracabilite.html" class="nl"><span class="ic">🔖</span>Traceability</a>
-    <a href="qualite.html" class="nl"><span class="ic">✅</span>Quality Control</a>
+    <a href="employees.html" class="nl"><span class="ic">&#128101;</span>Employees</a>
+    <a href="time_report.html" class="nl"><span class="ic">&#128200;</span>Time Report</a>
     <div class="sb-s">Resources</div>
-    <a href="inventory.html" class="nl"><span class="ic">📦</span>Inventory</a>
+    <a href="inventory.html" class="nl"><span class="ic">&#128230;</span>Inventory</a>
     <div class="sb-s">Integrations</div>
-    <a href="bloom_import.html" class="nl on"><span class="ic">🔵</span>Bloom Cases</a>
-    <div class="sb-s">System</div>
-    <a href="settings.html" class="nl"><span class="ic">⚙</span>Settings</a>
-    <a href="roles.html" class="nl"><span class="ic">🔑</span>Roles</a>
-    <a href="clocking.html" class="nl"><span class="ic">⏱</span>Clocking Terminal</a>
+    <a href="bloom_import.html" class="nl on"><span class="ic">&#128309;</span>Bloom Cases</a>
+    <div class="sb-s">Terminal</div>
+    <a href="clocking.html" class="nl"><span class="ic">&#9201;</span>Clocking Terminal</a>
   </nav>
-  <div class="sb-foot"><a href="index.html" class="nl"><span class="ic">←</span>Switch Role</a></div>
+  <div class="sb-foot"><a href="index.html" class="nl"><span class="ic">&#8592;</span>Switch Role</a></div>
 </aside>
 
 <div class="content">
   <div class="topbar">
-    <div style="display:flex;align-items:center;gap:14px">
-      
-      <div>
-        <div style="font-size:18px;font-weight:800">Bloom Cases Tracker</div>
-        <div style="font-size:11px;color:var(--mu)" id="lastInfo">Upload daily CSV · Track status changes</div>
-      </div>
+    <div>
+      <div style="font-size:20px;font-weight:800;letter-spacing:-.4px">&#128309; Bloom Cases</div>
+      <div style="font-size:12px;color:var(--mu);margin-top:2px">Import CSV and Excel from bloomaligner.fr</div>
     </div>
-    <button class="btn bgh" onclick="loadAll()">↻ Refresh</button>
+    <div style="display:flex;gap:8px">
+      <button class="btn bgh" id="btnRefresh">&#8635; Refresh</button>
+    </div>
   </div>
 
+  <div class="body">
+    <div class="debug-bar" id="debugBar">&#128309; Loading bloom_import_app.js...</div>
 
-
-
-  <div id="debugBar" style="background:#fef3c7;border:2px solid #f59e0b;padding:12px 20px;font-family:monospace;font-size:12px;display:block">
-  <strong>🔍 Debug:</strong> <span id="debugMsg">Page loaded — waiting for JS...</span>
-  <button onclick="document.getElementById('debugBar').style.display='none'" style="float:right;background:#f59e0b;border:none;padding:3px 8px;border-radius:4px;cursor:pointer">✕</button>
-</div>
-<div class="body">
-    <!-- KPIs -->
     <div class="kpi-grid">
-      <div class="kpi" style="border-top-color:#3b5fe2"><div class="kpi-val" id="kTotal" style="color:var(--blue)">—</div><div class="kpi-lbl">Total Cases</div></div>
-      <div class="kpi" style="border-top-color:#16a34a"><div class="kpi-val" id="kNew" style="color:var(--green)">—</div><div class="kpi-lbl">New (last import)</div></div>
-      <div class="kpi" style="border-top-color:#d97706"><div class="kpi-val" id="kChanged" style="color:var(--amber)">—</div><div class="kpi-lbl">Status Changes</div></div>
-      <div class="kpi" style="border-top-color:#dc2626"><div class="kpi-val" id="kOverdue" style="color:var(--red)">—</div><div class="kpi-lbl">Overdue</div></div>
-      <div class="kpi" style="border-top-color:#7c3aed"><div class="kpi-val" id="kHistory" style="color:var(--purple)">—</div><div class="kpi-lbl">Total Changes</div></div>
-      <div class="kpi" style="border-top-color:#64748b"><div class="kpi-val" id="kImports">—</div><div class="kpi-lbl">Imports</div></div>
+      <div class="kpi" style="border-top-color:#3b5fe2"><div class="kpi-val" id="kTotal" style="color:var(--blue)">&#8212;</div><div class="kpi-lbl">Total Cases</div></div>
+      <div class="kpi" style="border-top-color:#16a34a"><div class="kpi-val" id="kNew" style="color:var(--green)">&#8212;</div><div class="kpi-lbl">New (last import)</div></div>
+      <div class="kpi" style="border-top-color:#d97706"><div class="kpi-val" id="kChanged" style="color:var(--amber)">&#8212;</div><div class="kpi-lbl">Status Changes</div></div>
+      <div class="kpi" style="border-top-color:#dc2626"><div class="kpi-val" id="kOverdue" style="color:var(--red)">&#8212;</div><div class="kpi-lbl">Overdue</div></div>
+      <div class="kpi" style="border-top-color:#7c3aed"><div class="kpi-val" id="kAligners" style="color:var(--purple)">&#8212;</div><div class="kpi-lbl">Total Aligners</div></div>
+      <div class="kpi" style="border-top-color:#64748b"><div class="kpi-val" id="kImports">&#8212;</div><div class="kpi-lbl">Imports</div></div>
     </div>
 
-    <!-- UPLOAD -->
     <div class="card">
-      <div style="font-size:15px;font-weight:800;margin-bottom:4px">📥 Daily Upload</div>
-      <div style="font-size:12px;color:var(--mu);margin-bottom:14px">Upload from bloomaligner.fr every day — auto-detects new cases and status changes</div>
+      <div style="font-size:15px;font-weight:800;margin-bottom:4px">&#128229; Daily Upload</div>
+      <div style="font-size:12px;color:var(--mu);margin-bottom:14px">Upload files exported from bloomaligner.fr</div>
       <div class="upload-grid">
         <div class="upload-box">
-          <div style="font-size:32px">📄</div>
+          <div style="font-size:32px">&#128196;</div>
           <div style="font-size:14px;font-weight:800;color:var(--blue);margin:8px 0 4px">Cases CSV</div>
-          <div style="font-size:11px;color:var(--mu);margin-bottom:14px">bloomaligner.fr → Cases → EXPORT CSV</div>
-          <button class="btn bb" style="width:100%;justify-content:center" onclick="document.getElementById('csvInput').click()">📂 Choose CSV File</button>
+          <div style="font-size:11px;color:var(--mu);margin-bottom:14px">bloomaligner.fr &#8594; Cases &#8594; EXPORT CSV</div>
+          <button class="btn bb" style="width:100%;justify-content:center" id="btnChooseCSV">&#128194; Choose CSV File</button>
           <input type="file" id="csvInput" accept=".csv" style="display:none"/>
         </div>
         <div class="upload-box">
-          <div style="font-size:32px">📊</div>
+          <div style="font-size:32px">&#128202;</div>
           <div style="font-size:14px;font-weight:800;color:var(--green);margin:8px 0 4px">Aligners Excel</div>
-          <div style="font-size:11px;color:var(--mu);margin-bottom:14px" id="xlsxInfo">Reads SHIPPING + ALIGNER sheets automatically</div>
-          <button class="btn bg" style="width:100%;justify-content:center" onclick="document.getElementById('xlsxInput').click()">📂 Choose Excel File</button>
+          <div style="font-size:11px;color:var(--mu);margin-bottom:14px">Reads SHIPPING + ALIGNER sheets automatically</div>
+          <button class="btn bg2" style="width:100%;justify-content:center" id="btnChooseXLSX">&#128194; Choose Excel File</button>
           <input type="file" id="xlsxInput" accept=".xlsx,.xls" style="display:none"/>
         </div>
       </div>
       <div id="uploadProg" style="display:none;padding:12px;background:var(--b50);border-radius:10px;border:1px solid var(--b100);margin-bottom:10px">
-        <div style="font-size:13px;font-weight:700;margin-bottom:6px" id="progTitle">Processing…</div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:6px" id="progTitle">Processing...</div>
         <div class="prog-wrap"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
         <div style="font-size:11px;color:var(--mu);margin-top:4px" id="progSub"></div>
       </div>
       <div id="uploadMsg" style="font-size:13px;min-height:18px"></div>
     </div>
 
-    <!-- PREVIEW -->
     <div id="previewCard" class="card" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
         <div>
@@ -255,579 +138,654 @@ tbody tr:hover{background:#f8fafc;cursor:pointer}
           <div style="font-size:12px;color:var(--mu)" id="prevSub"></div>
         </div>
         <div style="display:flex;gap:8px">
-          <button class="btn bgh" onclick="cancelPreview()">✕ Cancel</button>
-          <button class="btn bg" id="confirmBtn" onclick="confirmImport()">⚡ Confirm Import</button>
+          <button class="btn bgh" id="btnCancelPreview">&#10005; Cancel</button>
+          <button class="btn bg2" id="btnConfirmImport">&#9889; Confirm Import</button>
         </div>
       </div>
-      <div id="prevSummary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px"></div>
       <div class="tw"><table>
-        <thead><tr><th>Type</th><th>ID</th><th>Patient</th><th>Doctor</th><th>Status</th><th>Overdue</th></tr></thead>
+        <thead><tr><th>Type</th><th>ID</th><th>Patient</th><th>Doctor</th><th>Status</th></tr></thead>
         <tbody id="prevRows"></tbody>
       </table></div>
     </div>
 
-    <!-- TABS -->
     <div class="card">
       <div class="tab-bar">
-        <button class="tab on" onclick="switchTab('cases')">📋 Cases (<span id="tcCases">—</span>)</button>
-        <button class="tab" onclick="switchTab('changes')">🔄 History (<span id="tcChanges">—</span>)</button>
-        <button class="tab" onclick="switchTab('aligners')">🦷 Aligners (<span id="tcAligners">—</span>)</button>
-        <button class="tab" onclick="switchTab('imports')">📥 Imports</button>
+        <button class="tab on" id="tabBtnCases">&#128203; Cases (<span id="tcCases">&#8212;</span>)</button>
+        <button class="tab" id="tabBtnChanges">&#128260; History (<span id="tcChanges">&#8212;</span>)</button>
+        <button class="tab" id="tabBtnAligners">&#129463; Aligners (<span id="tcAligners">&#8212;</span>)</button>
+        <button class="tab" id="tabBtnImports">&#128229; Imports</button>
       </div>
-      <!-- CASES -->
+
       <div id="tabCases">
         <div class="filters">
-          <input class="fi" id="srch" placeholder="🔍 Patient, doctor, ID…" style="flex:1;min-width:180px" oninput="casePg=0;renderCases()"/>
-          <select class="fi" id="fStatus" onchange="casePg=0;renderCases()"><option value="">All statuses</option></select>
-          <select class="fi" id="fDoctor" onchange="casePg=0;renderCases()"><option value="">All doctors</option></select>
-          <select class="fi" id="fOverdue" onchange="casePg=0;renderCases()"><option value="">All</option><option value="1">Overdue only</option><option value="0">On time</option></select>
+          <input class="fi" id="caseSearch" placeholder="Search case ID, patient, doctor..." style="width:220px"/>
+          <select class="fi" id="caseStatus"><option value="">All Statuses</option></select>
+          <select class="fi" id="caseDoctor"><option value="">All Doctors</option></select>
         </div>
         <div class="tw"><table>
-          <thead><tr><th>ID</th><th>Patient</th><th>Doctor</th><th>Distributor</th><th>Status</th><th>🦷 Aligners</th><th>Changed</th><th>Created</th><th>Overdue</th><th>×</th></tr></thead>
-          <tbody id="tCases"><tr><td colspan="9" class="ec">Loading…</td></tr></tbody>
+          <thead><tr><th>Case ID</th><th>Patient</th><th>Doctor</th><th>Status</th><th>Created</th><th>Updated</th></tr></thead>
+          <tbody id="tCases"><tr><td colspan="6" class="ec">Loading...</td></tr></tbody>
         </table></div>
-        <div class="pager" id="pCases"></div>
+        <div class="pager">
+          <span id="casesPagerInfo"></span>
+          <div style="display:flex;gap:6px">
+            <button class="btn bgh" id="casesPrev" style="padding:5px 12px;font-size:12px">&#8592;</button>
+            <button class="btn bgh" id="casesNext" style="padding:5px 12px;font-size:12px">&#8594;</button>
+          </div>
+        </div>
       </div>
-      <!-- CHANGES -->
+
       <div id="tabChanges" style="display:none">
-        <div class="filters">
-          <input class="fi" id="srchH" placeholder="🔍 Patient, ID…" style="flex:1" oninput="renderHistory()"/>
-        </div>
         <div class="tw"><table>
-          <thead><tr><th>Date</th><th>ID</th><th>Patient</th><th>Doctor</th><th>From</th><th></th><th>To</th></tr></thead>
-          <tbody id="tHistory"><tr><td colspan="7" class="ec">No history yet</td></tr></tbody>
-        </table></div>
-      </div>
-      <!-- ALIGNERS -->
-      <div id="tabAligners" style="display:none">
-        <div class="filters">
-          <input class="fi" id="srchA" placeholder="🔍 Case number…" style="flex:1" oninput="alPg=0;renderAligners()"/>
-        </div>
-        <div class="tw"><table>
-          <thead><tr><th>Case #</th><th>Status</th><th>Total 🦷</th><th>Upper 🔼</th><th>Lower 🔽</th><th>Refinements</th><th>Package</th><th>Created</th><th>Last Shipment</th></tr></thead>
-          <tbody id="tAligners"><tr><td colspan="8" class="ec">Upload Excel to see aligner data</td></tr></tbody>
-        </table></div>
-        <div class="pager" id="pAligners"></div>
-      </div>
-      <!-- IMPORTS -->
-      <div id="tabImports" style="display:none">
-        <div class="tw"><table>
-          <thead><tr><th>Date</th><th>File</th><th>Total</th><th>🆕 New</th><th>🔄 Updated</th><th>Same</th></tr></thead>
-          <tbody id="tImports"><tr><td colspan="6" class="ec">No imports yet</td></tr></tbody>
+          <thead><tr><th>Case ID</th><th>Patient</th><th>Old Status</th><th>New Status</th><th>Changed At</th></tr></thead>
+          <tbody id="tChanges"><tr><td colspan="5" class="ec">Loading...</td></tr></tbody>
         </table></div>
       </div>
 
-      <!-- PROJECT STATE TAB -->
+      <div id="tabAligners" style="display:none">
+        <div class="filters">
+          <input class="fi" id="alSearch" placeholder="Search case number..." style="width:200px"/>
+        </div>
+        <div class="tw"><table>
+          <thead><tr><th>Case #</th><th>Upper</th><th>Lower</th><th>Total Aligners</th><th>Order Type</th><th>Boxes</th><th>Shipped</th></tr></thead>
+          <tbody id="tAligners"><tr><td colspan="7" class="ec">Loading...</td></tr></tbody>
+        </table></div>
+      </div>
+
+      <div id="tabImports" style="display:none">
+        <div class="tw"><table>
+          <thead><tr><th>Import ID</th><th>Filename</th><th>Type</th><th>New</th><th>Updated</th><th>Date</th></tr></thead>
+          <tbody id="tImports"><tr><td colspan="6" class="ec">No imports yet</td></tr></tbody>
+        </table></div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- MODAL -->
-<div class="modal-bg" id="modal" onclick="if(event.target===this)closeModal()">
+<div class="modal-bg" id="caseModal">
   <div class="modal">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-      <div><div style="font-size:18px;font-weight:800" id="mTitle">Case</div><div style="font-size:12px;color:var(--mu)" id="mSub"></div></div>
-      <button class="btn bgh" onclick="closeModal()">✕</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:17px;font-weight:800" id="modalTitle">Case Details</div>
+      <button class="btn bgh" style="padding:5px 12px" id="btnCloseModal">&#10005;</button>
     </div>
-    <div id="mBody"></div>
+    <div id="modalBody"></div>
   </div>
 </div>
 
 <div class="notif" id="notif"></div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
+// bloom_import_app.js - Cedarwings Bloom Cases
+// Native REST client - no CDN needed
+var SUPA_URL = 'https://oaauobugpbcixnbmlakc.supabase.co';
+var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hYXVvYnVncGJjaXhuYm1sYWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzYyNTksImV4cCI6MjA5MTQxMjI1OX0.EpOUpmwRx_LAUqpGQcVMyJFB5NqX_HM7aMZ2gWW9oAA';
 
-// -- DIAGNOSTICS -------------------------------------------------------
-
-
-// -- SETUP -------------------------------------------------------------
-// SB is defined above as native REST client
-var PAGE = 100;
-var allCases = [], allHistory = [], allImports = [], allAligners = [];
-var casePg = 0, alPg = 0, parsedCSV = [], csvFilename = '';
-
-// -- XLSX LAZY LOADER --------------------------------------------------
-// XLSX loads only when user uploads Excel — does not block page load
-var XLSX = null;
-function loadXLSX(callback) {
-  if (XLSX) { callback(); return; }
-  var s = document.createElement('script');
-  s.src = 'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js';
-  s.onload = function() { XLSX = window.XLSX; callback(); };
-  s.onerror = function() {
-    // Try cdnjs fallback
-    var s2 = document.createElement('script');
-    s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-    s2.onload = function() { XLSX = window.XLSX; callback(); };
-    s2.onerror = function() { alert('Failed to load Excel library. Check your internet connection.'); };
-    document.head.appendChild(s2);
-  };
-  document.head.appendChild(s);
+function dbg(m) {
+  var el = document.getElementById('debugBar');
+  if (el) el.textContent = '&#128309; ' + m;
+  console.log('[Bloom]', m);
 }
 
-// -- HELPERS -----------------------------------------------------------
-function ntf(msg, type) {
-  var el = document.getElementById('notif');
-  el.textContent = msg; el.className = 'notif on ' + (type || 'ok');
-  setTimeout(function(){ el.classList.remove('on'); }, 4000);
-}
-function fdt(v) {
-  if (!v) return '--';
-  return new Date(v).toLocaleString('en-GB', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-}
-function sBadge(s) {
-  if (!s) return '<span class="badge b-gray">--</span>';
-  var map = {
-    ALIGNERS_ORDER_CREATED:'s-aligners', DRAFT:'s-draft', DELIVERED:'s-delivered',
-    REFINEMENT_ORDER_CREATED:'s-refinement', REPLACEMENT_ORDER_CREATED:'s-replacement',
-    RETAINER_ALIGNERS_ARE_MADE:'s-retainer', RETAINER_ORDER_PROCESSED:'s-retainer',
-    RETAINER_ORDER_CREATED:'s-retainer', PLAN_WITH_BLOOM_ADDED:'s-plan', PLAN_WITH_BLOOM_PROCESSED:'s-plan'
-  };
-  var cls = map[s] || 's-other';
-  var label = s.replace(/_/g,' ').toLowerCase().replace(/\b\w/g, function(c){ return c.toUpperCase(); });
-  return '<span class="badge ' + cls + '">' + label + '</span>';
-}
-function setProgress(pct, title, sub) {
-  document.getElementById('uploadProg').style.display = 'block';
-  document.getElementById('progTitle').textContent = title || 'Processing...';
-  document.getElementById('progFill').style.width = pct + '%';
-  if (sub) document.getElementById('progSub').textContent = sub;
-}
-function hideProgress() { document.getElementById('uploadProg').style.display = 'none'; }
-function msg(html, color) {
-  document.getElementById('uploadMsg').innerHTML = '<span style="color:' + (color||'var(--green)') + ';font-weight:600">' + html + '</span>';
-}
+dbg('JS file loaded OK! Connecting to Supabase...');
 
-// -- LOAD DATA ---------------------------------------------------------
-async function loadAll() {
-  function dbg(m){var el=document.getElementById('debugMsg');if(el)el.textContent=m;console.log('[Bloom]',m);}
-  dbg('loadAll started — connecting to Supabase...');
-  document.getElementById('tCases').innerHTML = '<tr><td colspan="10" class="ec">Loading...</td></tr>';
-  var all = [], from = 0;
-  while (true) {
-    var res = await SB.from('bloom_cases').select('*').order('case_id', {ascending:false}).range(from, from+999);
-    if(res.error){dbg('ERROR: '+res.error.message);break;}
-    if(!res.data||!res.data.length){dbg('Query OK — '+all.length+' cases loaded');break;}
-    all = all.concat(res.data);
-    if (res.data.length < 1000) break;
-    from += 1000;
+// ---- SUPABASE REST CLIENT ----
+var SB = {
+  from: function(table) {
+    var base = SUPA_URL + '/rest/v1/' + table;
+    var hdrs = {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    };
+    var _filters = [];
+    var _select = '*';
+    var _order = null;
+    var _limit = null;
+    var _offset = null;
+    var q = {
+      select: function(s) { _select = s; return q; },
+      order: function(col, opts) { _order = col + '.' + ((opts && opts.ascending === false) ? 'desc' : 'asc'); return q; },
+      limit: function(n) { _limit = n; return q; },
+      range: function(from, to) { _offset = from; _limit = (to - from + 1); return q; },
+      eq: function(col, val) { _filters.push(col + '=eq.' + encodeURIComponent(val)); return q; },
+      ilike: function(col, val) { _filters.push(col + '=ilike.' + encodeURIComponent(val)); return q; },
+      in: function(col, vals) { _filters.push(col + '=in.(' + vals.join(',') + ')'); return q; },
+      then: function(cb) { return q._run().then(cb); },
+      _run: function() {
+        var url = base + '?select=' + encodeURIComponent(_select);
+        _filters.forEach(function(f) { url += '&' + f; });
+        if (_order) url += '&order=' + _order;
+        if (_limit) url += '&limit=' + _limit;
+        if (_offset) url += '&offset=' + _offset;
+        return fetch(url, { headers: hdrs })
+          .then(function(r) { return r.json().then(function(d) { return { data: Array.isArray(d) ? d : [], error: r.ok ? null : d }; }); })
+          .catch(function(e) { return { data: [], error: e }; });
+      },
+      insert: function(rows) {
+        return fetch(base, {
+          method: 'POST', headers: hdrs,
+          body: JSON.stringify(Array.isArray(rows) ? rows : [rows])
+        }).then(function(r) { return r.json().then(function(d) { return { data: Array.isArray(d) ? d : [d], error: r.ok ? null : d }; }); })
+          .catch(function(e) { return { data: [], error: e }; });
+      },
+      upsert: function(rows, opts) {
+        var h = Object.assign({}, hdrs);
+        h['Prefer'] = 'resolution=merge-duplicates,return=representation';
+        if (opts && opts.onConflict) h['Prefer'] += ',resolution=merge-duplicates';
+        return fetch(base, { method: 'POST', headers: h, body: JSON.stringify(Array.isArray(rows) ? rows : [rows]) })
+          .then(function(r) { return r.json().then(function(d) { return { data: Array.isArray(d) ? d : [], error: r.ok ? null : d }; }); })
+          .catch(function(e) { return { data: [], error: e }; });
+      },
+      delete: function() {
+        return {
+          eq: function(col, val) {
+            var url = base + '?' + col + '=eq.' + encodeURIComponent(val);
+            return fetch(url, { method: 'DELETE', headers: hdrs })
+              .then(function(r) { return { data: null, error: r.ok ? null : { message: 'Delete failed' } }; });
+          }
+        };
+      }
+    };
+    return q;
   }
-  allCases = all;
-  dbg(allCases.length+" cases loaded from bloom_cases");
-  var hr = await SB.from('bloom_case_history').select('*').order('changed_at',{ascending:false}).limit(2000);
-  var ir = await SB.from('bloom_imports').select('*').order('imported_at',{ascending:false}).limit(100);
-  allHistory = hr.data || [];
-  allImports = ir.data || [];
+};
 
-  document.getElementById('kTotal').textContent = allCases.length.toLocaleString();
-  document.getElementById('kOverdue').textContent = allCases.filter(function(c){ return c.overdue_for > 0; }).length;
-  document.getElementById('kHistory').textContent = allHistory.length.toLocaleString();
-  document.getElementById('kImports').textContent = allImports.length;
-  var last = allImports[0];
-  document.getElementById('kNew').textContent = last ? (last.new_cases || 0) : 0;
-  document.getElementById('kChanged').textContent = last ? (last.updated_cases || 0) : 0;
-  if (last) document.getElementById('lastInfo').textContent = 'Last import: ' + fdt(last.imported_at) + ' - ' + (last.total_cases||0) + ' cases';
+console.log('[Bloom] Native REST client ready');
 
-  var statuses = [...new Set(allCases.map(function(c){ return c.current_status; }).filter(Boolean))].sort();
-  var doctors = [...new Set(allCases.map(function(c){ return c.doctor; }).filter(Boolean))].sort();
-  document.getElementById('fStatus').innerHTML = '<option value="">All statuses</option>' +
-    statuses.map(function(s){ return '<option value="'+s+'">'+s.replace(/_/g,' ')+'</option>'; }).join('');
-  document.getElementById('fDoctor').innerHTML = '<option value="">All doctors</option>' +
-    doctors.map(function(d){ return '<option value="'+d+'">'+d+'</option>'; }).join('');
+// ---- HELPERS ----
+var PAGE_SIZE = 50;
+var csvFilename = '';
+var pendingImport = null;
+var allCases = [];
+var allAligners = [];
+var casesPage = 0;
 
-  document.getElementById('tcCases').textContent = allCases.length.toLocaleString();
-  document.getElementById('tcChanges').textContent = allHistory.length.toLocaleString();
-  renderCases(); renderHistory(); renderImports();
-  await loadAligners();
+function msg(text, color) {
+  var el = document.getElementById('uploadMsg');
+  if (el) { el.textContent = text; el.style.color = color || 'inherit'; }
 }
 
-// -- CASES -------------------------------------------------------------
+function ntf(text, type) {
+  var el = document.getElementById('notif');
+  el.textContent = text;
+  el.className = 'notif on ' + (type || 'ok');
+  setTimeout(function() { el.classList.remove('on'); }, 4000);
+}
+
+function fdt(v) {
+  if (!v) return '-';
+  return new Date(v).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function statusBadge(s) {
+  if (!s) return '<span class="badge b-gray">-</span>';
+  var sl = s.toLowerCase();
+  var cls = sl.includes('aligner') ? 's-aligners' :
+            sl.includes('draft') ? 's-draft' :
+            sl.includes('deliver') ? 's-delivered' :
+            sl.includes('refin') ? 's-refinement' :
+            sl.includes('replace') ? 's-replacement' : 's-other';
+  return '<span class="badge ' + cls + '">' + s + '</span>';
+}
+
+// ---- TABS ----
+function switchTab(name) {
+  ['Cases','Changes','Aligners','Imports'].forEach(function(t) {
+    document.getElementById('tab' + t).style.display = t.toLowerCase() === name ? 'block' : 'none';
+    document.getElementById('tabBtn' + t).className = 'tab' + (t.toLowerCase() === name ? ' on' : '');
+  });
+}
+
+document.getElementById('tabBtnCases').addEventListener('click', function() { switchTab('cases'); });
+document.getElementById('tabBtnChanges').addEventListener('click', function() { switchTab('changes'); renderChanges(); });
+document.getElementById('tabBtnAligners').addEventListener('click', function() { switchTab('aligners'); renderAligners(); });
+document.getElementById('tabBtnImports').addEventListener('click', function() { switchTab('imports'); renderImports(); });
+
+// ---- LOAD ALL DATA ----
+async function loadAll() {
+  dbg('Fetching cases from Supabase...');
+  var r = await SB.from('bloom_cases').select('*').order('creation_date', { ascending: false }).limit(2000);
+  if (r.error) {
+    dbg('ERROR: ' + JSON.stringify(r.error));
+    document.getElementById('tCases').innerHTML = '<tr><td colspan="6" class="ec">Error loading: ' + JSON.stringify(r.error) + '</td></tr>';
+    return;
+  }
+  allCases = r.data || [];
+  dbg('Loaded ' + allCases.length + ' cases OK!');
+
+  // Aligners
+  var ra = await SB.from('bloom_aligner_details').select('*').order('case_number').limit(2000);
+  allAligners = ra.data || [];
+
+  // KPIs
+  document.getElementById('kTotal').textContent = allCases.length;
+  document.getElementById('kAligners').textContent = allAligners.length;
+  var overdue = allCases.filter(function(c) { return c.current_status && c.current_status.toLowerCase().includes('overdue'); }).length;
+  document.getElementById('kOverdue').textContent = overdue;
+
+  // Imports count
+  var ri = await SB.from('bloom_imports').select('id').limit(100);
+  document.getElementById('kImports').textContent = (ri.data || []).length;
+  document.getElementById('tcCases').textContent = allCases.length;
+  document.getElementById('tcAligners').textContent = allAligners.length;
+
+  // Populate filters
+  var statuses = [...new Set(allCases.map(function(c) { return c.current_status; }).filter(Boolean))].sort();
+  var statusSel = document.getElementById('caseStatus');
+  statusSel.innerHTML = '<option value="">All Statuses</option>';
+  statuses.forEach(function(s) {
+    var o = document.createElement('option'); o.value = s; o.textContent = s; statusSel.appendChild(o);
+  });
+
+  var doctors = [...new Set(allCases.map(function(c) { return c.doctor; }).filter(Boolean))].sort();
+  var docSel = document.getElementById('caseDoctor');
+  docSel.innerHTML = '<option value="">All Doctors</option>';
+  doctors.forEach(function(d) {
+    var o = document.createElement('option'); o.value = d; o.textContent = d; docSel.appendChild(o);
+  });
+
+  casesPage = 0;
+  renderCases();
+  dbg('All data loaded! ' + allCases.length + ' cases, ' + allAligners.length + ' aligner records.');
+}
+
+// ---- RENDER CASES ----
 function renderCases() {
-  var term = (document.getElementById('srch').value||'').toLowerCase();
-  var fs = document.getElementById('fStatus').value;
-  var fd = document.getElementById('fDoctor').value;
-  var fo = document.getElementById('fOverdue').value;
+  var term = document.getElementById('caseSearch').value.toLowerCase();
+  var statusF = document.getElementById('caseStatus').value;
+  var doctorF = document.getElementById('caseDoctor').value;
   var fl = allCases.filter(function(c) {
-    return (!term || (c.patient_name||'').toLowerCase().includes(term) || String(c.case_id).includes(term) || (c.doctor||'').toLowerCase().includes(term)) &&
-           (!fs || c.current_status === fs) && (!fd || c.doctor === fd) &&
-           (fo === '' || (fo==='1' ? c.overdue_for > 0 : c.overdue_for === 0));
+    if (term && !(
+      (c.case_id || '').toLowerCase().includes(term) ||
+      (c.patient_name || '').toLowerCase().includes(term) ||
+      (c.doctor || '').toLowerCase().includes(term)
+    )) return false;
+    if (statusF && c.current_status !== statusF) return false;
+    if (doctorF && c.doctor !== doctorF) return false;
+    return true;
   });
   var total = fl.length;
-  var page = fl.slice(casePg*PAGE, (casePg+1)*PAGE);
-  var alMap = {}; allAligners.forEach(function(a){ alMap[String(a.case_number)] = a; });
-  document.getElementById('tCases').innerHTML = page.length ? page.map(function(c) {
-    var changed = c.previous_status && c.previous_status !== c.current_status;
-    return '<tr class="'+(changed?'row-changed':'')+'" onclick="showCase(\"+c.case_id+\")">' +
-      '<td class="mono" style="font-weight:700;color:var(--blue)">'+c.case_id+'</td>' +
-      '<td style="font-weight:600">'+(c.patient_name||'--')+'</td>' +
-      '<td style="color:var(--mu)">'+(c.doctor||'--')+'</td>' +
-      '<td style="color:var(--dim);font-size:11px">'+(c.distributor||'--')+'</td>' +
-      '<td>'+sBadge(c.current_status)+'</td>' +
-      '<td>'+(alMap[String(c.case_id)] ? '<span style="font-weight:800;color:var(--amber);font-family:var(--mono);font-size:13px">'+(alMap[String(c.case_id)].total||0)+'</span><span style="font-size:10px;color:var(--mu);margin-left:4px">&#8679;'+(alMap[String(c.case_id)].upper||0)+' &#8681;'+(alMap[String(c.case_id)].lower||0)+'</span>' : '<span style="color:var(--dim)">—</span>')+'</td>' +
-      '<td class="mono" style="font-size:10px">'+(c.status_change_date||'--')+'</td>' +
-      '<td class="mono" style="font-size:10px">'+(c.creation_date||'--')+'</td>' +
-      '<td>'+(c.overdue_for>0 ? '<span style="color:var(--red);font-weight:700">! '+c.overdue_for+'d</span>' : '<span style="color:var(--green)">OK</span>')+'</td>' +
-      '<td class="mono" style="color:var(--mu)">'+(c.import_count||1)+'x</td>' +
-      '</tr>';
-  }).join('') : '<tr><td colspan="9" class="ec">No cases found</td></tr>';
-  var tp = Math.ceil(total/PAGE) || 1;
-  document.getElementById('pCases').innerHTML =
-    '<span>'+total.toLocaleString()+' cases - page '+(casePg+1)+'/'+tp+'</span>' +
-    '<div style="display:flex;gap:6px">' +
-    '<button class="btn bgh" style="padding:5px 10px;font-size:11px" onclick="casePg=0;renderCases()"><<</button>' +
-    '<button class="btn bgh" style="padding:5px 10px;font-size:11px" onclick="if(casePg>0){casePg--;renderCases()}" '+(casePg===0?'disabled':'')+'><</button>' +
-    '<button class="btn bgh" style="padding:5px 10px;font-size:11px" onclick="if((casePg+1)*PAGE<'+total+'){casePg++;renderCases()}" '+((casePg+1)*PAGE>=total?'disabled':'')+'>></button>' +
-    '<button class="btn bgh" style="padding:5px 10px;font-size:11px" onclick="casePg='+(tp-1)+';renderCases()">>></button>' +
-    '</div>';
+  var start = casesPage * PAGE_SIZE;
+  var page = fl.slice(start, start + PAGE_SIZE);
+  document.getElementById('tCases').innerHTML = page.length ?
+    page.map(function(c) {
+      return '<tr onclick="openCase(\'' + c.case_id + '\')">' +
+        '<td class="mono">' + (c.case_id || '-') + '</td>' +
+        '<td>' + (c.patient_name || '-') + '</td>' +
+        '<td style="font-size:11px;color:var(--mu)">' + (c.doctor || '-') + '</td>' +
+        '<td>' + statusBadge(c.current_status) + '</td>' +
+        '<td class="mono">' + fdt(c.creation_date) + '</td>' +
+        '<td class="mono">' + fdt(c.updated_at) + '</td>' +
+        '</tr>';
+    }).join('') :
+    '<tr><td colspan="6" class="ec">No cases found.</td></tr>';
+  var totalPages = Math.ceil(total / PAGE_SIZE);
+  document.getElementById('casesPagerInfo').textContent = total + ' cases (page ' + (casesPage + 1) + '/' + (totalPages || 1) + ')';
 }
 
-// -- HISTORY -----------------------------------------------------------
-function renderHistory() {
-  var term = (document.getElementById('srchH').value||'').toLowerCase();
-  var fl = allHistory.filter(function(h){ return !term || (h.patient_name||'').toLowerCase().includes(term) || String(h.case_id).includes(term); });
-  document.getElementById('tHistory').innerHTML = fl.slice(0,200).map(function(h) {
-    return '<tr onclick="showCase(\"+h.case_id+\")">' +
-      '<td class="mono" style="font-size:10px">'+fdt(h.changed_at)+'</td>' +
-      '<td class="mono" style="color:var(--blue);font-weight:700">'+h.case_id+'</td>' +
-      '<td style="font-weight:600">'+(h.patient_name||'--')+'</td>' +
-      '<td style="color:var(--mu)">'+(h.doctor||'--')+'</td>' +
-      '<td>'+sBadge(h.old_status)+'</td>' +
-      '<td style="color:var(--mu)">-></td>' +
-      '<td>'+sBadge(h.new_status)+'</td>' +
-      '</tr>';
-  }).join('') || '<tr><td colspan="7" class="ec">No history yet</td></tr>';
+document.getElementById('caseSearch').addEventListener('input', function() { casesPage = 0; renderCases(); });
+document.getElementById('caseStatus').addEventListener('change', function() { casesPage = 0; renderCases(); });
+document.getElementById('caseDoctor').addEventListener('change', function() { casesPage = 0; renderCases(); });
+document.getElementById('casesPrev').addEventListener('click', function() { if (casesPage > 0) { casesPage--; renderCases(); } });
+document.getElementById('casesNext').addEventListener('click', function() { casesPage++; renderCases(); });
+
+// ---- RENDER CHANGES ----
+async function renderChanges() {
+  document.getElementById('tChanges').innerHTML = '<tr><td colspan="5" class="ec">Loading...</td></tr>';
+  var r = await SB.from('bloom_case_history').select('*').order('changed_at', { ascending: false }).limit(200);
+  var data = r.data || [];
+  document.getElementById('tcChanges').textContent = data.length;
+  document.getElementById('tChanges').innerHTML = data.length ?
+    data.map(function(h) {
+      return '<tr><td class="mono">' + (h.case_id || '-') + '</td>' +
+        '<td>' + (h.patient_name || '-') + '</td>' +
+        '<td>' + statusBadge(h.old_status) + '</td>' +
+        '<td>' + statusBadge(h.new_status) + '</td>' +
+        '<td class="mono">' + fdt(h.changed_at) + '</td></tr>';
+    }).join('') :
+    '<tr><td colspan="5" class="ec">No history yet.</td></tr>';
 }
 
-// -- ALIGNERS ----------------------------------------------------------
-async function loadAligners() {
-  var sRes = await SB.from('bloom_aligners').select('case_number,aligners_per_box,date_of_shipment,shipping_number').order('case_number',{ascending:false});
-  var dRes = await SB.from('bloom_aligner_details').select('case_number,aligner_upper,aligner_lower,number_of_aligners,package_type,order_type').order('case_number',{ascending:false});
-  var ship = sRes.data || [], det = dRes.data || [];
-  var sm = {}, dm = {};
-  ship.forEach(function(r) {
-    var k = String(r.case_number);
-    if (!sm[k]) sm[k] = {total:0, last:'', nums:[]};
-    sm[k].total += (r.aligners_per_box||0);
-    if (!sm[k].last || r.date_of_shipment > sm[k].last) sm[k].last = r.date_of_shipment;
-    if (r.shipping_number && sm[k].nums.indexOf(r.shipping_number)<0) sm[k].nums.push(r.shipping_number);
-  });
-  det.forEach(function(r) {
-    var k = String(r.case_number);
-    if (!dm[k]) dm[k] = {upper:0,lower:0,total:0,refs:0,reftotal:0,pkg:''};
-    if (r.order_type === 'TreatmentPlan') { dm[k].upper=r.aligner_upper||0; dm[k].lower=r.aligner_lower||0; dm[k].total=r.number_of_aligners||0; }
-    else if (r.order_type === 'RefinementOrder') { dm[k].refs++; dm[k].reftotal+=(r.number_of_aligners||0); }
-    if (r.package_type) dm[k].pkg = r.package_type;
-  });
-  var keys = Object.keys(Object.assign({}, sm, dm));
-  allAligners = keys.map(function(k) {
-    var s = sm[k]||{}, d = dm[k]||{};
-    return {case_number:k, total:d.total||s.total||0, upper:d.upper||0, lower:d.lower||0, refs:d.refs||0, reftotal:d.reftotal||0, pkg:d.pkg||'', last:s.last||''};
-  }).sort(function(a,b){ return Number(b.case_number)-Number(a.case_number); });
-  document.getElementById('tcAligners').textContent = allAligners.length.toLocaleString();
-  renderAligners();
-  renderCases(); // re-render cases now that aligner data is loaded
-}
+// ---- RENDER ALIGNERS ----
 function renderAligners() {
-  var term = (document.getElementById('srchA').value||'').toLowerCase();
-  var fl = allAligners.filter(function(a){ return !term || String(a.case_number).includes(term); });
-  var total = fl.length, page = fl.slice(alPg*PAGE, (alPg+1)*PAGE);
-  var cmap = {};
-  allCases.forEach(function(c){ cmap[String(c.case_id)] = c; });
-  document.getElementById('tAligners').innerHTML = page.length ? page.map(function(a) {
-    var bc = cmap[String(a.case_number)];
-    return '<tr onclick="showCase(\"+a.case_number+\")">' +
-      '<td class="mono" style="font-weight:700;color:var(--blue)">'+a.case_number+'</td>' +
-      '<td>'+(bc ? sBadge(bc.current_status) : '<span class="badge b-gray">No CSV data</span>')+'</td>' +
-      '<td style="font-weight:800;color:var(--amber);font-family:var(--mono);font-size:14px">'+(a.total||'--')+'</td>' +
-      '<td class="mono" style="color:var(--blue)">'+(a.upper||'--')+'</td>' +
-      '<td class="mono" style="color:var(--green)">'+(a.lower||'--')+'</td>' +
-      '<td>'+(a.refs>0 ? '<span style="color:var(--purple);font-weight:700">'+a.refs+'x ('+a.reftotal+')</span>' : '<span style="color:var(--dim)">--</span>')+'</td>' +
-      '<td style="font-size:11px;color:var(--mu)">'+(a.pkg||'--')+'</td>' +
-      '<td class="mono" style="font-size:11px;color:var(--mu)">'+(bc&&bc.creation_date ? bc.creation_date : '--')+'</td>' +
-      '<td class="mono" style="font-size:11px;color:var(--mu)">'+(a.last||'--')+'</td></tr>';
-  }).join('') : '<tr><td colspan="9" class="ec">No aligner data -- upload Excel file</td></tr>';
-  var tp = Math.ceil(total/PAGE)||1;
-  document.getElementById('pAligners').innerHTML = total > PAGE ?
-    '<span>'+total.toLocaleString()+' cases</span>' +
-    '<div style="display:flex;gap:6px">' +
-    '<button class="btn bgh" style="padding:5px 10px;font-size:11px" onclick="alPg=0;renderAligners()"><<</button>' +
-    '<button class="btn bgh" style="padding:5px 10px;font-size:11px" onclick="if(alPg>0){alPg--;renderAligners()}" '+(alPg===0?'disabled':'')+'><</button>' +
-    '<button class="btn bgh" style="padding:5px 10px;font-size:11px" onclick="if((alPg+1)*PAGE<'+total+'){alPg++;renderAligners()}" '+((alPg+1)*PAGE>=total?'disabled':'')+'>></button>' +
-    '</div>' : '';
+  var term = document.getElementById('alSearch').value.toLowerCase();
+  var fl = term ? allAligners.filter(function(a) { return (a.case_number || '').toLowerCase().includes(term); }) : allAligners;
+  document.getElementById('tAligners').innerHTML = fl.length ?
+    fl.map(function(a) {
+      return '<tr><td class="mono">' + (a.case_number || '-') + '</td>' +
+        '<td style="font-weight:700;color:var(--blue)">' + (a.aligner_upper || 0) + '</td>' +
+        '<td style="font-weight:700;color:var(--purple)">' + (a.aligner_lower || 0) + '</td>' +
+        '<td style="font-weight:700">' + (a.number_of_aligners || '-') + '</td>' +
+        '<td><span class="badge b-gray">' + (a.order_type || '-') + '</span></td>' +
+        '<td>' + (a.boxes || '-') + '</td>' +
+        '<td class="mono">' + fdt(a.date_of_shipment) + '</td></tr>';
+    }).join('') :
+    '<tr><td colspan="7" class="ec">No aligner data yet.</td></tr>';
+}
+document.getElementById('alSearch').addEventListener('input', renderAligners);
+
+// ---- RENDER IMPORTS ----
+async function renderImports() {
+  var r = await SB.from('bloom_imports').select('*').order('imported_at', { ascending: false }).limit(50);
+  var data = r.data || [];
+  document.getElementById('tImports').innerHTML = data.length ?
+    data.map(function(i) {
+      return '<tr><td class="mono">' + (i.id || '-').toString().slice(0, 8) + '</td>' +
+        '<td>' + (i.filename || '-') + '</td>' +
+        '<td><span class="badge b-b">' + (i.import_type || 'csv') + '</span></td>' +
+        '<td style="color:var(--green);font-weight:700">' + (i.new_cases || 0) + '</td>' +
+        '<td style="color:var(--amber);font-weight:700">' + (i.updated_cases || 0) + '</td>' +
+        '<td class="mono">' + fdt(i.imported_at) + '</td></tr>';
+    }).join('') :
+    '<tr><td colspan="6" class="ec">No imports yet.</td></tr>';
 }
 
-// -- IMPORTS TABLE -----------------------------------------------------
-function renderImports() {
-  document.getElementById('tImports').innerHTML = allImports.length ? allImports.map(function(i) {
-    return '<tr><td class="mono" style="font-size:11px">'+fdt(i.imported_at)+'</td>' +
-      '<td style="font-size:11px;color:var(--mu)">'+(i.filename||'CSV')+'</td>' +
-      '<td class="mono" style="font-weight:700">'+(i.total_cases||0)+'</td>' +
-      '<td style="color:var(--green);font-weight:700">+'+(i.new_cases||0)+'</td>' +
-      '<td style="color:var(--amber);font-weight:700">R'+(i.updated_cases||0)+'</td>' +
-      '<td style="color:var(--dim)">'+(i.unchanged_cases||0)+'</td></tr>';
-  }).join('') : '<tr><td colspan="6" class="ec">No imports yet</td></tr>';
-}
+// ---- CASE MODAL ----
+window.openCase = function(caseId) {
+  var c = allCases.find(function(x) { return x.case_id === caseId; });
+  if (!c) return;
+  document.getElementById('modalTitle').textContent = 'Case: ' + caseId;
+  var al = allAligners.filter(function(a) { return a.case_number === caseId; });
+  document.getElementById('modalBody').innerHTML =
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">' +
+    '<div><div style="font-size:10px;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Patient</div><div style="font-weight:700">' + (c.patient_name || '-') + '</div></div>' +
+    '<div><div style="font-size:10px;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Doctor</div><div style="font-weight:700">' + (c.doctor || '-') + '</div></div>' +
+    '<div><div style="font-size:10px;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Status</div>' + statusBadge(c.current_status) + '</div>' +
+    '<div><div style="font-size:10px;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Created</div><div>' + fdt(c.creation_date) + '</div></div>' +
+    '<div><div style="font-size:10px;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Distributor</div><div>' + (c.distributor || '-') + '</div></div>' +
+    '<div><div style="font-size:10px;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Clinic</div><div>' + (c.clinic || '-') + '</div></div>' +
+    '</div>' +
+    (al.length ? '<div style="font-size:13px;font-weight:700;margin-bottom:8px">Aligner Details</div>' +
+      al.map(function(a) {
+        return '<div style="background:var(--bg);border-radius:10px;padding:12px;margin-bottom:8px;display:flex;gap:16px;flex-wrap:wrap">' +
+          '<span><strong>Upper:</strong> ' + (a.aligner_upper || 0) + '</span>' +
+          '<span><strong>Lower:</strong> ' + (a.aligner_lower || 0) + '</span>' +
+          '<span><strong>Total:</strong> ' + (a.number_of_aligners || '-') + '</span>' +
+          '<span><strong>Type:</strong> ' + (a.order_type || '-') + '</span>' +
+          '</div>';
+      }).join('') : '');
+  document.getElementById('caseModal').classList.add('on');
+};
 
-// -- TAB SWITCH --------------------------------------------------------
-function switchTab(tab) {
-  var tabs = ['cases','changes','aligners','imports'];
-  tabs.forEach(function(t) {
-    document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).style.display = t===tab?'block':'none';
-  });
-  document.querySelectorAll('.tab').forEach(function(b,i){ b.className='tab'+(tabs[i]===tab?' on':''); });
-}
+document.getElementById('btnCloseModal').addEventListener('click', function() {
+  document.getElementById('caseModal').classList.remove('on');
+});
+document.getElementById('caseModal').addEventListener('click', function(e) {
+  if (e.target === document.getElementById('caseModal')) document.getElementById('caseModal').classList.remove('on');
+});
 
-// -- CSV UPLOAD --------------------------------------------------------
+// ---- CSV UPLOAD ----
+document.getElementById('btnChooseCSV').addEventListener('click', function() {
+  document.getElementById('csvInput').click();
+});
+
 document.getElementById('csvInput').addEventListener('change', function() {
   var file = this.files[0];
   if (!file) return;
   csvFilename = file.name;
-  msg(' Reading ' + file.name + ' (' + Math.round(file.size/1024) + ' KB)...', 'var(--blue)');
+  msg('Reading ' + file.name + ' (' + Math.round(file.size / 1024) + ' KB)...', 'var(--blue)');
   var reader = new FileReader();
-  reader.onload = function(e) { setTimeout(function(){ parseCSV(e.target.result, file.name); }, 50); };
-  reader.onerror = function() { msg('[ERR] Error reading file', 'var(--red)'); };
+  reader.onload = function(e) {
+    setTimeout(function() { parseCSV(e.target.result, file.name); }, 50);
+  };
+  reader.onerror = function() { msg('Error reading file', 'var(--red)'); };
   reader.readAsText(file, 'UTF-8');
   this.value = '';
 });
 
 function parseCSV(text, filename) {
-  var lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n').filter(function(l){ return l.trim(); });
-  if (lines.length < 2) { msg('[ERR] CSV is empty','var(--red)'); return; }
+  var lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(function(l) { return l.trim(); });
+  if (lines.length < 2) { msg('CSV is empty', 'var(--red)'); return; }
   var sep = (lines[0].split(',').length >= lines[0].split(';').length) ? ',' : ';';
-  var hdrs = lines[0].split(sep).map(function(h){ return h.trim().replace(/"/g,''); });
-  function G(n) { return hdrs.findIndex(function(h){ return h.toLowerCase()===n.toLowerCase(); }); }
-  var idx = { patient:G('patient'), doctor:G('doctor'), distributor:G('distributor'), clinic:G('clinic'),
-    creation_date:G('creation_date'), status:G('status'), status_change_date:G('status_change_date'),
-    action_required_for:G('action_required_for'), overdue_for:G('overdue_for'), id:G('id'),
-    extra:G('number_of_extra_refinements') };
-  function get(cols,i){ return i>=0 ? (cols[i]||'').trim().replace(/^"|"$/g,'') : ''; }
-  parsedCSV = lines.slice(1).map(function(line) {
-    var cols = line.split(sep);
-    return { case_id:get(cols,idx.id), patient_name:get(cols,idx.patient), doctor:get(cols,idx.doctor),
-      distributor:get(cols,idx.distributor), clinic:get(cols,idx.clinic),
-      creation_date:get(cols,idx.creation_date), current_status:get(cols,idx.status),
-      status_change_date:get(cols,idx.status_change_date),
-      action_required_for:parseInt(get(cols,idx.action_required_for))||0,
-      overdue_for:parseInt(get(cols,idx.overdue_for))||0,
-      number_of_extra_refinements:parseInt(get(cols,idx.extra))||0 };
-  }).filter(function(r){ return r.case_id && r.patient_name; });
-  if (!parsedCSV.length) { msg('[ERR] No valid cases found','var(--red)'); return; }
+  var hdrs = lines[0].split(sep).map(function(h) { return h.trim().replace(/"/g, ''); });
+  function G(n) { return hdrs.findIndex(function(h) { return h.toLowerCase() === n.toLowerCase(); }); }
+  var idx = {
+    patient: G('patient'), doctor: G('doctor'), distributor: G('distributor'), clinic: G('clinic'),
+    id: G('case id'), status: G('status'), date: G('creation date')
+  };
+  // Try alternate column names
+  if (idx.id < 0) idx.id = G('id');
+  if (idx.patient < 0) idx.patient = G('name');
 
-  var existMap = {};
-  allCases.forEach(function(c){ existMap[String(c.case_id)] = c; });
-  var nNew=0, nChanged=0, nSame=0;
-  var preview = parsedCSV.map(function(r) {
-    var ex = existMap[String(r.case_id)];
-    var type = 'same';
-    if (!ex) { type='new'; nNew++; }
-    else if (ex.current_status !== r.current_status) { type='changed'; nChanged++; }
-    else nSame++;
-    return Object.assign({}, r, {_type:type, _old:ex?ex.current_status:''});
-  });
+  var cases = [];
+  for (var i = 1; i < lines.length; i++) {
+    var parts = lines[i].split(sep).map(function(v) { return v.trim().replace(/^"|"$/g, ''); });
+    var caseId = idx.id >= 0 ? parts[idx.id] : '';
+    if (!caseId) continue;
+    cases.push({
+      case_id: caseId,
+      patient_name: idx.patient >= 0 ? parts[idx.patient] : '',
+      doctor: idx.doctor >= 0 ? parts[idx.doctor] : '',
+      distributor: idx.distributor >= 0 ? parts[idx.distributor] : '',
+      clinic: idx.clinic >= 0 ? parts[idx.clinic] : '',
+      current_status: idx.status >= 0 ? parts[idx.status] : '',
+      creation_date: idx.date >= 0 ? parts[idx.date] : ''
+    });
+  }
+
+  if (!cases.length) { msg('No valid cases found in CSV. Check column names.', 'var(--red)'); return; }
+  msg(cases.length + ' cases parsed. Previewing...', 'var(--green)');
+
+  // Preview
+  pendingImport = { type: 'csv', data: cases, filename: filename };
+  document.getElementById('prevTitle').textContent = 'Preview: ' + filename;
+  document.getElementById('prevSub').textContent = cases.length + ' cases will be imported';
+  document.getElementById('prevRows').innerHTML = cases.slice(0, 20).map(function(c) {
+    return '<tr><td><span class="badge b-b">CSV</span></td><td class="mono">' + c.case_id + '</td>' +
+      '<td>' + (c.patient_name || '-') + '</td><td>' + (c.doctor || '-') + '</td>' +
+      '<td>' + statusBadge(c.current_status) + '</td></tr>';
+  }).join('');
   document.getElementById('previewCard').style.display = 'block';
-  document.getElementById('prevTitle').textContent = 'Preview -- ' + parsedCSV.length.toLocaleString() + ' cases from ' + filename;
-  document.getElementById('prevSub').textContent = nNew + ' new - ' + nChanged + ' status changes - ' + nSame + ' unchanged';
-  document.getElementById('prevSummary').innerHTML =
-    '<div style="background:var(--g50);border:1px solid var(--g100);border-radius:10px;padding:14px;text-align:center"><div style="font-size:28px;font-weight:800;color:var(--green)">'+nNew+'</div><div style="font-size:12px;font-weight:700;color:#15803d;margin-top:4px">NEW New Cases</div></div>' +
-    '<div style="background:var(--a50);border:1px solid var(--a100);border-radius:10px;padding:14px;text-align:center"><div style="font-size:28px;font-weight:800;color:var(--amber)">'+nChanged+'</div><div style="font-size:12px;font-weight:700;color:#92400e;margin-top:4px">R Status Changes</div></div>' +
-    '<div style="background:#f8fafc;border:1px solid var(--bdr);border-radius:10px;padding:14px;text-align:center"><div style="font-size:28px;font-weight:800;color:var(--mu)">'+nSame+'</div><div style="font-size:12px;font-weight:700;color:var(--mu);margin-top:4px"> Unchanged</div></div>';
-  var interesting = preview.filter(function(r){ return r._type!=='same'; }).slice(0,30);
-  document.getElementById('prevRows').innerHTML = interesting.length ? interesting.map(function(r){
-    return '<tr class="'+(r._type==='new'?'row-new':'row-changed')+'">' +
-      '<td>'+(r._type==='new'?'<span class="badge b-g">NEW New</span>':'<span class="badge b-a">R Changed</span>')+'</td>' +
-      '<td class="mono" style="color:var(--blue);font-weight:700">'+r.case_id+'</td>' +
-      '<td style="font-weight:600">'+r.patient_name+'</td>' +
-      '<td style="color:var(--mu)">'+r.doctor+'</td>' +
-      '<td>'+(r._type==='changed' ? sBadge(r._old)+'<span style="color:var(--mu);margin:0 4px">-></span>' : '')+sBadge(r.current_status)+'</td>' +
-      '<td>'+(r.overdue_for>0?'<span style="color:var(--red);font-weight:700">'+r.overdue_for+'d</span>':'OK')+'</td></tr>';
-  }).join('') : '<tr><td colspan="6" class="ec">All '+nSame+' cases unchanged</td></tr>';
-  msg('[OK] ' + parsedCSV.length.toLocaleString() + ' cases ready - ' + nNew + ' new - ' + nChanged + ' changed - Click Confirm to save', 'var(--green)');
-  document.getElementById('previewCard').scrollIntoView({behavior:'smooth'});
+  document.getElementById('previewCard').scrollIntoView({ behavior: 'smooth' });
 }
 
-function cancelPreview() { document.getElementById('previewCard').style.display='none'; parsedCSV=[]; }
+// ---- EXCEL UPLOAD ----
+document.getElementById('btnChooseXLSX').addEventListener('click', function() {
+  document.getElementById('xlsxInput').click();
+});
+
+document.getElementById('xlsxInput').addEventListener('change', function() {
+  var self = this;
+  msg('Loading Excel library...', 'var(--blue)');
+  loadXLSX(function() {
+    var file = self.files[0];
+    if (!file) return;
+    msg('Reading ' + file.name + '...', 'var(--blue)');
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        var wb = XLSX.read(e.target.result, { type: 'array' });
+        var shipRows = [], alRows = [];
+        var ss = wb.Sheets['SHIPPING'] || wb.Sheets[wb.SheetNames[0]];
+        if (ss) {
+          XLSX.utils.sheet_to_json(ss).forEach(function(r) {
+            var cn = String(r['Case number'] || r['case_number'] || '').trim();
+            if (cn) {
+              shipRows.push({
+                case_number: cn,
+                aligners_per_box: r['Aligners per box'] || r['aligners_per_box'] || null,
+                date_of_shipment: r['Date of shipment'] || r['date_of_shipment'] || null,
+                shipping_number: r['Shipping number'] || r['shipping_number'] || null
+              });
+            }
+          });
+        }
+        var as = wb.Sheets['ALIGNER'] || wb.Sheets['Aligners'] || wb.Sheets[wb.SheetNames[1]];
+        if (as) {
+          XLSX.utils.sheet_to_json(as).forEach(function(r) {
+            var cn = String(r['Case number'] || r['case_number'] || '').trim();
+            if (cn) {
+              alRows.push({
+                case_number: cn,
+                aligner_upper: Number(r['Upper'] || r['aligner_upper'] || 0),
+                aligner_lower: Number(r['Lower'] || r['aligner_lower'] || 0),
+                number_of_aligners: r['Number of aligners'] || r['number_of_aligners'] || null,
+                order_type: r['Order type'] || r['order_type'] || null
+              });
+            }
+          });
+        }
+        msg((shipRows.length + alRows.length) + ' rows parsed from Excel.', 'var(--green)');
+        pendingImport = { type: 'excel', shipping: shipRows, aligners: alRows, filename: file.name };
+        document.getElementById('prevTitle').textContent = 'Preview: ' + file.name;
+        document.getElementById('prevSub').textContent = shipRows.length + ' shipping rows, ' + alRows.length + ' aligner rows';
+        document.getElementById('prevRows').innerHTML = alRows.slice(0, 20).map(function(r) {
+          return '<tr><td><span class="badge b-g">XLS</span></td><td class="mono">' + r.case_number + '</td>' +
+            '<td>Upper: ' + r.aligner_upper + '</td><td>Lower: ' + r.aligner_lower + '</td>' +
+            '<td>' + (r.order_type || '-') + '</td></tr>';
+        }).join('');
+        document.getElementById('previewCard').style.display = 'block';
+        document.getElementById('previewCard').scrollIntoView({ behavior: 'smooth' });
+      } catch (err) {
+        msg('Error parsing Excel: ' + err.message, 'var(--red)');
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    self.value = '';
+  });
+});
+
+// ---- LAZY XLSX LOADER ----
+var XLSX = null;
+function loadXLSX(cb) {
+  if (XLSX) { cb(); return; }
+  if (window.XLSX) { XLSX = window.XLSX; cb(); return; }
+  var s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  s.onload = function() { XLSX = window.XLSX; cb(); };
+  s.onerror = function() {
+    var s2 = document.createElement('script');
+    s2.src = 'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js';
+    s2.onload = function() { XLSX = window.XLSX; cb(); };
+    s2.onerror = function() { msg('Failed to load Excel library', 'var(--red)'); };
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s);
+}
+
+// ---- PREVIEW CANCEL/CONFIRM ----
+document.getElementById('btnCancelPreview').addEventListener('click', function() {
+  pendingImport = null;
+  document.getElementById('previewCard').style.display = 'none';
+  msg('', '');
+});
+
+document.getElementById('btnConfirmImport').addEventListener('click', confirmImport);
 
 async function confirmImport() {
-  if (!parsedCSV.length) return;
-  var btn = document.getElementById('confirmBtn');
-  btn.disabled=true; btn.textContent=' Saving...';
-  var now = new Date().toISOString();
-  var existMap = {};
-  allCases.forEach(function(c){ existMap[String(c.case_id)] = c; });
-  var nNew=0, nChanged=0, histRows=[];
-  var impRes = await SB.from('bloom_imports').insert([{
-    imported_at:now, filename:csvFilename, total_cases:parsedCSV.length,
-    new_cases:0, updated_cases:0, unchanged_cases:0, status:'importing'
-  }]).select();
-  if (impRes.error) { ntf('[ERR] '+impRes.error.message,'err'); btn.disabled=false; btn.textContent=' Confirm Import'; return; }
-  var importId = impRes.data[0].id;
-  var BATCH = 200;
-  for (var i=0; i<parsedCSV.length; i+=BATCH) {
-    var batch = parsedCSV.slice(i, i+BATCH);
-    batch.forEach(function(row) {
-      var ex = existMap[String(row.case_id)];
-      if (!ex) nNew++;
-      else if (ex.current_status !== row.current_status) {
-        nChanged++;
-        histRows.push({case_id:row.case_id, patient_name:row.patient_name, doctor:row.doctor,
-          distributor:row.distributor, clinic:row.clinic,
-          old_status:ex.current_status, new_status:row.current_status,
-          old_overdue:ex.overdue_for||0, new_overdue:row.overdue_for||0,
-          status_change_date:row.status_change_date, import_id:importId, changed_at:now});
+  if (!pendingImport) return;
+  var btn = document.getElementById('btnConfirmImport');
+  btn.disabled = true; btn.textContent = 'Importing...';
+  document.getElementById('uploadProg').style.display = 'block';
+
+  try {
+    if (pendingImport.type === 'csv') {
+      await saveCasesData(pendingImport.data, pendingImport.filename);
+    } else {
+      await saveExcelData(pendingImport.shipping, pendingImport.aligners, pendingImport.filename);
+    }
+  } catch (err) {
+    msg('Import error: ' + err.message, 'var(--red)');
+  }
+  btn.disabled = false; btn.textContent = '&#9889; Confirm Import';
+  document.getElementById('uploadProg').style.display = 'none';
+}
+
+async function saveCasesData(cases, filename) {
+  document.getElementById('progTitle').textContent = 'Saving ' + cases.length + ' cases...';
+  var newCount = 0, updCount = 0;
+  var batchSize = 50;
+  for (var i = 0; i < cases.length; i += batchSize) {
+    var batch = cases.slice(i, i + batchSize);
+    document.getElementById('progFill').style.width = Math.round(i / cases.length * 100) + '%';
+    document.getElementById('progSub').textContent = (i + batch.length) + ' / ' + cases.length;
+
+    // Check existing
+    var existIds = batch.map(function(c) { return c.case_id; });
+    var ex = await SB.from('bloom_cases').select('case_id,current_status').in('case_id', existIds);
+    var existMap = {};
+    (ex.data || []).forEach(function(e) { existMap[e.case_id] = e.current_status; });
+
+    // Upsert
+    var toSave = batch.map(function(c) {
+      return Object.assign({}, c, { updated_at: new Date().toISOString() });
+    });
+    await SB.from('bloom_cases').upsert(toSave, { onConflict: 'case_id' });
+
+    // History
+    var histRows = [];
+    batch.forEach(function(c) {
+      if (existMap[c.case_id] !== undefined && existMap[c.case_id] !== c.current_status) {
+        updCount++;
+        histRows.push({ case_id: c.case_id, patient_name: c.patient_name, old_status: existMap[c.case_id], new_status: c.current_status, changed_at: new Date().toISOString() });
+      } else if (existMap[c.case_id] === undefined) {
+        newCount++;
       }
     });
-    await SB.from('bloom_cases').upsert(batch.map(function(row) {
-      var ex = existMap[String(row.case_id)];
-      var isChanged = ex && ex.current_status !== row.current_status;
-      return {case_id:row.case_id, patient_name:row.patient_name, doctor:row.doctor,
-        distributor:row.distributor, clinic:row.clinic, creation_date:row.creation_date,
-        previous_status:ex ? ex.current_status : null, current_status:row.current_status,
-        status_change_date:row.status_change_date, action_required_for:row.action_required_for||0,
-        overdue_for:row.overdue_for||0, number_of_extra_refinements:row.number_of_extra_refinements||0,
-        first_seen_at:ex ? ex.first_seen_at : now, last_updated_at:now,
-        last_import_id:importId, import_count:(ex?ex.import_count:0)+1,
-        status_changed_count:(ex?ex.status_changed_count:0)+(isChanged?1:0)};
-    }), {onConflict:'case_id'});
-    var pct = Math.round((i+BATCH)/parsedCSV.length*100);
-    setProgress(Math.min(pct,100), 'Saving cases...', Math.min(i+BATCH,parsedCSV.length).toLocaleString()+' / '+parsedCSV.length.toLocaleString());
+    if (histRows.length) await SB.from('bloom_case_history').insert(histRows);
   }
-  if (histRows.length) {
-    for (var j=0; j<histRows.length; j+=BATCH) { await SB.from('bloom_case_history').insert(histRows.slice(j,j+BATCH)); }
-  }
-  await SB.from('bloom_imports').update({new_cases:nNew,updated_cases:nChanged,unchanged_cases:parsedCSV.length-nNew-nChanged,status:'completed'}).eq('id',importId);
-  hideProgress();
-  btn.disabled=false; btn.textContent=' Confirm Import';
-  document.getElementById('previewCard').style.display='none';
-  ntf('[OK] '+parsedCSV.length.toLocaleString()+' cases saved - '+nNew+' new - '+nChanged+' changed');
-  parsedCSV=[];
+  document.getElementById('progFill').style.width = '100%';
+
+  // Log import
+  await SB.from('bloom_imports').insert([{
+    filename: filename, import_type: 'csv',
+    new_cases: newCount, updated_cases: updCount,
+    imported_at: new Date().toISOString()
+  }]);
+
+  document.getElementById('kNew').textContent = newCount;
+  document.getElementById('kChanged').textContent = updCount;
+  ntf(newCount + ' new, ' + updCount + ' updated cases imported!', 'ok');
+  document.getElementById('previewCard').style.display = 'none';
+  pendingImport = null;
+  msg('', '');
   await loadAll();
 }
 
-// -- EXCEL UPLOAD ------------------------------------------------------
-document.getElementById('xlsxInput').addEventListener('change', function() {
-  var self = this;
-  loadXLSX(function() { handleExcelFile(self); });
-});
-function handleExcelFile(input) {
-  var file = input.files[0];
-  if (!file) return;
-  msg(' Reading ' + file.name + '...', 'var(--blue)');
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      var wb = XLSX.read(e.target.result, {type:'array'});
-      var shipRows=[], alRows=[];
-      // SHIPPING sheet
-      var ss = wb.Sheets['SHIPPING'] || wb.Sheets[wb.SheetNames[0]];
-      if (ss) {
-        XLSX.utils.sheet_to_json(ss).forEach(function(r) {
-          var cn = String(r['Case number']||r['case_number']||'').trim();
-          if (cn) shipRows.push({case_number:cn,
-            label_printed:String(r['Label printed']||'').trim(),
-            box_number:parseInt(r['Box number']||1)||1,
-            aligners_per_box:parseInt(r['Aligners per box']||0)||0,
-            box_details:String(r['Box details']||'').trim(),
-            date_of_shipment:String(r['Date of shipment']||'').trim(),
-            shipping_number:String(r['Shipping number']||'').trim(),
-            imported_at:new Date().toISOString()});
-        });
-      }
-      // ALIGNER sheet
-      var as = wb.Sheets['ALIGNER'] || (wb.SheetNames[1] ? wb.Sheets[wb.SheetNames[1]] : null);
-      if (as) {
-        XLSX.utils.sheet_to_json(as).forEach(function(r) {
-          var cn = String(r['Case number']||'').trim();
-          if (cn) alRows.push({case_number:cn,
-            aligner_upper:parseInt(r['Aligner Upper']||0)||0,
-            aligner_lower:parseInt(r['Aligner lower']||0)||0,
-            number_of_aligners:parseInt(r['Number of aligners']||0)||0,
-            package_type:String(r['Package type']||'').trim(),
-            order_type:String(r['Order type']||'').trim(),
-            imported_at:new Date().toISOString()});
-        });
-      }
-      saveExcelData(shipRows, alRows, file.name);
-    } catch(err) {
-      msg('[ERR] Error: '+err.message, 'var(--red)');
-    }
-  };
-  reader.readAsArrayBuffer(file);
-  input.value = '';
-}
-
 async function saveExcelData(shipRows, alRows, filename) {
-  var BATCH = 500;
-  if (shipRows.length) {
-    await SB.from('bloom_aligners').delete().neq('id','00000000-0000-0000-0000-000000000000');
-    for (var i=0; i<shipRows.length; i+=BATCH) {
-      await SB.from('bloom_aligners').insert(shipRows.slice(i,i+BATCH));
-      setProgress(Math.round((i+BATCH)/shipRows.length*50), 'Saving shipping data...', Math.min(i+BATCH,shipRows.length)+'/'+shipRows.length);
-    }
-  }
+  document.getElementById('progTitle').textContent = 'Saving Excel data...';
+  document.getElementById('progFill').style.width = '30%';
+
   if (alRows.length) {
-    var delRes = await SB.from('bloom_aligner_details').delete().neq('id','00000000-0000-0000-0000-000000000000');
-    if (delRes.error && delRes.error.message.includes('does not exist')) {
-      msg('[ERR] Table missing! Run SETUP_ONE_TIME_ONLY.sql in Supabase first.', 'var(--red)');
-      hideProgress(); return;
-    }
-    for (var j=0; j<alRows.length; j+=BATCH) {
-      var res = await SB.from('bloom_aligner_details').insert(alRows.slice(j,j+BATCH));
-      if (res.error) { msg('[ERR] '+res.error.message,'var(--red)'); hideProgress(); return; }
-      setProgress(50+Math.round((j+BATCH)/alRows.length*50), 'Saving aligner details...', Math.min(j+BATCH,alRows.length)+'/'+alRows.length);
+    await SB.from('bloom_aligner_details').upsert(
+      alRows.map(function(r) { return Object.assign({}, r, { updated_at: new Date().toISOString() }); }),
+      { onConflict: 'case_number' }
+    );
+  }
+  document.getElementById('progFill').style.width = '60%';
+
+  if (shipRows.length) {
+    for (var i = 0; i < shipRows.length; i += 50) {
+      await SB.from('bloom_aligners').upsert(
+        shipRows.slice(i, i + 50).map(function(r) { return Object.assign({}, r, { updated_at: new Date().toISOString() }); }),
+        { onConflict: 'case_number' }
+      );
     }
   }
-  hideProgress();
-  msg('[OK] Excel imported! Shipping: '+shipRows.length.toLocaleString()+' rows - Aligners: '+alRows.length.toLocaleString()+' rows from '+filename);
-  document.getElementById('xlsxInfo').textContent = 'Last upload: '+new Date().toLocaleDateString('en-GB')+' - '+shipRows.length+' shipping + '+alRows.length+' aligner rows';
-  ntf('[OK] Excel saved: '+shipRows.length+' shipping + '+alRows.length+' aligner rows');
-  await loadAligners();
+  document.getElementById('progFill').style.width = '90%';
+
+  await SB.from('bloom_imports').insert([{
+    filename: filename, import_type: 'excel',
+    new_cases: alRows.length, updated_cases: 0,
+    imported_at: new Date().toISOString()
+  }]);
+
+  document.getElementById('progFill').style.width = '100%';
+  ntf('Excel data saved: ' + alRows.length + ' aligner records!', 'ok');
+  document.getElementById('previewCard').style.display = 'none';
+  pendingImport = null;
+  msg('', '');
+  await loadAll();
 }
 
-// -- CASE MODAL --------------------------------------------------------
-function showCase(caseId) {
-  var c = allCases.find(function(x){ return String(x.case_id)===String(caseId); });
-  var history = allHistory.filter(function(h){ return String(h.case_id)===String(caseId); })
-    .sort(function(a,b){ return new Date(a.changed_at)-new Date(b.changed_at); });
-  var al = allAligners.find(function(a){ return String(a.case_number)===String(caseId); });
-  document.getElementById('mTitle').textContent = 'Case #'+caseId+(c?' -- '+c.patient_name:'');
-  document.getElementById('mSub').textContent = c ? (c.doctor||'--')+' - '+(c.clinic||'--')+' - '+(c.distributor||'--') : '';
-  var html = '';
-  if (c) {
-    html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">' +
-      '<div style="background:var(--bg);border-radius:10px;padding:12px;border:1px solid var(--bdr)"><div style="font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;margin-bottom:4px">Status</div>'+sBadge(c.current_status)+'</div>' +
-      '<div style="background:var(--bg);border-radius:10px;padding:12px;border:1px solid var(--bdr)"><div style="font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;margin-bottom:4px">Created</div><div style="font-size:13px;font-weight:700">'+(c.creation_date||'--')+'</div></div>' +
-      '<div style="background:'+(c.overdue_for>0?'var(--r50)':'var(--g50)')+';border-radius:10px;padding:12px;border:1px solid '+(c.overdue_for>0?'var(--r100)':'var(--g100)')+'"><div style="font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;margin-bottom:4px">Overdue</div><div style="font-size:16px;font-weight:800;color:'+(c.overdue_for>0?'var(--red)':'var(--green)')+';">'+(c.overdue_for>0?c.overdue_for+'d overdue':'OK On time')+'</div></div>' +
-      '</div>';
-  }
-  if (al) {
-    html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">' +
-      '<div style="background:var(--a50);border:1px solid var(--a100);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--amber)">'+al.total+'</div><div style="font-size:11px;color:#92400e;font-weight:600">Total Aligners</div></div>' +
-      '<div style="background:var(--b50);border:1px solid var(--b100);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--blue)">'+(al.upper||'--')+'</div><div style="font-size:11px;color:var(--blue);font-weight:600">Upper U</div></div>' +
-      '<div style="background:var(--g50);border:1px solid var(--g100);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--green)">'+(al.lower||'--')+'</div><div style="font-size:11px;color:var(--green);font-weight:600">Lower D</div></div>' +
-      '<div style="background:var(--p50);border:1px solid #ddd6fe;border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--purple)">'+(al.refs||0)+'</div><div style="font-size:11px;color:var(--purple);font-weight:600">Refinements</div></div>' +
-      '</div>';
-  }
-  html += '<div style="font-size:12px;font-weight:800;color:var(--mu);text-transform:uppercase;margin-bottom:10px;border-top:1px solid var(--bdr);padding-top:12px">? Status Timeline ('+history.length+' changes)</div>';
-  if (history.length) {
-    html += history.map(function(h) {
-      return '<div style="display:flex;gap:12px;margin-bottom:12px">' +
-        '<div style="width:10px;height:10px;border-radius:50%;background:var(--amber);flex-shrink:0;margin-top:3px"></div>' +
-        '<div><div style="font-size:11px;color:var(--mu)">'+fdt(h.changed_at)+'</div>' +
-        '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:3px">'+sBadge(h.old_status)+'<span style="color:var(--mu)">-></span>'+sBadge(h.new_status)+'</div></div></div>';
-    }).join('');
-  } else {
-    html += '<div style="text-align:center;padding:16px;color:var(--dim);font-size:13px">No changes recorded yet</div>';
-  }
-  if (c) {
-    html += '<div style="border-top:1px solid var(--bdr);padding-top:12px;margin-top:4px;font-size:11px;color:var(--mu);display:flex;gap:16px;flex-wrap:wrap">' +
-      '<span>First seen: <strong>'+fdt(c.first_seen_at)+'</strong></span>' +
-      '<span>Imports: <strong>'+(c.import_count||1)+'x</strong></span>' +
-      '<span>Total changes: <strong>'+(c.status_changed_count||0)+'</strong></span></div>';
-  }
-  document.getElementById('mBody').innerHTML = html;
-  document.getElementById('modal').classList.add('on');
-}
-function closeModal() { document.getElementById('modal').classList.remove('on'); }
+// ---- REFRESH ----
+document.getElementById('btnRefresh').addEventListener('click', loadAll);
 
-// -- START -------------------------------------------------------------
+// ---- INIT ----
+dbg('Calling loadAll()...');
 loadAll();
+
+</script>
+</body>
+</html>
