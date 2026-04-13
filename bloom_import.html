@@ -175,14 +175,17 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc;cursor:poin
         </div>
         <div class="tw"><table>
           <thead><tr>
-            <th class="sortable" onclick="sortBy('case_id')">Case ID <span class="sarr" id="sh_case_id"></span></th>
+            <th class="sortable" onclick="sortBy('case_id')">ID <span class="sarr" id="sh_case_id"></span></th>
             <th class="sortable" onclick="sortBy('patient_name')">Patient <span class="sarr" id="sh_patient_name"></span></th>
             <th class="sortable" onclick="sortBy('doctor')">Doctor <span class="sarr" id="sh_doctor"></span></th>
-            <th>Status</th>
+            <th class="sortable" onclick="sortBy('distributor')">Distributor <span class="sarr" id="sh_distributor"></span></th>
+            <th class="sortable" onclick="sortBy('clinic')">Clinic <span class="sarr" id="sh_clinic"></span></th>
+            <th class="sortable" onclick="sortBy('current_status')">Status <span class="sarr" id="sh_current_status"></span></th>
             <th class="sortable" onclick="sortBy('creation_date')">Created <span class="sarr" id="sh_creation_date">↓</span></th>
-            <th class="sortable" onclick="sortBy('updated_at')">Updated <span class="sarr" id="sh_updated_at"></span></th>
+            <th class="sortable" onclick="sortBy('action_required_for')">Action Required <span class="sarr" id="sh_action_required_for"></span></th>
+            <th class="sortable" onclick="sortBy('overdue_for')">Overdue For <span class="sarr" id="sh_overdue_for"></span></th>
           </tr></thead>
-          <tbody id="tCases"><tr><td colspan="6" class="ec">Loading...</td></tr></tbody>
+          <tbody id="tCases"><tr><td colspan="9" class="ec">Loading...</td></tr></tbody>
         </table></div>
         <div class="pager">
           <span id="casesPagerInfo"></span>
@@ -405,7 +408,7 @@ async function loadAll() {
 function sortBy(col) {
   if (sortCol === col) { sortDir *= -1; }
   else { sortCol = col; sortDir = (col === 'creation_date' || col === 'updated_at') ? -1 : 1; }
-  ['case_id','patient_name','doctor','creation_date','updated_at'].forEach(function(c) {
+  ['case_id','patient_name','doctor','distributor','clinic','current_status','creation_date','action_required_for','overdue_for'].forEach(function(c) {
     var el = document.getElementById('sh_' + c);
     if (el) el.textContent = (c === sortCol) ? (sortDir === 1 ? '↑' : '↓') : '';
   });
@@ -437,16 +440,19 @@ function renderCases() {
   var page = fl.slice(start, start + PAGE_SIZE);
   document.getElementById('tCases').innerHTML = page.length ?
     page.map(function(c) {
-      return '<tr onclick="openCase(\'' + c.case_id + '\')">' +
-        '<td class="mono">' + (c.case_id || '-') + '</td>' +
+      return '<tr onclick="openCase(\''+c.case_id+'\')">' +
+        '<td class="mono" style="font-weight:700">' + (c.case_id || '-') + '</td>' +
         '<td>' + (c.patient_name || '-') + '</td>' +
         '<td style="font-size:11px;color:var(--mu)">' + (c.doctor || '-') + '</td>' +
+        '<td style="font-size:11px;color:var(--mu)">' + (c.distributor || '-') + '</td>' +
+        '<td style="font-size:11px;color:var(--mu)">' + (c.clinic || '-') + '</td>' +
         '<td>' + statusBadge(c.current_status) + '</td>' +
         '<td class="mono">' + fdt(c.creation_date) + '</td>' +
-        '<td class="mono">' + fdt(c.updated_at) + '</td>' +
+        '<td style="font-size:11px;color:var(--red)">' + (c.action_required_for || '-') + '</td>' +
+        '<td style="font-size:11px;font-weight:700;color:#f59e0b">' + (c.overdue_for || '-') + '</td>' +
         '</tr>';
     }).join('') :
-    '<tr><td colspan="6" class="ec">No cases found.</td></tr>';
+    '<tr><td colspan="9" class="ec">No cases found.</td></tr>';
   var totalPages = Math.ceil(total / PAGE_SIZE);
   document.getElementById('casesPagerInfo').textContent = total + ' cases (page ' + (casesPage + 1) + '/' + (totalPages || 1) + ')';
 }
@@ -568,12 +574,18 @@ function parseCSV(text, filename) {
   var hdrs = lines[0].split(sep).map(function(h) { return h.trim().replace(/"/g, ''); });
   function G(n) { return hdrs.findIndex(function(h) { return h.toLowerCase() === n.toLowerCase(); }); }
   var idx = {
-    patient: G('patient'), doctor: G('doctor'), distributor: G('distributor'), clinic: G('clinic'),
-    id: G('case id'), status: G('status'), date: G('creation date')
+    id:           G('id'),
+    patient:      G('patient'),
+    doctor:       G('doctor'),
+    distributor:  G('distributor'),
+    clinic:       G('clinic'),
+    status:       G('status'),
+    date:         G('creation_date'),
+    status_change:G('status_change_date'),
+    action_req:   G('action_required_for'),
+    overdue_for:  G('overdue_for'),
+    extra_ref:    G('number_of_extra_refinements')
   };
-  // Try alternate column names
-  if (idx.id < 0) idx.id = G('id');
-  if (idx.patient < 0) idx.patient = G('name');
 
   var cases = [];
   for (var i = 1; i < lines.length; i++) {
@@ -581,13 +593,17 @@ function parseCSV(text, filename) {
     var caseId = idx.id >= 0 ? parts[idx.id] : '';
     if (!caseId) continue;
     cases.push({
-      case_id: caseId,
-      patient_name: idx.patient >= 0 ? parts[idx.patient] : '',
-      doctor: idx.doctor >= 0 ? parts[idx.doctor] : '',
-      distributor: idx.distributor >= 0 ? parts[idx.distributor] : '',
-      clinic: idx.clinic >= 0 ? parts[idx.clinic] : '',
-      current_status: idx.status >= 0 ? parts[idx.status] : '',
-      creation_date: idx.date >= 0 ? parts[idx.date] : ''
+      case_id:                     caseId,
+      patient_name:                idx.patient >= 0      ? parts[idx.patient]      : '',
+      doctor:                      idx.doctor >= 0       ? parts[idx.doctor]        : '',
+      distributor:                 idx.distributor >= 0  ? parts[idx.distributor]   : '',
+      clinic:                      idx.clinic >= 0       ? parts[idx.clinic]        : '',
+      current_status:              idx.status >= 0       ? parts[idx.status]        : '',
+      creation_date:               idx.date >= 0         ? parts[idx.date]          : '',
+      status_change_date:          idx.status_change >= 0? parts[idx.status_change] : '',
+      action_required_for:         idx.action_req >= 0   ? parts[idx.action_req]    : '',
+      overdue_for:                 idx.overdue_for >= 0  ? parts[idx.overdue_for]   : '',
+      number_of_extra_refinements: idx.extra_ref >= 0    ? parts[idx.extra_ref]     : ''
     });
   }
 
@@ -676,19 +692,23 @@ document.getElementById('xlsxInput').addEventListener('change', function() {
 // ---- LAZY XLSX LOADER ----
 var XLSX = null;
 function loadXLSX(cb) {
-  if (XLSX) { cb(); return; }
-  if (window.XLSX) { XLSX = window.XLSX; cb(); return; }
-  var s = document.createElement('script');
-  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-  s.onload = function() { XLSX = window.XLSX; cb(); };
-  s.onerror = function() {
-    var s2 = document.createElement('script');
-    s2.src = 'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js';
-    s2.onload = function() { XLSX = window.XLSX; cb(); };
-    s2.onerror = function() { msg('Failed to load Excel library', 'var(--red)'); };
-    document.head.appendChild(s2);
-  };
-  document.head.appendChild(s);
+  if (XLSX || window.XLSX) { XLSX = window.XLSX || XLSX; cb(); return; }
+  var cdns = [
+    'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+    'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js',
+    'https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js'
+  ];
+  var i = 0;
+  function tryNext() {
+    if (i >= cdns.length) { msg('❌ Cannot load Excel library', 'var(--red)'); return; }
+    msg('Loading Excel (' + (i+1) + '/3)...', 'var(--blue)');
+    var s = document.createElement('script');
+    s.src = cdns[i++];
+    s.onload = function() { XLSX = window.XLSX; cb(); };
+    s.onerror = tryNext;
+    document.head.appendChild(s);
+  }
+  tryNext();
 }
 
 // ---- PREVIEW CANCEL/CONFIRM ----
