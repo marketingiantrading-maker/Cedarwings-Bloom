@@ -685,7 +685,7 @@ async function saveCasesData(cases, filename) {
   var batchSize = 50;
 
   // Test INSERT of 1 row first
-  var testCase = Object.assign({}, cases[0], { updated_at: new Date().toISOString() });
+  var testCase = Object.assign({}, cases[0]);
   console.log('[Bloom] TEST insert sample:', JSON.stringify(testCase));
   
   // Try INSERT first (ignore conflict if exists)
@@ -717,7 +717,7 @@ async function saveCasesData(cases, filename) {
     (ex.data || []).forEach(function(e) { existMap[e.case_id] = e.current_status; });
 
     var toSave = batch.map(function(c) {
-      return Object.assign({}, c, { updated_at: new Date().toISOString() });
+      return Object.assign({}, c);
     });
     var ur = await SB.from('bloom_cases').upsert(toSave, { onConflict: 'case_id' });
     if (ur.error) {
@@ -761,7 +761,7 @@ async function saveExcelData(shipRows, alRows, filename) {
 
   if (alRows.length) {
     var ar = await SB.from('bloom_aligner_details').upsert(
-      alRows.map(function(r) { return Object.assign({}, r, { updated_at: new Date().toISOString() }); }),
+      alRows.map(function(r) { return Object.assign({}, r); }),
       { onConflict: 'case_number' }
     );
     console.log('[Bloom] aligner_details upsert:', ar.error ? 'ERROR: '+(ar.error.message||ar.error.hint||JSON.stringify(ar.error)) : 'OK rows='+alRows.length);
@@ -771,7 +771,7 @@ async function saveExcelData(shipRows, alRows, filename) {
   if (shipRows.length) {
     for (var i = 0; i < shipRows.length; i += 50) {
       var sr = await SB.from('bloom_aligners').upsert(
-        shipRows.slice(i, i + 50).map(function(r) { return Object.assign({}, r, { updated_at: new Date().toISOString() }); }),
+        shipRows.slice(i, i + 50).map(function(r) { return Object.assign({}, r); }),
         { onConflict: 'case_number' }
       );
       console.log('[Bloom] aligners upsert batch '+i+':', sr.error ? 'ERROR: '+(sr.error.message||sr.error.hint||JSON.stringify(sr.error)) : 'OK');
