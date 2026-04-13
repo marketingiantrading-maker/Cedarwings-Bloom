@@ -964,3 +964,10 @@ function loadProjectState(){
 async function saveProjectState(){
   try{
     var stateStr = JSON.stringify({state:PS_STATE, savedAt: new Date().toISOString()});
+    var res = await SB.from('system_settings').upsert([{key:'project_state', value:stateStr}], {onConflict:'key'});
+    if(res.error) throw res.error;
+    ntf('[OK] Project state saved to database', 'ok');
+  }catch(e){
+    ntf('[ERR] Save failed: '+e.message, 'err');
+  }
+}
