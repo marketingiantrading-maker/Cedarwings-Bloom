@@ -236,7 +236,9 @@ var SB = {
       'apikey': SUPA_KEY,
       'Authorization': 'Bearer ' + SUPA_KEY,
       'Content-Type': 'application/json',
-      'Prefer': 'return=representation'
+      'Prefer': 'return=representation',
+      'Range': '0-9999',
+      'Range-Unit': 'items'
     };
     var _filters = [];
     var _select = '*';
@@ -315,7 +317,12 @@ function ntf(text, type) {
 
 function fdt(v) {
   if (!v) return '-';
-  return new Date(v).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  // Fix for date-only strings (YYYY-MM-DD) which Safari/some Chrome versions parse as UTC midnight
+  var s = String(v);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) s = s + 'T00:00:00';
+  var d = new Date(s);
+  if (isNaN(d.getTime())) return '-';
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 function statusBadge(s) {
@@ -345,13 +352,15 @@ document.getElementById('tabBtnImports').addEventListener('click', function() { 
 // ---- LOAD ALL DATA ----
 async function loadAll() {
   dbg('Fetching cases from Supabase...');
-  var r = await SB.from('bloom_cases').select('*').order('creation_date', { ascending: false }).limit(2000);
+  var r = await SB.from('bloom_cases').select('*').order('creation_date', { ascending: false });
   if (r.error) {
     dbg('ERROR: ' + JSON.stringify(r.error));
     document.getElementById('tCases').innerHTML = '<tr><td colspan="6" class="ec">Error loading: ' + JSON.stringify(r.error) + '</td></tr>';
     return;
   }
   allCases = r.data || [];
+  // Default sort: newest first by creation_date
+  allCases.sort(function(a,b){ var av=a.creation_date||'', bv=b.creation_date||''; return bv>av?1:bv<av?-1:0; });
   dbg('Loaded ' + allCases.length + ' cases OK!');
 
   // Aligners
@@ -391,6 +400,31 @@ async function loadAll() {
 }
 
 // ---- RENDER CASES ----
+function sortBy(col) {
+  if (sortCol === col) {
+    sortDir *= -1;
+  } else {
+    sortCol = col;
+    sortDir = (col === 'creation_date' || col === 'updated_at') ? -1 : 1;
+  }
+  // Update arrows
+  ['case_id','patient_name','doctor','creation_date','updated_at'].forEach(function(c) {
+    var el = document.getElementById('sh_' + c);
+    if (!el) return;
+    el.textContent = (c === sortCol) ? (sortDir === 1 ? ' ↑' : ' ↓') : '';
+  });
+  // Sort
+  allCases.sort(function(a, b) {
+    var av = a[sortCol] || '', bv = b[sortCol] || '';
+    if (sortCol === 'case_id') { av = parseInt(av)||0; bv = parseInt(bv)||0; }
+    if (av < bv) return -sortDir;
+    if (av > bv) return sortDir;
+    return 0;
+  });
+  casesPage = 0;
+  renderCases();
+}
+
 function renderCases() {
   var term = document.getElementById('caseSearch').value.toLowerCase();
   var statusF = document.getElementById('caseStatus').value;
