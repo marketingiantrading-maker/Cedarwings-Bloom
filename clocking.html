@@ -1002,18 +1002,53 @@ window.filterOrders=window._filterOrders=(term)=>{
   },400)
 }
 
-window.selectOrder=window._selectOrder=(caseId)=>{
+window.selectOrder=window._selectOrder=async(caseId)=>{
   const ord=String(caseId)
   document.getElementById("ord").value=ord
   document.getElementById("ordDropdown").style.display="none"
   
-  // Show order info
   const o=allOrders.find(x=>String(x.case_id)===ord)
   if(o){
     const msg=document.getElementById("ordMsg")
     msg.innerHTML=o.overdue_for>0
-      ?`<span style="color:var(--red)">⚠ ${o.patient_name} — ${o.overdue_for}d overdue</span>`
-      :`<span style="color:var(--green)">✓ ${o.patient_name||""} · ${(o.current_status||"").replace(/_/g," ")}</span>`
+      ?`<span style="color:var(--red)">${o.patient_name} - ${o.overdue_for}d overdue</span>`
+      :`<span style="color:var(--green)">OK ${o.patient_name||""} - ${(o.current_status||"").replace(/_/g," ")}</span>`
+  }
+  
+  // BUSINESS RULE: selecting a DIFFERENT order while a step is active
+  // = current step is DONE. Auto-complete it, then load new order pipeline.
+  if(activeSession && activeSession.order && String(activeSession.order)!==ord){
+    const now=new Date()
+    const prevOrd=activeSession.order
+    const prevStep=activeSession.step
+    // 1. End the open session
+    if(activeSession.id){
+      await sb.from("time_sessions")
+        .update({ended_at:now.toISOString()})
+        .eq("id",activeSession.id)
+    }
+    // 2. Mark step COMPLETE on previous order
+    try{
+      const{data:tr}=await sb.from("order_step_tracking")
+        .select("id,status").eq("order_no",prevOrd).eq("step",prevStep).limit(1)
+      if(tr&&tr.length){
+        await sb.from("order_step_tracking").update({
+          status:"complete",
+          completed_at:now.toISOString(),
+          completed_by:emp
+        }).eq("id",tr[0].id)
+      }
+    }catch(e){}
+    // 3. Clear UI state
+    clearInterval(timerInt)
+    activeSession={}
+    document.getElementById("jobBox").style.display="none"
+    document.getElementById("mrBox").style.display="none"
+    document.getElementById("ordMsg").innerHTML=
+      `<span style="color:var(--green);font-weight:700">Step ${prevStep} on order ${prevOrd} marked COMPLETE - now select a step for ${ord}</span>`
+    // 4. Fill W9 transition gap
+    await fillW9Gap(emp,now)
+    loadToday()
   }
   
   renderPipeline(ord)
