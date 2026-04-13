@@ -491,7 +491,13 @@ async function load(){
   allSess=sR.data||[];allProd=pR.data||[]
   const bloomCases=bCR.data||[]
   const bloomAligners=bAR.data||[]
-  if(cSR.error) console.warn('[Dashboard] order_step_tracking error:',cSR.error.message)
+  if(cSR.error) console.warn('[Dashboard] order_step_tracking error:',cSR.error.message||JSON.stringify(cSR.error))
+  if(sR.error) console.warn('[Dashboard] time_sessions error:',sR.error.message||JSON.stringify(sR.error))
+  if(pR.error) console.warn('[Dashboard] production_records error:',pR.error.message||JSON.stringify(pR.error))
+  if(lR.error) console.warn('[Dashboard] inventory_lots_enriched_view error:',lR.error.message||JSON.stringify(lR.error))
+  if(rR.error) console.warn('[Dashboard] inventory_requisitions error:',rR.error.message||JSON.stringify(rR.error))
+  if(bCR.error) console.warn('[Dashboard] bloom_cases error:',bCR.error.message||JSON.stringify(bCR.error))
+  if(bAR.error) console.warn('[Dashboard] bloom_aligner_details error:',bAR.error.message||JSON.stringify(bAR.error))
   const completedStepsInPeriod=cSR.data||[]
 
   // Cases that completed PACKAGING (final step) in this period = produced this period
@@ -712,6 +718,12 @@ async function load(){
   } catch(err) {
     console.error('[Dashboard] Load error:', err)
     document.querySelectorAll('[id^="k"]').forEach(el => { if(el.textContent==='Loading...') el.textContent='—' })
+    // Show error visibly on page
+    const errDiv = document.getElementById('dashError') || document.createElement('div')
+    errDiv.id = 'dashError'
+    errDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#dc2626;color:#fff;padding:12px 20px;font-size:13px;font-weight:700;z-index:9999;font-family:monospace'
+    errDiv.textContent = '❌ Dashboard Error: ' + (err.message || String(err))
+    if (!document.getElementById('dashError')) document.body.prepend(errDiv)
   }
 }
 
