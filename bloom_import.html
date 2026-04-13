@@ -205,7 +205,7 @@ tbody tr:hover{background:#f8fafc;cursor:pointer}
           <select class="fi" id="fOverdue" onchange="casePg=0;renderCases()"><option value="">All</option><option value="1">Overdue only</option><option value="0">On time</option></select>
         </div>
         <div class="tw"><table>
-          <thead><tr><th>ID</th><th>Patient</th><th>Doctor</th><th>Distributor</th><th>Status</th><th>Changed</th><th>Created</th><th>Overdue</th><th>×</th></tr></thead>
+          <thead><tr><th>ID</th><th>Patient</th><th>Doctor</th><th>Distributor</th><th>Status</th><th>🦷 Aligners</th><th>Changed</th><th>Created</th><th>Overdue</th><th>×</th></tr></thead>
           <tbody id="tCases"><tr><td colspan="9" class="ec">Loading…</td></tr></tbody>
         </table></div>
         <div class="pager" id="pCases"></div>
@@ -226,7 +226,7 @@ tbody tr:hover{background:#f8fafc;cursor:pointer}
           <input class="fi" id="srchA" placeholder="🔍 Case number…" style="flex:1" oninput="alPg=0;renderAligners()"/>
         </div>
         <div class="tw"><table>
-          <thead><tr><th>Case #</th><th>Status</th><th>Total</th><th>Upper 🔼</th><th>Lower 🔽</th><th>Refinements</th><th>Package</th><th>Last Shipment</th></tr></thead>
+          <thead><tr><th>Case #</th><th>Status</th><th>Total 🦷</th><th>Upper 🔼</th><th>Lower 🔽</th><th>Refinements</th><th>Package</th><th>Created</th><th>Last Shipment</th></tr></thead>
           <tbody id="tAligners"><tr><td colspan="8" class="ec">Upload Excel to see aligner data</td></tr></tbody>
         </table></div>
         <div class="pager" id="pAligners"></div>
@@ -465,8 +465,6 @@ async function loadAll() {
   document.getElementById('tcChanges').textContent = allHistory.length.toLocaleString();
   renderCases(); renderHistory(); renderImports();
   await loadAligners();
-  // Auto-sync today's aligner data to production_records
-  await syncBloomToProduction(alRows, shipRows);
 }
 
 // -- CASES -------------------------------------------------------------
@@ -482,6 +480,7 @@ function renderCases() {
   });
   var total = fl.length;
   var page = fl.slice(casePg*PAGE, (casePg+1)*PAGE);
+  var alMap = {}; allAligners.forEach(function(a){ alMap[String(a.case_number)] = a; });
   document.getElementById('tCases').innerHTML = page.length ? page.map(function(c) {
     var changed = c.previous_status && c.previous_status !== c.current_status;
     return '<tr class="'+(changed?'row-changed':'')+'" onclick="showCase(\"+c.case_id+\")">' +
@@ -490,6 +489,7 @@ function renderCases() {
       '<td style="color:var(--mu)">'+(c.doctor||'--')+'</td>' +
       '<td style="color:var(--dim);font-size:11px">'+(c.distributor||'--')+'</td>' +
       '<td>'+sBadge(c.current_status)+'</td>' +
+      '<td>'+(alMap[String(c.case_id)] ? '<span style="font-weight:800;color:var(--amber);font-family:var(--mono);font-size:13px">'+(alMap[String(c.case_id)].total||0)+'</span><span style="font-size:10px;color:var(--mu);margin-left:4px">&#8679;'+(alMap[String(c.case_id)].upper||0)+' &#8681;'+(alMap[String(c.case_id)].lower||0)+'</span>' : '<span style="color:var(--dim)">—</span>')+'</td>' +
       '<td class="mono" style="font-size:10px">'+(c.status_change_date||'--')+'</td>' +
       '<td class="mono" style="font-size:10px">'+(c.creation_date||'--')+'</td>' +
       '<td>'+(c.overdue_for>0 ? '<span style="color:var(--red);font-weight:700">! '+c.overdue_for+'d</span>' : '<span style="color:var(--green)">OK</span>')+'</td>' +
@@ -568,8 +568,9 @@ function renderAligners() {
       '<td class="mono" style="color:var(--green)">'+(a.lower||'--')+'</td>' +
       '<td>'+(a.refs>0 ? '<span style="color:var(--purple);font-weight:700">'+a.refs+'x ('+a.reftotal+')</span>' : '<span style="color:var(--dim)">--</span>')+'</td>' +
       '<td style="font-size:11px;color:var(--mu)">'+(a.pkg||'--')+'</td>' +
+      '<td class="mono" style="font-size:11px;color:var(--mu)">'+(bc&&bc.creation_date ? bc.creation_date : '--')+'</td>' +
       '<td class="mono" style="font-size:11px;color:var(--mu)">'+(a.last||'--')+'</td></tr>';
-  }).join('') : '<tr><td colspan="8" class="ec">No aligner data -- upload Excel file</td></tr>';
+  }).join('') : '<tr><td colspan="9" class="ec">No aligner data -- upload Excel file</td></tr>';
   var tp = Math.ceil(total/PAGE)||1;
   document.getElementById('pAligners').innerHTML = total > PAGE ?
     '<span>'+total.toLocaleString()+' cases</span>' +
@@ -850,51 +851,6 @@ function showCase(caseId) {
 }
 function closeModal() { document.getElementById('modal').classList.remove('on'); }
 
-// -- SYNC BLOOM → PRODUCTION RECORDS ------------------------------------
-async function syncBloomToProduction(alRows, shipRows) {
-  if (!alRows.length) return;
-  var today = new Date().toISOString().slice(0,10);
-
-  // Build production rows: one per case from bloom_aligner_details
-  var prodRows = [];
-  alRows.forEach(function(r) {
-    if (!r.case_number) return;
-    var al = parseInt(r.number_of_aligners) || 0;
-    if (al <= 0) return;
-    prodRows.push({
-      order_no: String(r.case_number),
-      batch_id: 'BLOOM-' + String(r.case_number),
-      aligners_count: al,
-      cases_count: 1,
-      employee_name: 'Bloom Import',
-      inventory_deducted: false,
-      notes: 'Auto-synced from Bloom · Upper:' + (r.aligner_upper||0) + ' Lower:' + (r.aligner_lower||0) + ' Type:' + (r.order_type||''),
-      created_at: new Date().toISOString()
-    });
-  });
-
-  if (!prodRows.length) { ntf('[INFO] No aligner records to sync', 'ok'); return; }
-
-  try {
-    // Delete any previous Bloom auto-records for TODAY to avoid duplicates on re-import
-    await SB.from('production_records')
-      .delete()
-      .eq('employee_name', 'Bloom Import')
-      .gte('created_at', today + 'T00:00:00.000Z');
-
-    // Insert fresh records in batches
-    var BATCH = 100;
-    for (var i = 0; i < prodRows.length; i += BATCH) {
-      var res = await SB.from('production_records').insert(prodRows.slice(i, i+BATCH));
-      if (res.error) { console.error('Sync error:', res.error.message); break; }
-    }
-    console.log('[Bloom Sync] ' + prodRows.length + ' production records saved');
-    ntf('[OK] ' + prodRows.length + ' cases synced to production ✅', 'ok');
-  } catch(e) {
-    console.error('[Bloom Sync Error]', e.message);
-  }
-}
-
 // -- START -------------------------------------------------------------
 runDiagnostics();
 loadAll();
@@ -988,4 +944,3 @@ function loadProjectState(){
 async function saveProjectState(){
   try{
     var stateStr = JSON.stringify({state:PS_STATE, savedAt: new Date().toISOString()});
- 
