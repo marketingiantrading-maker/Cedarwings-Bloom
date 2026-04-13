@@ -430,7 +430,7 @@ function msg(html, color) {
 
 // -- LOAD DATA ---------------------------------------------------------
 async function loadAll() {
-  document.getElementById('tCases').innerHTML = '<tr><td colspan="9" class="ec">Loading...</td></tr>';
+  document.getElementById('tCases').innerHTML = '<tr><td colspan="10" class="ec">Loading...</td></tr>';
   var all = [], from = 0;
   while (true) {
     var res = await SB.from('bloom_cases').select('*').order('case_id', {ascending:false}).range(from, from+999);
@@ -551,6 +551,7 @@ async function loadAligners() {
   }).sort(function(a,b){ return Number(b.case_number)-Number(a.case_number); });
   document.getElementById('tcAligners').textContent = allAligners.length.toLocaleString();
   renderAligners();
+  renderCases(); // re-render cases now that aligner data is loaded
 }
 function renderAligners() {
   var term = (document.getElementById('srchA').value||'').toLowerCase();
