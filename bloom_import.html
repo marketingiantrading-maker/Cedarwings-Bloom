@@ -225,31 +225,20 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc;cursor:poin
 <div class="notif" id="notif"></div>
 
 <script type="module">
-// bloom_import_app.js - Cedarwings Bloom Cases
-// Native REST client - no CDN needed
-// Supabase SDK (same as all other pages)
-var sb = null;
-var sbReady = false;
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { SUPABASE_CONFIG } from './config.js';
 
-async function initSB() {
-  const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-  sb = createClient(
-    'https://oaauobugpbcixnbmlakc.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hYXVvYnVncGJjaXhuYm1sYWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzYyNTksImV4cCI6MjA5MTQxMjI1OX0.EpOUpmwRx_LAUqpGQcVMyJFB5NqX_HM7aMZ2gWW9oAA'
-  );
-  sbReady = true;
-  console.log('[Bloom] Supabase SDK ready');
+const sb = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+console.log('[Bloom] Supabase SDK ready');
+
+var SB = { from: function(t){ return sb.from(t); } };
+
+// ---- DEBUG BAR ----
+function dbg(m) {
+  var el = document.getElementById('debugBar');
+  if (el) el.innerHTML = (m ? '&#128309; ' + m : '');
+  console.log('[Bloom] ' + m);
 }
-
-// Compatibility wrapper so all existing SB.from() calls keep working
-var SB = {
-  from: function(table) {
-    return sb.from(table);
-  }
-};
-
-
-console.log('[Bloom] Native REST client ready');
 
 // ---- HELPERS ----
 var PAGE_SIZE = 50;
@@ -770,14 +759,8 @@ async function saveExcelData(shipRows, alRows, filename) {
 document.getElementById('btnRefresh').addEventListener('click', loadAll);
 
 // ---- INIT ----
-dbg('Connecting to Supabase...');
-initSB().then(function() {
-  dbg('Calling loadAll()...');
-  loadAll();
-}).catch(function(e) {
-  dbg('SDK load failed: ' + e.message);
-  console.error('[Bloom] SDK error:', e);
-});
+dbg('Calling loadAll()...');
+loadAll();
 
 </script>
 </body>
