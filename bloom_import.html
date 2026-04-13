@@ -205,7 +205,7 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc;cursor:poin
           <input class="fi" id="alSearch" placeholder="Search case number..." style="width:200px"/>
         </div>
         <div class="tw"><table>
-          <thead><tr><th>Case #</th><th>Upper</th><th>Lower</th><th>Total Aligners</th><th>Order Type</th><th>Boxes</th><th>Shipped</th></tr></thead>
+          <thead><tr><th>Case #</th><th>Upper</th><th>Lower</th><th>Total</th><th>Order Type</th><th>Boxes</th><th>Last Shipped</th></tr></thead>
           <tbody id="tAligners"><tr><td colspan="7" class="ec">Loading...</td></tr></tbody>
         </table></div>
       </div>
@@ -311,9 +311,24 @@ document.getElementById('tabBtnAligners').addEventListener('click', function() {
 document.getElementById('tabBtnImports').addEventListener('click', function() { switchTab('imports'); renderImports(); });
 
 // ---- LOAD ALL DATA ----
+async function fetchAllRows(table, orderCol, orderAsc) {
+  var allRows = [];
+  var pageSize = 1000;
+  var from = 0;
+  while (true) {
+    var r = await SB.from(table).select('*').order(orderCol, { ascending: orderAsc }).range(from, from + pageSize - 1);
+    if (r.error) return { data: null, error: r.error };
+    allRows = allRows.concat(r.data || []);
+    if (!r.data || r.data.length < pageSize) break; // last page
+    from += pageSize;
+    dbg('Fetching... ' + allRows.length + ' rows so far');
+  }
+  return { data: allRows, error: null };
+}
+
 async function loadAll() {
   dbg('Fetching cases from Supabase...');
-  var r = await SB.from('bloom_cases').select('*').order('creation_date', { ascending: false }).range(0, 9999);
+  var r = await fetchAllRows('bloom_cases', 'creation_date', false);
   console.log('[Bloom] loadAll result - error:', JSON.stringify(r.error), 'rows:', r.data ? r.data.length : 'null');
   if (r.error) {
     dbg('ERROR: ' + (r.error.message||r.error.hint||JSON.stringify(r.error)));
@@ -327,13 +342,37 @@ async function loadAll() {
   dbg('Loaded ' + allCases.length + ' cases OK!');
 
   // Aligners
-  var ra = await SB.from('bloom_aligner_details').select('*').order('case_number').limit(2000);
+  var ra = await fetchAllRows('bloom_aligner_details', 'case_number', true);
   allAligners = ra.data || [];
+
+  // Also load shipping data from bloom_aligners and merge
+  var rs = await fetchAllRows('bloom_aligners', 'case_number', true);
+  var shipMap = {};
+  (rs.data || []).forEach(function(s) {
+    if (!shipMap[s.case_number]) shipMap[s.case_number] = [];
+    shipMap[s.case_number].push(s);
+  });
+  // Attach shipping info to each aligner detail
+  allAligners.forEach(function(a) {
+    var ships = shipMap[a.case_number] || [];
+    a._boxes = ships.length;
+    a._shipped = ships.length > 0 ? fdt(ships[ships.length-1].date_of_shipment) : '-';
+    a._shipping_no = ships.map(function(s){ return s.shipping_number||''; }).filter(Boolean).join(', ');
+  });
 
   // KPIs
   document.getElementById('kTotal').textContent = allCases.length;
   document.getElementById('kAligners').textContent = allAligners.length;
-  var overdue = allCases.filter(function(c) { return c.current_status && c.current_status.toLowerCase().includes('overdue'); }).length;
+  var now = new Date();
+  var overdue = allCases.filter(function(c) {
+    // Overdue = status contains 'overdue' OR case older than 30 days not yet received
+    if (c.current_status && c.current_status.toLowerCase().includes('overdue')) return true;
+    var done = ['ALIGNERS_RECEIVED','CANCELLED','DELIVERED'];
+    if (done.indexOf(c.current_status) >= 0) return false;
+    if (!c.creation_date) return false;
+    var age = (now - new Date(c.creation_date)) / (1000*60*60*24);
+    return age > 30;
+  }).length;
   document.getElementById('kOverdue').textContent = overdue;
 
   // Imports count
@@ -446,8 +485,8 @@ function renderAligners() {
         '<td style="font-weight:700;color:var(--purple)">' + (a.aligner_lower || 0) + '</td>' +
         '<td style="font-weight:700">' + (a.number_of_aligners || '-') + '</td>' +
         '<td><span class="badge b-gray">' + (a.order_type || '-') + '</span></td>' +
-        '<td>' + (a.boxes || '-') + '</td>' +
-        '<td class="mono">' + fdt(a.date_of_shipment) + '</td></tr>';
+        '<td style="text-align:center">' + (a._boxes || 0) + '</td>' +
+        '<td class="mono">' + (a._shipped || '-') + '</td></tr>';
     }).join('') :
     '<tr><td colspan="7" class="ec">No aligner data yet.</td></tr>';
 }
