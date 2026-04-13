@@ -208,7 +208,15 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc;cursor:poin
           <input class="fi" id="alSearch" placeholder="Search case number..." style="width:200px"/>
         </div>
         <div class="tw"><table>
-          <thead><tr><th>Case #</th><th>Upper</th><th>Lower</th><th>Total</th><th>Order Type</th><th>Boxes</th><th>Last Shipped</th></tr></thead>
+          <thead><tr>
+            <th class="sortable" onclick="sortAligners('case_number')">Case # <span class="sarr" id="ash_case_number">↑</span></th>
+            <th class="sortable" onclick="sortAligners('aligner_upper')">Upper <span class="sarr" id="ash_aligner_upper"></span></th>
+            <th class="sortable" onclick="sortAligners('aligner_lower')">Lower <span class="sarr" id="ash_aligner_lower"></span></th>
+            <th class="sortable" onclick="sortAligners('number_of_aligners')">Total <span class="sarr" id="ash_number_of_aligners"></span></th>
+            <th class="sortable" onclick="sortAligners('order_type')">Order Type <span class="sarr" id="ash_order_type"></span></th>
+            <th>Boxes</th>
+            <th class="sortable" onclick="sortAligners('_shipped')">Last Shipped <span class="sarr" id="ash__shipped"></span></th>
+          </tr></thead>
           <tbody id="tAligners"><tr><td colspan="7" class="ec">Loading...</td></tr></tbody>
         </table></div>
       </div>
@@ -301,7 +309,7 @@ function statusBadge(s) {
 }
 
 // ---- TABS ----
-function switchTab(name) {
+window.switchTab = function switchTab(name) {
   ['Cases','Changes','Aligners','Imports'].forEach(function(t) {
     document.getElementById('tab' + t).style.display = t.toLowerCase() === name ? 'block' : 'none';
     document.getElementById('tabBtn' + t).className = 'tab' + (t.toLowerCase() === name ? ' on' : '');
@@ -366,6 +374,7 @@ async function loadAll() {
   // KPIs
   document.getElementById('kTotal').textContent = allCases.length;
   document.getElementById('kAligners').textContent = allAligners.length;
+  renderAligners();
   var now = new Date();
   var overdue = allCases.filter(function(c) {
     // Overdue = status contains 'overdue' OR case older than 30 days not yet received
@@ -405,7 +414,7 @@ async function loadAll() {
 }
 
 // ---- RENDER CASES ----
-function sortBy(col) {
+window.sortBy = function sortBy(col) {
   if (sortCol === col) { sortDir *= -1; }
   else { sortCol = col; sortDir = (col === 'creation_date' || col === 'updated_at') ? -1 : 1; }
   ['case_id','patient_name','doctor','distributor','clinic','current_status','creation_date','action_required_for','overdue_for'].forEach(function(c) {
@@ -421,7 +430,7 @@ function sortBy(col) {
   renderCases();
 }
 
-function renderCases() {
+window.renderCases = function renderCases() {
   var term = document.getElementById('caseSearch').value.toLowerCase();
   var statusF = document.getElementById('caseStatus').value;
   var doctorF = document.getElementById('caseDoctor').value;
@@ -481,6 +490,22 @@ async function renderChanges() {
 }
 
 // ---- RENDER ALIGNERS ----
+var alSortCol = 'case_number', alSortDir = 1;
+window.sortAligners = function(col) {
+  if (alSortCol === col) { alSortDir *= -1; }
+  else { alSortCol = col; alSortDir = col === '_shipped' ? -1 : 1; }
+  ['case_number','aligner_upper','aligner_lower','number_of_aligners','order_type','_shipped'].forEach(function(c) {
+    var el = document.getElementById('ash_' + c);
+    if (el) el.textContent = (c === alSortCol) ? (alSortDir === 1 ? '↑' : '↓') : '';
+  });
+  allAligners.sort(function(a, b) {
+    var av = a[alSortCol] || '', bv = b[alSortCol] || '';
+    if (!isNaN(Number(av)) && !isNaN(Number(bv))) { av = Number(av); bv = Number(bv); return alSortDir*(av-bv); }
+    if (av < bv) return -alSortDir; if (av > bv) return alSortDir; return 0;
+  });
+  renderAligners();
+};
+
 function renderAligners() {
   var term = document.getElementById('alSearch').value.toLowerCase();
   var fl = term ? allAligners.filter(function(a) { return (a.case_number || '').toLowerCase().includes(term); }) : allAligners;
@@ -720,7 +745,7 @@ document.getElementById('btnCancelPreview').addEventListener('click', function()
 
 document.getElementById('btnConfirmImport').addEventListener('click', confirmImport);
 
-async function confirmImport() {
+async window.confirmImport = function confirmImport() {
   if (!pendingImport) return;
   var btn = document.getElementById('btnConfirmImport');
   btn.disabled = true; btn.textContent = 'Importing...';
