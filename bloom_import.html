@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Cedarwings — Bloom Cases Tracker</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Cedarwings — Bloom Cases</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-:root{--bg:#f0f4f8;--card:#fff;--bdr:#e2e8f0;--txt:#0f172a;--mu:#64748b;--dim:#94a3b8;--blue:#3b5fe2;--b50:#eef2ff;--b100:#e0e7ff;--green:#16a34a;--g50:#f0fdf4;--g100:#dcfce7;--amber:#d97706;--a50:#fffbeb;--a100:#fef3c7;--red:#dc2626;--r50:#fef2f2;--r100:#fee2e2;--purple:#7c3aed;--p50:#f5f3ff;--f:"DM Sans",sans-serif;--mono:"JetBrains Mono",monospace;--sh:0 1px 3px rgba(0,0,0,.07),0 0 0 1px rgba(0,0,0,.04)}
+:root{--bg:#f0f4f8;--card:#fff;--bdr:#e2e8f0;--txt:#0f172a;--mu:#64748b;--dim:#94a3b8;
+  --blue:#3b5fe2;--b50:#eef2ff;--b100:#e0e7ff;--green:#16a34a;--g50:#f0fdf4;--g100:#dcfce7;
+  --amber:#d97706;--a50:#fffbeb;--a100:#fef3c7;--red:#dc2626;--r50:#fef2f2;--r100:#fee2e2;
+  --purple:#7c3aed;--p50:#f5f3ff;--f:"DM Sans",sans-serif;--mono:"JetBrains Mono",monospace;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 0 0 1px rgba(0,0,0,.04)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh}
+body{font-family:var(--f);background:var(--bg);color:var(--txt)}
 .sb{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--card);border-right:1px solid var(--bdr);display:flex;flex-direction:column;z-index:100;overflow-y:auto}
 .sb-top{display:flex;flex-direction:column;align-items:flex-start;padding:16px 18px;border-bottom:1px solid var(--bdr)}
 .logo{width:38px;height:38px;background:linear-gradient(135deg,#3b5fe2,#6366f1);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
@@ -18,70 +25,48 @@ body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh
 .nl .ic{font-size:15px;width:18px;text-align:center}.sb-foot{padding:12px 10px;border-top:1px solid var(--bdr)}
 .content{margin-left:240px;min-height:100vh}
 .topbar{background:var(--card);border-bottom:1px solid var(--bdr);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:50}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;font-size:13px;font-weight:600;border:none;border-radius:9px;cursor:pointer;font-family:var(--f);transition:all .12s;text-decoration:none}
-.bb{background:var(--blue);color:#fff}.bb:hover{background:#2e4fc7}.bg{background:var(--green);color:#fff}
-.bgh{background:var(--card);border:1px solid var(--bdr);color:var(--mu)}.bgh:hover{color:var(--txt)}
-.br{background:var(--red);color:#fff}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;font-size:13px;font-weight:700;border:none;border-radius:9px;cursor:pointer;font-family:var(--f);transition:all .12s}
+.bb{background:var(--blue);color:#fff}.bg{background:var(--green);color:#fff}
+.bgh{background:var(--card);border:1.5px solid var(--bdr);color:var(--mu)}
 .body{padding:20px 28px 60px}
 .card{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:20px;margin-bottom:16px}
-/* KPIs */
 .kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px}
-.kpi{background:var(--card);border-radius:12px;box-shadow:var(--sh);padding:14px 16px;border-top:3px solid var(--bdr);cursor:default}
-.kpi-val{font-size:24px;font-weight:800;font-family:var(--mono)}
+.kpi{background:var(--card);border-radius:12px;box-shadow:var(--sh);padding:14px;border-top:3px solid var(--bdr)}
+.kpi-val{font-size:22px;font-weight:800;font-family:var(--mono)}
 .kpi-lbl{font-size:11px;color:var(--mu);font-weight:600;margin-top:2px}
-.kpi-sub{font-size:10px;color:var(--dim);margin-top:1px}
-/* UPLOAD */
-.drop-zone{border:2.5px dashed var(--bdr);border-radius:14px;padding:24px;text-align:center;cursor:pointer;transition:all .15s;background:#f8fafc}
-.drop-zone:hover,.drop-zone.drag{border-color:var(--blue);background:var(--b50)}
-.drop-zone.ok{border-color:var(--green);background:var(--g50)}
-/* TABS */
+.upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.upload-box{border:2.5px dashed var(--bdr);border-radius:14px;padding:24px;text-align:center;background:#f8fafc}
 .tab-bar{display:flex;gap:3px;background:var(--bg);border:1px solid var(--bdr);border-radius:10px;padding:3px;margin-bottom:14px;flex-wrap:wrap}
-.tab{padding:6px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--mu);font-family:var(--f);transition:all .12s}
+.tab{padding:7px 14px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--mu);font-family:var(--f)}
 .tab.on{background:var(--card);color:var(--blue);box-shadow:var(--sh)}
-/* FILTERS */
 .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.fi{padding:8px 11px;border:1.5px solid var(--bdr);border-radius:8px;font-family:var(--f);font-size:12px;color:var(--txt);background:#fff;outline:none;transition:border-color .15s}
+.fi{padding:8px 11px;border:1.5px solid var(--bdr);border-radius:8px;font-family:var(--f);font-size:12px;background:#fff;outline:none}
 .fi:focus{border-color:var(--blue)}
-/* TABLE */
 .tw{overflow-x:auto;border-radius:11px;border:1px solid var(--bdr)}
 table{width:100%;border-collapse:collapse;font-size:12px}
-thead th{padding:8px 12px;font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;background:#f8fafc;border-bottom:1px solid var(--bdr);text-align:left;white-space:nowrap;cursor:pointer;user-select:none}
-thead th:hover{color:var(--blue)}
+thead th{padding:8px 12px;font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;background:#f8fafc;border-bottom:1px solid var(--bdr);text-align:left;white-space:nowrap}
 tbody td{padding:9px 12px;border-bottom:1px solid var(--bdr);vertical-align:middle}
 tbody tr:last-child td{border:none}
 tbody tr:hover{background:#f8fafc;cursor:pointer}
-.ec{color:var(--dim)!important;text-align:center;padding:28px!important;cursor:default!important}
+.ec{color:var(--dim)!important;text-align:center!important;padding:28px!important}
 .mono{font-family:var(--mono);font-size:11px}
-/* BADGES */
 .badge{display:inline-flex;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:700;white-space:nowrap}
 .b-g{background:var(--g100);color:#15803d}.b-a{background:var(--a100);color:#92400e}
 .b-b{background:var(--b100);color:#1e40af}.b-gray{background:#f1f5f9;color:#475569}
-.b-r{background:var(--r100);color:#991b1b}.b-p{background:var(--p50);color:var(--purple)}
-/* ROW HIGHLIGHTS */
-.row-new td{background:#f0fdf4!important}.row-new:hover td{background:#dcfce7!important}
-.row-changed td{background:#fffbeb!important}.row-changed:hover td{background:#fef3c7!important}
-.row-overdue td:last-of-type{color:var(--red);font-weight:700}
-/* PAGER */
-.pager{display:flex;align-items:center;justify-content:space-between;margin-top:10px;font-size:12px;color:var(--mu);padding:0 2px}
-/* MODAL */
-.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.7);z-index:600;display:none;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+.b-r{background:var(--r100);color:#991b1b}
+.row-new td{background:#f0fdf4!important}.row-changed td{background:#fffbeb!important}
+.pager{display:flex;align-items:center;justify-content:space-between;margin-top:10px;font-size:12px;color:var(--mu)}
+.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.7);z-index:600;display:none;align-items:center;justify-content:center;padding:20px}
 .modal-bg.on{display:flex}
-.modal{background:var(--card);border-radius:18px;padding:28px;width:100%;max-width:700px;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
-/* CHANGE ARROW */
-.arrow{color:var(--mu);margin:0 4px}
-/* STATUS */
-.s-aligners{background:#dcfce7;color:#15803d;border:1px solid #bbf7d0}
-.s-draft{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
-.s-delivered{background:#e0e7ff;color:#3730a3;border:1px solid #c7d2fe}
-.s-refinement{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
-.s-replacement{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
-.s-retainer{background:#f0fdfa;color:#0f766e;border:1px solid #99f6e4}
-.s-plan{background:#f5f3ff;color:#6d28d9;border:1px solid #ddd6fe}
-.s-other{background:#f8fafc;color:#475569;border:1px solid #e2e8f0}
-/* NOTIF */
-.notif{position:fixed;bottom:24px;right:24px;padding:12px 18px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;display:none;align-items:center;gap:8px;box-shadow:0 6px 24px rgba(0,0,0,.15)}
-.notif.on{display:flex}.notif.ok{background:#15803d;color:#fff}.notif.err{background:var(--red);color:#fff}
-@media(max-width:768px){.sb{display:none}.content{margin-left:0}.kpi-grid{grid-template-columns:repeat(3,1fr)}}
+.modal{background:var(--card);border-radius:18px;padding:28px;width:100%;max-width:680px;max-height:88vh;overflow-y:auto}
+.prog-wrap{background:var(--bdr);border-radius:999px;height:8px;margin:8px 0}
+.prog-fill{height:8px;border-radius:999px;transition:width .3s;background:var(--blue)}
+.notif{position:fixed;bottom:24px;right:24px;padding:13px 18px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;display:none;box-shadow:0 6px 24px rgba(0,0,0,.15)}
+.notif.on{display:block}.notif.ok{background:#15803d;color:#fff}.notif.err{background:var(--red);color:#fff}
+.s-aligners{background:#dcfce7;color:#15803d}.s-draft{background:#f1f5f9;color:#475569}
+.s-delivered{background:#e0e7ff;color:#3730a3}.s-refinement{background:#fef3c7;color:#92400e}
+.s-replacement{background:#fee2e2;color:#991b1b}.s-retainer{background:#f0fdfa;color:#0f766e}
+.s-plan{background:#f5f3ff;color:#6d28d9}.s-other{background:#f8fafc;color:#475569}
 </style>
 </head>
 <body>
@@ -101,7 +86,7 @@ tbody tr:hover{background:#f8fafc;cursor:pointer}
     <div class="sb-s">Operations</div>
     <a href="manager.html" class="nl"><span class="ic">📊</span>Dashboard</a>
     <a href="production.html" class="nl"><span class="ic">🏭</span>Production</a>
-    <a href="production_materials.html" class="nl"><span class="ic">🧪</span>Materials & Lots</a>
+    <a href="production_materials.html" class="nl"><span class="ic">🧪</span>Materials &amp; Lots</a>
     <a href="machines.html" class="nl"><span class="ic">⚙</span>Machines</a>
     <div class="sb-s">Team</div>
     <a href="employees.html" class="nl"><span class="ic">👥</span>Employees</a>
@@ -127,1053 +112,683 @@ tbody tr:hover{background:#f8fafc;cursor:pointer}
     <div style="display:flex;align-items:center;gap:14px">
       <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAkACQAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCAG2BIEDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9U6KKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooqvqGoW2k2M97e3EdraW6GSWeZgqIoGSST0FAFiivi34uf8FFrHR7250/wDpEWsNG2warqW9bdiOpSMFWYe5K/SvGY/+Cg3xYS884y6LJHuz9naw+THpkNux+OaAP04or43+Ev/AAUT0fxBfW+neOdIXw/LKwT+0rJmktgT3dD8yD3y2K+wbG+t9Ss4bu0njubWZBJFNCwZHU8ggjqKAJ6KKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAr5c/aa/bC1T4CeP7Xw9ZeHLTVoprCO8M89w8bAs7rtwAePk/WvqOvzY/wCCjH/JctN/7AkH/o2agDqP+HmGv/8AQkab/wCBsn/xNfWX7O3xcufjb8M7XxRd6dFpc01xLCbeGQuoCNjOSO9fj9X6h/sDf8m66b/1/XX/AKHQB9F0UUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABUN5MbaznmUAtHGzgHpwM1NVXVf+QXef9cX/wDQTQB+eX/Dybx//wBC34b/AO/dx/8AHa0fDf8AwUU8d614i0vT5fD3h1Iru6igdkjn3BWcKSMy9ea+N63fAf8AyPHh3/sI2/8A6NWgD9saKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAr89/29/wBoO417xFJ8OtEuZItK05gdUkjfAuZ+ojOOqpx16t/uivvXxRrkXhfwzq2szqXh0+0mu3UdSsaFyPyFfkH8N9BuvjN8atG0+/drifXdVEl5JnkqzF5W/wC+QxoA99/ZR/Yti+JOkweL/Gxmg0Gb5rHTYiUkulBx5jt1VOOMct1yB1+y7H9nD4W6fp4so/AHh54Qu3dPp8csnTH+sYFs++a9AsrOHTrOC1tolht4I1ijjQYVFUYAA7AAVPQB8gfHn9gbw9rejXWqfD2I6LrUKmQaY0jNb3OOqLuJMbenOO2B1HFfsD/G2/0PW9S+GviGVo7OKOa5svtJKtayR8zRc9Bjc2OxU+vH3pX5dftqab/wgv7SGt3WjyNYvqVotxIYDtOZojHKP+BDdn13GgD6R+Hv/BQLQvE3jibw9quhXVvFc35tdMvrDMwmVn2x74/vAnjlcjnoK+tK/Nj9gD4R/wDCZ/E6bxXex7tM8OqHj3DiS6cEIP8AgI3N9dtfpPQAUUV8p/tdfteQ/DK1ufCXhG5S48VzKUubuNgy6cpH6y88D+HqfSgD6sor5z/Yx/aA1n40eD7qz1+wuG1LR9kL6wE/c3eRxk9pQMEgdcg8Zr6MoAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAr82P+CjH/JctN/7AkH/AKNmr9J6/Nj/AIKMf8ly03/sCQf+jZqAPliv1D/YG/5N103/AK/rr/0Ovy8r9Q/2Bv8Ak3XTf+v66/8AQ6APouiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKq6r/wAgu8/64v8A+gmrVVdV/wCQXef9cX/9BNAH4d1u+A/+R48O/wDYRt//AEatYVbvgP8A5Hjw7/2Ebf8A9GrQB+2NFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQBzHxQ0afxF8NfFel2ys1zeaVdQRKvUu0TBR+JIr8sP2VfEVt4T/AGhvBN/fERwC9a2dn6KZY3hBP0MgP4V+u1fl7+2N8AdQ+EfxCuvEWm27DwvrFybi2uIc4tpm+Zojj7vOSvt9KAP1Cor42/Z0/bw0TUdDtNC+It0dM1e3URJrDIWguVHAMm0ZR/U4weuRX0pJ8bPh7Hp/25vHPh0WmN3m/wBqQY/9C6+3WgDtGYKpJOAOSTX5I/tV+P7f4nfHjxFqOnP9osYpVsLWReRIsQ2bh6gsGI9iK+iv2nv25tN1LQbvwt8OriS4e7VobvWihRVjIwVhBwST/eIGB09R4l+xZ8Jx8T/jRYz3kHn6RoQGo3W4ZRnU/ukP1fBx3CmgD76/Zh+E8fwf+D2i6S8e3VLlPtuoORyZ5ACV/wCAjav/AAH3r1iivlD9rv8Aa9h+Gtvc+EPB9yk/iqRdl1eJ8y6epHQdjL/6D35oAd+15+15D8M7e58IeEblZvFcqbbm8TDLp6nt7ykdv4ep5r5F/Z7/AGevEH7Rfi6WWWWa30OGXzNT1iTliSclEJ+9I2SfQdT2BX9nf9nfXv2iPFkk0sk9toEEwfUtYkBYsSclEJ+9I36ZyewP6k+CfBWjfDzwzY6BoNlHYaZZpsjijHJPdmPdieSTySaADwT4J0b4d+GbLQNAsksNMtF2xxJ1J7sx7sTySetbtFfGn7WH7ZPiX4WfEE+EvCVtZxPZxRyXd5eRGUu7jcEVcgABSMnqSe2OQD7Lorxr9lj47XHx6+Hcmq6hZR2WrWNwbS7WDPlSNtDB1B5GQemTgg17LQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFfmx/wAFGP8AkuWm/wDYEg/9GzV+k9fmx/wUY/5Llpv/AGBIP/Rs1AHyxX6h/sDf8m66b/1/XX/odfl5X6h/sDf8m66b/wBf11/6HQB9F0UUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABVXVf+QXef9cX/wDQTVqquq/8gu8/64v/AOgmgD8O63fAf/I8eHf+wjb/APo1awq3fAf/ACPHh3/sI2//AKNWgD9saKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAqhrug6d4n0m40zVrKDUdPuF2S21wgdHHuDV+igD44+IH/AATg8PaveTXPhLxDcaCrncLK8i+0xJ7K2QwH1JNcTpP/AATR117wf2n400+G1B5NpaySOR9GKgfrX37RQB+PPx+8KeGvAHxCu/C3hiSe8ttIAt7rULl9z3Nx1kOBwqqcKAB/CSSc1+g37E3wnb4Z/Bmzu7y38nWNfI1C53DDrGR+5Q/ROcdi5rQ+IX7HPw2+IWvRa1Lpb6VqYuluZ5NPYIl0d25lkQgqd3OSMHnrXnX7XX7XUHw1tbjwX4MuFfxMyeXc3sWCmnr02j1lx/3z9aAJP2vP2vYfhzb3Pg/wfcpP4olUx3d9GwK6eCOg9Zf/AEH618mfs7/s769+0T4sknmlmttAgl36lq8uWZmPJjQn70jZ79AcnsCv7Ov7Ouu/tEeLJZ55JrXw/BLv1LVpOWZiclEJ+9I3XPIHU9gf1I8G+DdH+H/huy0LQrKPT9Ls02RQp+rE9yTySetACeC/BejfD3w3ZaDoFjHp+mWiBI4ox19WY9WY9STyTWZ8TPiv4Y+Eegtq3ifU47GDnyofvTTsB92NOrH9BnkivFP2iP22fD3wq+0aL4Z8nxH4oVSrbWza2jf9NGB+Zh/dU/UivhNI/iH+054/H/H54m1y4ONzcRW6Z/75jQfh+JoA+2fgb+3JZfFb4rXXhvUtOi0LTr0BdGkkfMjyAn5JTnG5hjAHGRjJyK6749fsdeGfjp4kh1+bUrvRNWEawzy2yq6Tqv3cqejAcZB6Y4rJ/Z3/AGKvD3wl+z614i8nxF4qUh0dlzbWjDp5akcsD/G3tgDv9K0AcR8H/hDoXwT8GQeHdBWRoVdpp7mcgy3Ep6uxHHQAADoAK7eiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAK/Nj/gox/wAly03/ALAkH/o2av0nr82P+CjH/JctN/7AkH/o2agD5Yr9Q/2Bv+TddN/6/rr/ANDr8vK/UP8AYG/5N103/r+uv/Q6APouiiigAooooAKKKKACikZgqlmICjkk9q4nXPjh8PvDcjx6l4z0O2lQ4aM30bOvsVBJFAHb0V43eftgfCGzzu8aWcmP+eMcr/yWqsf7aHwekYKPF8Y92tZgP/QKAPbqK8q039qf4T6owWHxzpSse00hj/8AQgK73w/4y0HxZEZNE1rT9XRerWN0k2PrtJxQBsUUUUAFFFFABRRRQAUUUUAFFFFABVXVf+QXef8AXF//AEE1aqrqv/ILvP8Ari//AKCaAPw7rd8B/wDI8eHf+wjb/wDo1awq3fAf/I8eHf8AsI2//o1aAP2xooooAKKKKACiiigAooooAKKKKACiiigAornfEfxG8K+EHKa54k0rSZMZ8u8vI43/AO+Sc1w19+1h8JNPYrJ44012HXyS0n/oKmgD1uivET+2h8Hg2P8AhL4//AWbH/oFaFl+1t8I75gE8b6fGT084PH/ADWgD16iuV8O/FTwb4tlSLRvFOj6lO/3Ybe9jaQ/8Bzn9K6qgAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKiurqCxt3nuZo7eCMZeSVgqqPUk9K4LWP2hfhpoTMt5450NGXqI71JSP++CaAPQqK8Yuf2xvhBathvGds/8A1zhlf+SVHB+2V8H7hto8YwJ7yW8yj9UoA9rorzPS/wBpb4W6ywW28daNuPaa5EX/AKHiu/0nWtP160W60y/tdRtm6TWkyyof+BKSKALtFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFITjk8CuK8RfGzwD4TmaLVvGGjWUy/eha8Quv1UEkUAdtRXi97+2P8H7F9reMreU+sMEsg/MJUNv+2h8HriQIPF8aE95LWZR+ZSgD26ivOtF/aK+GXiCRI7LxxoryNwqyXaxE+3z4r0G3uYryFJoJUmhcZWSNgysPUEdaAJKKKKACiiigAooooAKKKKACiiigAooooAKK5/xN8QPDPgtd2veINN0jIyFvLpI2P0BOT+FcBqX7W/wj0vIl8bWEpHa3Dy/+gqaAPX6K8OX9tb4Os2P+EtUfWznx/6BW5pn7U/wn1YqIPHOlqzdFnkMX/oQFAHqtFZuh+JNJ8TWv2nSNUs9Vt/+etlcJMv5qTWlQAUUUUAFFFFABRRRQAV8s/Gz9hfRfid8RLLxHpV8ugwXdxv1u3jjz5w6mSLssjHg54+bd1BDfU1FAHDtP4L/AGffh3Ekktp4c8N6ZHsTccbj7Dq7scnuSTXwh+0T+3FrnxHN3oXg4zeH/DTAxyXAO27u175I/wBWp/ujkjqecV3H7dPwR8d+KPiFo2raMdT8S6VqW21g0+PLpYzBeQFHCqwBbce4bJ6V2v7Ov7COleC/smv+PRDrWuKBJHpY+a1tW7bv+erD/vkHscA0AfOf7PX7G/ib4yyW2sav5vh/wmzbjeSp+/ul7iFT2P8AfPHpnpX6M/DX4V+GfhL4ej0fwzpkdhbDmSTGZZ2/vSOeWP16dBgVT+KPxi8I/BXQVvvEmoR2SFSLayhAaefH8McY69hngDuRXxn46/4KReIr65mj8JeHbLTLTOI59SJnmI9SqkKD7c/jQB+gtFflzH+3t8X0uhKdX094/wDng2nRbP0G79a9l+E//BRpbzUILHx/o0VnBJhTqmlhisZ9XiJJ2+6kkehoA+4aKp6PrFlr+l2upaddRXthdRiWG4hYMkinoQRVygAooooAKKKKACiiigAooooAKKKKACiiigAooooAK/Nj/gox/wAly03/ALAkH/o2av0nr82P+CjH/JctN/7AkH/o2agD5Yr9Q/2Bv+TddN/6/rr/ANDr8vK/UP8AYG/5N103/r+uv/Q6APouiiq2pahBpOn3V9cv5dvbRNNI3oqgkn8hTSbdkJtJXY+6vILGBprmaO3hX70krhVH1JqlpfibR9bkZNO1Wyv3XqttcJIR+ANfl58cvj1r/wAaPE1zcXV1NbaHHIwsdMRyI4o88Fh0ZyMZY/hgV55pOs3+gahDfabeT2F5CweO4t5Cjow7givvqPCc5UlKpUtJ9LXS+dz8wr8b04V3GjR5oLrezfmlY/Zmvnn9tr4r+JvhJ8MdM1DwtfjTb681NbSSfyldhGYpGO3cCAcqOa1f2TfjlcfGbwHMNWYN4h0l1gu3UACZWBKS4HQnDAj1U+orzv8A4KSf8kf8Pf8AYcT/ANETV8TicPUwtaVCqtYn6LhMVSxtCGIou8ZK/wDXofCHiv4qeMfHG4a/4m1TVY2OTDcXTtH/AN8Z2/pXK06ON5mCorOx6Koya9A8Mfs9/ErxiqPpXgnWp4X5WeW1aGJvo8m1T+dcx1nntFe/WP7DHxgvMbvD1va/9d76EfyY1ck/YI+LsalhpmnOf7q36ZoA+damtLy40+4S4tZ5LadDlZYXKsp9QRyK9l1b9jX4waPG0jeD57pF6m0uIZT+Ch8n8q8w8R+BfEng+Yxa7oGp6NJ/dv7OSHP03AZoA9A8F/tXfFPwLLGbPxbeXsK9bfU2+1Iw9DvyR+BFfS/w3/4KRWd00Nt458OmyY4D6ho5Lx/UxMdwH0Zq+DKKAP2m8C/E7wr8TNOF74Y12z1iDGWED/vE/wB9DhlPsQK6ivxG8NeKtY8G6vBqmh6ldaVqEJ3JcWkpRx7cdR6g8GvtX4C/8FBvNki0f4lxqm7Cx65aRYA/67Rj/wBCX8u9AH3JRVTSdWstd063v9Nu4L+xuEEkNzbyCSORT0IYcEVboAKKKKACiiigAqrqv/ILvP8Ari//AKCatVV1X/kF3n/XF/8A0E0Afh3W74D/AOR48O/9hG3/APRq1hVu+A/+R48O/wDYRt//AEatAH7Y0UUUAFFFFABRRRQAUUVheNPHGhfD3QbjWvEWpwaXp0A+aadsZPZVHVmPYDk0Abtef/Ez48eBvhHau/iXX7e1uQMrYRHzbmT0AjXJ/E4Hqa+Lfjn+39r/AImuLjS/ACtoGkYKf2lIAbub1K9oh6Yy3fI6D5Kvr651O7lury4lurmZi8k0zl3dj1JJ5JoA+0PiN/wUi1K58228EeHIbKPot9q5MkmPURKQAfqzfSvnDxf+0b8SvHDyHVfGOqNFJw0FrMbeLHpsj2jFeb0tACu7SMzMxZmOSzHJJ9abXUeF/hb4w8bMP7B8L6vq65x5lpZSOg+rAYH4mvStN/Yp+MOpKrHwm1orcj7TdwofxG8kUAeG0V9FD9gj4ulc/wBmacPb7emay9Q/Yj+MNgrFfC63YX/n3vYTn6ZcUAeFV3nhH48fELwM0Q0bxfqtrFH92B7hpYh7bHyuPwqn4p+DfjrwSGbXPCOs6bEvWeayk8r/AL7A2n8649gVJBGD6GgD7G+HP/BR7xHpflW3jLQrXW4BgNeaefs8+PUryjH6ba+tvhX+0p8P/i/FEmh65FFqTfe0u+/c3Kn0Cnh/qpIr8gqfFM8EiyRu0cinKspwQfUGgD9y6K/NP4H/ALd3i3wBNaab4saTxVoC4jMkrf6ZCvqsh+/j0bk+or9APhv8UvDPxY8Px6x4Z1SLULU8SIPllhb+7Ih5U/X8M0AdZRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABUF9fW2mWkt1eXEVrbRLukmmcIiD1JPArw34+/te+EvgrHcadA66/wCKQvy6bbSDbCx6ec4+567fvewzmvz1+Ln7RHjf403WfEGqsNPVt0WmWmYraP32g/MfdiTQB92/FT9vP4f+A5JbPQ2k8X6kmQfsJ22yn0Mx4P8AwEMPevlb4g/t5/E3xlJJFplza+FbFuFi02PdLj/alfJz/uhfpXzhRQBt+JPG3iHxjMJdd1zUNYkByDe3Ly7foGJx+FYlT2djcahMsNrby3MzHCxwoXYn0AFeleHf2Yfir4pRXsfA2rpG3Ie8h+yqR6gylcj6UAeXUV9BWf7Cfxfuly2h2lt7TX8Wf0JqS4/YN+L1uhYaRYzH+7Hfx5/UigD55rQ0XxBqnhy8F1pOo3emXQ6TWc7RP+akGvTtd/ZJ+Lnh+NpLjwRqFxGOc2JS5P8A3zGzN+leY6x4f1Tw/dNbappt5ptwvWG8geJx+DAGgD2XwJ+2p8VfA8kYbXRr9ovW11iPzgR/vghx/wB9V9Q/DH/gol4S8RSw2njDTJ/C9w+FN3CTcW2fU4G9R+Bx3PevzpooA/bvw74m0jxbpseoaLqVrqtjJ924tJVkQ/iDWnX4vfDn4reKvhRrA1LwvrNxpkx/1kSNmGYejxn5WH1HHavvT9n/APbt0Hx/9l0XxqIfDmvuRGl3nFncntyf9Wx9GOPfnFAH1bRSKwdQykMpGQRyDS0AFFFFABRRRQAUUUUAFFFFABRSMwVSScAckmvjz9o79u6y8JTXfh34feTqerxsYp9YfD28BHBEY/5aMD3+6PegD6U+JHxc8J/CbSX1DxPrMGnR4zHCTummPokY+Zj+GPXFfGvxS/4KOanfLLZ+AtETTUPA1LVAJZceqxA7VP8AvFvpXx/4k8Uav4x1i41XW9RudV1G4bdJcXUhdz7c9B6AcDtWXQB2/jf42eOviMXHiHxRqOoQscm3aYpD/wB+1wv6VxFKqlmAAJJ6AV3nhH4C/ETx0sb6J4N1e8gk5W5a2aKE/SR8L+tAHBUV9BWH7CXxfvly+iWlp7XF/ED+hNT3X7BXxdtoyy6Xp9wf7sV+mf1xQB87V0HhP4geJfAt0Ljw9ruoaPJnJ+x3DIrfVQcH8RXZ+KP2Xfir4RjMt/4I1SSEcmSxjF0oHqfKLYH1rzG5tZrOZobiGSCVTho5FKsD6EGgD6o+GP8AwUK8beGZo7fxZaW3irT+hmCi3ul9wyja30K596+yvg/+014D+NEaxaNqn2XVsfPpV+BFcD/dGcOPdSffFfkRUlvcS2k8c0ErwzRsGSSNirKR0II6GgD9yqK/PT9nj9vTVPDM0GifESSbWNIwEj1gDdc2/YeYP+Wi+/3v96vvvQfEGm+KdHtNV0i9h1DTrpBJDc27bkdT3B/zigDQooooAKKKKACqGua9pvhnTJtR1a+t9NsYRukuLqQRoo9ya8h/aD/aq8MfAm0ezdhq/iiSPdBpML4256NK38C/qew71+bnxY+OPjD40at9s8SapJPAjEwWEJKW0A/2UzjP+0ck+tAH2f8AFb/gon4c0Friy8D6Y/iK7XKrqF4GhtQfULw7j/vnPrXyf48/au+KHxCaVL/xRc2NpJn/AETS/wDRYwPT5PmI+pNeRUUAPmmkuJWkldpJGOWdySSfUmmV0Xhb4c+KvHEvl+H/AA5qmsnOC1laSSqv1YDA/E16rpX7Efxg1RUZvDC2QYZH2q8hUj6gMSKAPCKK+jW/YE+LioW/s/TG/wBkagmf5VzeufscfF7QYXmk8H3F5GvU2M0c7fgqtuP4CgDyHS9WvtDvI7zTry4sLuM5Se1laN1+jKQRXuXw9/bc+KPgW4hW51ZfEunqcNa6sm8ke0gw4P4kexrxTXPDOr+GLtrXWNKvdJuV6w31u8Lj8GANZtAH6efCH9urwJ8R7mHTtY3+EdWkwFW+cNbSN6LMMAH/AHgv519HwzJcRJJE6yRuAyupyCD0INfhpXt/wG/ay8X/AARuIbMTNrnhnfmTSbuQ4QdzE/JjPtyPagD9X6K4X4R/Gbwx8avDa6v4cvPN2ELcWcvyz2z/AN11/kRwexruqACiiigArO8Q+ItN8J6Leavq97Dp+m2kZlmuJ22qij/PTvWjXwT/AMFGvitdy63o/gCzlMdjDCNQvlU/62RiRGp9lAJ9yw9KAPoH4G/tXaJ8d/H2v6BpGnzWltp9stza3NywD3SB9jts/hALJjkn5u1eo/Ebx1YfDTwPrPifUj/omm27TMoOC7dFQe7MQo9zXy/+wj+zi/hPSbb4j6xLNFqmpW7LY2athUtnx88g7lsAgdhg9emx/wAFGdWns/gzpVlEzLFeatGJdpwGVI3YKfUZwf8AgIoA+JNY1bxr+078VgxSTVte1SXy7e3TiO3iySFHZI0B5J9yea+2/hL/AME/fBnhWxiufGLyeKdXYAvDvaK0iPoqjDN9WOPYVyH/AATZ8B2Y0fxR4xmjWS/a4XTLdmAzFGqiRyP94un/AHxX23QB5hJ+zH8KprU27eBdHEeMfLBhv++gc18u/tN/sLWXh/Q73xV8O1nEVohmu9DdjKdg5Z4WPzcDkqc9Dg9q+8aRlEilWGVYYIPegD8+/wDgnx8brjSfE0vw71O4Z9N1BXn03eciG4A3Og9A65P+8v8AtV+gtflTa6Qvw6/bQt9N04eXDZ+LEhhVeNsbzAAf98viv1WoAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACvzY/4KMf8ly03/sCQf+jZq/SevzY/4KMf8ly03/sCQf8Ao2agD5Yr9Q/2Bv8Ak3XTf+v66/8AQ6/Lyv1D/YG/5N103/r+uv8A0OgD6Lrn/iDo03iLwJ4h0u2OLi8sJ4I8f3mjIH6mugoq4ScJKS6ETgqkHB7PQ/F66tpbO5lt542inicxyRuMFWBwQR6g1FX6O/HT9jXQPivq02u6Venw7rsx3XDLEHguG/vMvBDf7QPPcZ5rzPwn/wAE75I9Uik8R+Ko5tPRsvBp0BWSQem5j8v1wa/XaPEeAnSU5y5X1VmfhFfhPM6dd06cOaPSV1a3nrdF3/gnd4ZvbfTfFmvSxtHYXLw2kDMMCRk3M5H03KM+/tX0b8XPgz4e+Nmk6bpfiVbmXT7G8F6IbeXy/NYIy7WYc7cOehB966bwv4X0vwXoNnoujWiWOm2ieXDBH0A7knuSckk9Sa1a/Mcxxf17FTxCVk/yWh+x5Tgf7NwVPCt3cd/Vu7OQ8H/CHwV4BijTw/4X0zTCgwJYrdTL9S5yxPuTXX0UV5p64UUUUAFQXljbalbtBd28V1A3DRzIHU/UGp6KAPE/iR+x58MPiPE7yaDHoeoHpfaPi3bP+0gGxvxXPvXyN8Xv2APGPgsSX3hKdfFumDkwqoivIx/uE4cf7pz7V+ktFAH4cX1jc6ZeTWl5by2t1C5jlhmQo6MOCCDyDUFfrt8bP2afBvxwsJjqtktjrezbBrNooWdCOm7s6+zduhHWvzZ+OP7PPin4Ea0LbWYBc6ZMx+yarbgmGYeh/ut6qfwyOaANT9n39pzxN8B9UCW7tqnhyZs3Okzudnu8Z/gf9D3Hp+nvww+KPh/4veFLfxB4cu/tNpJ8skbcSwSYyY5F7MM/Q9RkV+L1eh/BP43eIPgb4ui1jRpjJbSFVvdPkY+VdRg/dYdmGThuxPpkEA/YuiuT+GHxM0T4teDrHxHoNys9pcL88ZP7yCQfejcdmB/PqOCK6ygAooooAKq6r/yC7z/ri/8A6CatVV1X/kF3n/XF/wD0E0Afh3W74D/5Hjw7/wBhG3/9GrWFW74D/wCR48O/9hG3/wDRq0AftjRRRQAUUUUAFFFeU/tEfH7SfgL4MfUbnbd6zdAx6dp2eZpMfeb0Re5/AcmgB/x8/aF8O/AXw59r1Jvtur3Cn7DpMTgSznpuP91Aerflk8V+YHxf+NXif42eJH1bxDeF0UkW1jF8sFsn91F/mx5Pc1h+OvHmufEnxNd694hvpL/UrlstI3AVeyqOiqOwFc/QAVqeG/DOreMNYg0rRNOuNU1GY4jtrWMu598DoPfoK9l/Z3/ZI8SfHKVNSuC2heFUfD6jMnzz+qwqfvf7x4Hv0r9H/hf8G/CXwe0gWHhjSYrMsoWa7YbrifHd5DyeecdB2AoA+MfhL/wTq1rWoY77x5qo0OFuRpthiW4x/tv91foN34V9YfD79mH4a/DW3jXS/DFpcXS/evtRX7TOx9dz5C/RQB7V6pRQAyGFLeNY4kWONRhVQYAHsKfRRQAUUUUAIyhlIIyDwQa878dfs8/Dv4jW8set+FNPllk/5erePyJ1PqJEw358eor0WigD4P8Aip/wTjntbaa98Aa21465YaXqxCuw9ElAAz7MAPcV8geM/AfiD4eaw2l+I9JutIvlGRHcpjcP7ynow9wSK/a+uZ8ffDbw18T9FbSvE2kW+q2nJTzl+eMn+JHHzKfcEUAfivXU/Dj4meIvhT4mt9c8N6g9jeRkb16xzLnlJF6Mp/8A1YPNe3/tH/sWa58JVude8OGbX/CisWfC5ubNf+mgA+ZR/fH4gV8z0AfrB+zf+1FoXx70r7MyrpPim2Tdc6Y7ghwOskR6svqOo79ifbq/EPw74i1Lwlrdnq+j3kun6laSCSG4hbDIw/z071+o37LH7S1l8ePDP2a+aO08XaegF7aqNomXoJox/dJ6jsfYigD3aiiigAooooAKKKKACiikZgoJJwBySaAEkkSGNpJGVI1BZmY4AA6kmvhX9qL9uSSSS+8J/Dm52RDMN14gjPzN2ZYPQdvM6/3fWsL9sr9ribxTfXngbwZetFocJaLUdRt35vG6GNCP+WY5BP8AF9Ovx1QA+aaS4meWV2lldizO5yWJ6knuaZV/QdB1HxRq9rpek2U2oajdOI4ba3Qs7sewFff37PX7Bel+FUh1v4hpDrWrEBo9IU7ra3PX5z/y0b2+6PfrQB8kfCL9mXx78Z2im0TSvs2ks21tWvyYrYc8kHBL4/2Qa+zPhr/wTz8D+GfIufFN5deKrxcFoCxt7Xd/uqdxH1bHqK+p7e3is7eOCCJIIIlCJHGoVVUDAAA6AVLQBheG/AvhzwdCsOhaFp+kRqMAWdskfH1ArdoooAKKKKACs/WfD2l+IrU2+q6da6lAePLu4VkX8mBrQooA+c/iV+wn8NfHTSXOmWkvhPUG58zSz+5Y+8LZUf8AAdtfHfxg/Yt+IHwra4vLW0/4SfQowX+3aapLoo7yRfeX8Mj3r9UKKAPwypK/UP4/fsX+FPi1b3GpaLFD4a8Ukl/tVumILhu4lQdz/eXn1zX5y/Eb4Z+IvhT4ln0PxJp72N7Gcq3WOZezxt0ZT6/ng0Ae7fsy/toar8KpLXw94qabWPCZYIkud9xYg8ZUk/Mg/unp29D+j+g69p/ijRrPVtJu4r/TruMSwXELbkdT3Br8Qa98/Za/ah1L4G69Hp2oyyXngy8k/wBKteWa2Y/8toh2I7r3Hvg0AfqlRVPR9YsvEGl2upabdRXthdRiWG4hbckikZBBq5QAUUUUAFFFFABTZJEhjaSRgiKCzMxwAB1Jp1fD/wC3b+0xJZm5+Gvhq4KSMoGs3kT8hSP+PcY9Qfm9jj1oA4/9rr9sWfxpcXXg7wPevb+HoyY73UoTta+PdEPURe/BbHp1+QaK3vA/gfWviL4mstA0Cykv9Su32pGg4Ud2Y/wqOpJ6UAYtvby3lxFBBE808rBI441LM7E4AAHUk19Y/BX/AIJ/+I/GEcWp+N7l/C+mMAyWUYD3kg9x0jH1yfYV9P8A7OX7Jnh74H2MOoXiQ614uYZk1J0+WDI+5CD90f7XU+w4r3qgDzT4c/s4/D34W2sUeieG7VrpOWv71BPcufUu3T6Lge1elUtFABRRRQAVynjT4VeEPiLayQeJPDun6ssg2mSaEeaP92QYZT7gg11dFAHw18Yf+CdKLbz6h8OtTYyrl/7H1N+GH92OXHX0D/i1fFvirwnrHgjW7jSNe0640vUoDiS3uEKsPQj1B9Rwa/bevPvjF8DfCvxu8Pvp/iCyU3KoRa6lCALi2Y91bHTPVTwaAPxyr239m39p7XPgNrQgcyan4VuXH2vTWY/JzzJF/df26N37Ec78dPgL4h+A/ij+zNXQXNjPl7LUoVPlXCf+ysO6np7jBrzSgD9tfCHi/SPHnh2y13Q72PUNMvE3xTRn8wR2IPBB5BrZr8gfgt+0Z4y+Bd8zaDeLcaZK26fSrwF7eQ9yACCrY/iUj3z0r6t0j/gpboclqDqng3UILnHItbpJEz7FgDQB9o18x/taftbQfB22fw14ZeK78Yzp+8kIDJp6EcMw7uc5C9O57A+G/FD/AIKKeIvEWmy2Hg/Ro/Daygq2oXEnn3AB/uDAVT7nd7Yr5H1DULrVr64vb24lu7y4cyzTzOXeRiclmJ5JJoAfq2rXuu6lc6hqN1Le31y5kmuJ2LO7HqSTVSnRxvNIqIrO7EKqqMkk9ABX3f8AstfsPwW8Nn4s+Itos80iiW00GUfLHnkNOO7Y/g6DvzwAD58+B/7JPjX41Nb30MA0Tw45ydWvlIV17+UnVz+Q96+5PhX+xX8N/hqqXFxpv/CT6qBzd6sBIqn/AGIvuD6kE+9e8wwpbwpFEixxIoVUQYCgcAAdhT6AIbOzt9Pt0t7WCO2gQYWKFAqr9AKmoooAKKKKAM7XPDuleJrM2ur6baanbHgxXcKyr+TA180/Fj/gn/4J8YfaL3wrLJ4S1NwWEMeZbNm90Jyg/wB04HpX1PRQB+OPxZ+BfjH4K6kLXxNpjQwSMVgv4D5ltPj+6+OuOcEA+1ef1+3XiTwzpXjDRbnSdb0+DU9NuF2y21ygZG9+ehHY9RX5yftUfsd3vwia48TeGPN1Hwgz5khbLTWGezH+KPsG6jjPqQDwj4cfErX/AIU+KLXXvDt89neQsNy5JjmTPKSL/Ep9Py5r9Uf2ff2gdD+PXhNb6yZbTWbdQuoaYzZeB/7w/vIex/A81+Q1dj8J/ilrXwf8a2PiPQ5yk0LbZoCfkuIiRujcdwR+RwR0oA/Z2iuU+F3xI0n4s+B9M8TaNJutbyPLRN9+GQcPG3upyPfqODXV0AFflt+3VG6/tI6x53CNb2pX/d8sf1zX6k18A/8ABSD4c3Fn4o0DxtBHusryD+zrllH3JkJZCf8AeUkD/cNAH3L4Lhht/B+hxWwAt0sYFjC9NojXH6V4t+3J8P7jx38B9QmsozLeaLOmprGoyXjUFZAPojlv+A079jT422PxS+FenaXNcIviPQ4Vs7u3ZhueNRtjmA7grgH0YH2r3y4gjuoJIZkWWGRSjowyGUjBBHpQB8Mf8E3PiRaW3/CSeB7qRYrmeRdTstx/1mFCSr9QFjIHpu9K+66/PH48fsl+Lvg34yPjn4YLdXGlwzm6jisSWutObqQF6vHyRxnjhuOT2fw7/wCCjlnDp8Vn478OXUepQjZLd6UFKyEcZMTkFT6jJ/DpQB9t1meJvEmneENAv9a1a6js9OsYWnnmkOAqgfz7AdyQK+Xtc/4KPeAbW2Y6XoeuahcY+VJ44oFP472/lXyZ8ef2qPF3x3k+yXrJpHh5HDR6TaMShI6NIx5dvyA7AUAdx+zj4fv/AI+ftWXXjA2zjS7XUZdaupGHyx5ZjDH9S23j0U+lfpcGDdDmvxX8N+KvFlrp82haBqOqQ2t0++Wz013Xzmxj5gnLcetfpb+xH/b9r8CrLTfEWlX2lXen3c0MK38LRtNCxEiuAw5GXZf+A0Ae+UUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFfmx/wUY/5Llpv/YEg/wDRs1fpPX5sf8FGP+S5ab/2BIP/AEbNQB8sV+of7A3/ACbrpv8A1/XX/odfl5X6h/sDf8m66b/1/XX/AKHQB9F0UUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFY/i7wjo/jrw/eaJrtjFqOmXabJYJRwfQg9QR1BHINbFFAH5TftQfsw6n8B9eN5aCS+8IXkpFnenloWPPlS+jDnB6MB65FeFV+2vjDwjpXjzwzqGg61apeabfRGKWJx69GHowOCD2Ir8lf2gPgnqPwK+IFzoV0zXOnyDz9PvSuBPCTxn/aXoR6j3FAG7+y7+0FefAnx3HLPLJL4Y1Bli1K1GSAvaVR/eX9Rkelfq5pep2mtadbX9hcR3dldRrNDPE25JEYZDA+hBr8O6+8/+CfPx4a+tZvhrrNyDNbhrjSHkPzNH1khHrt5Ye27sKAPtuiiigAqrqv8AyC7z/ri//oJq1VXVf+QXef8AXF//AEE0Afh3W74D/wCR48O/9hG3/wDRq1hVu+A/+R48O/8AYRt//Rq0AftjRRRQAUUUUAc58Q/H2k/DHwfqXiTW5vJ0+xj3ttxukboqKO7McAD3r8iPi98VdY+Mnjq/8SaxI2+ZttvbbyyW0IPyxr7D9SSe9e4/t2fHgfETxyvhLSLkyaBoMhWVkPyXF3jDt7hOVHvux1r5aoAK+sf2Rf2P5PiVJb+L/GVtJB4VU7rSxcFW1Ag9T3EXv/F245rk/wBkH9m1/jd4sbUtYhkTwhpTq1yw+UXUvBEAPpjliOg9CRX6h2dpBp9rDbW0SQW8KCOOKNQqooGAAB0AFACWNjbaZZw2lnbxWtrCgjighQIiKBgKqjgADsKnoooAKKKKACiiigAooooAKKKKACiiigBskayxsjqHRhgqwyCPQ18G/tffsappEV3438A2OLNd02paNboT5Q6mWFR/D1yg6YyOOB96UjKGUgjIPBBoA/DKt7wL421f4c+K9O8Q6HdNaajYyiRGUnDDujDurDII7g19Ifttfsyr8N9Ybxp4atWXw1qM3+l28YytjOx7eiOc47A8dwK+UaAP2S+Cvxc0r41eAbHxHpZ8tpB5d3as2WtpwBvQ/wAwe4INd5X5U/sf/HU/Bn4mQxahcNH4a1kra3yk/LE2f3c2P9knk/3Sa/VSORZEV0YMjDIZTkEetADqKKKACiiigAr47/bs/aSbwnpknw98OXW3WL6POqXMT/NbQMOIhjozg8+i/wC9x9CfHT4tWPwW+G+qeJLsCWeNfKs7YnHn3DAhF+meT7A1+QPiDXr3xRrl/q+pTtc399M1xPKx5Z2OSaAM+tvwX4L1j4g+JbHQdBspL/U7x9kcSDp6sx7KBySeABWTa2s19cxW9vG008ziOONBlmYnAAHqTX6lfslfs2WvwR8IpqOpwRy+MNTiV7uY/MbZDyIEPbH8RHU+oAoA1f2b/wBmXQvgPoKSlI9R8VXMYF7qbKCVzyY4s/dQH8Wxk9gPaqKKACiiigAooooAKKKKACiiigAooooAK4T4wfBnw38a/C8mjeILQOVy1reRjE1tJj7yH+Y6HvXd0UAfjf8AGj4Ma/8AA/xhLoetxbkbMlpfRg+VdRZwGU+vqOoNcDX7F/HP4L6P8cvA1zoOpgQXK5lsr5VBe2mxww9QehHcfga/JDxt4N1T4feK9T8PazbtbajYTGKVCOD3DD1Uggg9wRQB9N/sN/tKHwPrkfgTxHesPD+oyY0+aZsraXDH7uT0Rz+AbnuTX6L1+GSsVYMpIYHII6iv1K/Yy+O3/C3/AIbJp+p3Il8TaGq211uPzzRYxHN75AwT6g+tAH0HRRRQAUUUUAeVftK/GWD4JfC3UdZVlOr3A+y6bCed07A4Yj0UZY/THevyO1DULnVb64vbyZ7m7uJGmmmkYszuxyzEnqSSa+jP27viu/j34wS6FbTbtI8OL9kRVPytcHmZ/rnCf8A96+a6ALujaPe+IdWs9M062e7v7yVYIIIxlndjgAfjX6r/ALMP7OenfAfwennRx3Pim+RW1G9HOD1ESHsi/qefTHgH/BPX4FxTLcfEnWLXeVZrXRxIPlBHEsw9TnKA/wC9+H3TQAUUUUAFFFFABRRRQAUUUUAFFFFAHJ/E/wCGeh/Fvwfe+HdetxNaXC5SUAeZBIPuyIT0Yf4joa/JH4v/AAq1f4NeOr/w1rC7pYDvguVUhLmE52SL7HH4EEdq/Zqvn39s34GR/Fz4ZT6jYQBvEmhI11aMo+aaMcyQ/iBkf7QHqaAPyzopSCDgjBpKACiivaP2T/gmPjX8VLWzvYnfw/poF5qTLkBkB+WLPbewx64DY6UAfQ/7Dv7LccFvafEfxZZ7ppAJNGsphwi9rhl9T/DnoPm7jH2/UdvbxWlvHBBGsUMahEjQYVVAwAB2FSUAFFFFABRRRQAUUUUAFFFFABUV1aw31tLb3ESTwSqUkikUMrqRggg9QRUtFAH5gftifszt8F/Ei67ocLN4P1SUiJQM/YpiCTCT/dOCVPoCO2T84V+1fxC8CaX8TPBuqeG9Yi8yxv4TGxH3o26q6+jKcEfSvx3+IfgfUPht411fw1qi4vNOnaFmAwJF6q49mUgj60Ae7/sM/HST4cfESPwxqd35fhzX5Fi2yH5ILo8RuPTdwp+q56V+mlfhmjtG6ujFWU5DDgg+tfrr+zD8VE+Lnwb0PV5Jd+p26fYtQUnLCePgsf8AeG1/+BUAer1ynxQ+G+kfFnwTqXhnWoy1neJhZF+/DIOVkU+oPP6dDXV0UAfkl8RvhD8Q/wBl/wAZR3qPeWSRSn7Br+nFhFKP94fdJHVG9+ororb9u74vW9mIDrVnOwGPOksIy59+AB+lfqLd2cGoW7291BHcwOMPFKgZWHoQetcPc/AH4a3lz9om8B+HpZv77adFn/0GgD8ufE/xw+KHxUnNrqHibWtUWU7RY2bskTZ7eVEAp/EGtzwf+yF8WfGypND4UutOgk587ViLX8dr4f8A8dr76tfjz8Dvh5fXelWesaJodzZyvbzQWtoYijoxVlO1OxBFXf8Ahrv4Q/8AQ7WP/fEn/wATQB8z+C/+Cauq3LJL4r8W21jH1a20uAzOfbe+0Kf+AtXuXhL9hH4UeGTG91pl3r8y87tSumKk+6ptH6V03/DXfwh/6Hax/wC+JP8A4mj/AIa7+EP/AEO1j/3xJ/8AE0Aej+HPBXh/wfarbaFoenaPbr/yzsbVIR9TtAyfetqvHv8Ahrv4Q/8AQ7WP/fEn/wATXpXhPxZpPjjQbXWtDvU1DS7oEw3EYIV8Eg4yPUGgDXooooAKKKKACiiigAooooAKKKKACiiigAooooAK/Nj/AIKMf8ly03/sCQf+jZq/SevzY/4KMf8AJctN/wCwJB/6NmoA+WK/UP8AYG/5N103/r+uv/Q6/Lyv1D/YG/5N103/AK/rr/0OgD6LooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACvIP2ofgjB8b/hjeafDHGNesQ11pc7DkSgcx57BwNp98HtXr9FAH4bXVrLZXMtvPG0M8TmOSNxhlYHBBHqDWp4N8VX3gfxVpWv6bIYr7TrlLmJgcZKnOD7EZB9jX0F+3r8JI/APxWXxBYQ+VpfiRWuSqjCpcrgSgfXKv8AVjXzJQB+1nw98baf8R/BOjeJdMffZ6lbLOo7oxHzIfdWyp9xXRV8Y/8ABOP4nLqXhnXPA11J/pGnSfb7MMfvQucSAf7r4P8A20r7OoAKq6r/AMgu8/64v/6CatVV1X/kF3n/AFxf/wBBNAH4d1u+A/8AkePDv/YRt/8A0atYVbvgP/kePDv/AGEbf/0atAH7Y0UUUAFeT/tPfFwfBv4Q6vrEDqNWuF+xaeG/57uCA2O+0Zb/AIDXrFfnH/wUQ+JT+IviZp/hK3lzZaDb75UU8G4lAYk/RAmPTJ9aAPlCaZ7iZ5ZHaSR2LMzHJJPJJra8D+DdR+IPi7SvDukxGa/1GdYIwBkLnqx9lGST6A1hV91f8E5fhIUj1f4h30I+fdp2mlhzgYM0g/HaufZhQB9c/C/4c6V8KfA+leGdIi2W1nEFeTHzTSEfPI3uxyf0rq6KKACiiigAooooAKKKKACiiigAooooAKKKKACiiigDK8VeF9N8aeHdQ0PWLZbvTb6FoZ4W7qfQ9iOoPYivx8+Mnwwvvg/8RdX8L325/ssm63nZcefA3Mcg+o6+4I7V+zFfJP8AwUK+Ep8UfD+z8aWMAe/0FvLuio+ZrV2Az77XIPsGY+tAH5z1+pX7E3xib4o/CK3sb6Tfrfh8rY3BJ5kjx+5k/FRtPuhPevy1r6E/Yd+Jj+APjhYWM0u3TPECf2dOpPHmE5ib6hxt+jmgD9SqKKKACiiuU+Kvji3+Gvw58Q+JrllVNOtHlQN/FIfljX8XKj8aAPgD9vr4wN42+JyeFLK436R4czHIqH5Xu2/1hPqVGE9iG9a+W6s6lqE+rahdX11I011cytNLIxyWdiSxPuSTVzwr4bvvGPiTTND02Pzb/ULhLaFT03MQAT7DqfYUAfWX/BP/AOA6+I9cn+IWtWYk07TX8nS1mX5ZLkfelA7hBwD03H1Xj9B65v4ceB7L4a+B9G8M6fzbabbrCHxgyMPvOfdmJP410lABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAV8mft7/AAIXxl4NXx1pMAOtaJHi8VF5ntM8n6oTn6FvavrOorm3ivLeW3njWaCVSkkcgyrKRggjuCKAPw2r1P8AZp+LbfBr4t6RrcrN/ZczfY9QRe8DkBmx32nDY/2ap/tC/C5/g/8AFrXPDqoy2KSfaLFm53W78pz3xyv1U15xQB+5UM0dzDHNE6yRSKHR1OQwIyCKkrwr9jH4nf8ACyvgdpIuJN+qaL/xLLrJ5bYB5bfjGV/EGvdaACub+JHjGH4f+A9f8RzhWTTbOS4Ct0dlU7V/FsD8a6SvnD9vrxUPDv7Pt3Zq22bWL6CxXHXAJlb8MREfjQB+ZGoahcatqFze3crT3VzK000rdXdiSxPuSTV/wj4au/GXinSNBsE33mpXcVpEP9p2Cgn2Gcn2FZFfSf7AfhNPEXx8gvpY98ejWM14MjgOcRqf/IhoA/SHwX4VtPA/hLSNAsECWmm2sdtHgYyFUDP1JyfxraoooAKKKKACiiigAooooAKKKKACiiigApOvBpaKAPyU/az+F8fwq+Nut6faR+Vpd839o2aAYCRyEkoPZWDKPYCvHK++v+ClHgqK48OeFPFcUeLi1uX06ZwPvRuu9M/Rkb/vuvgWgAr9Sf2HfhkPh/8ABGw1CeER6l4hI1KZiPm8ojEKn22fN/wM1+aHgrw+3ivxhoeiqCW1C9htcL1+dwv9a/azT7GHS9PtrO3RY7e3iWGNFGAqqAAB+AoAsUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAV8K/wDBSD4YxRyaB49tItskh/sy+ZR94gFomPvgOufQL6V91V5b+094Mi8d/Ajxhprx+ZLHZNeW/HIlh/eLj6lcfQmgD8g6+zP+CbvxAXT/ABd4j8H3Em1NRt1vrUE8eZEdrqPcqwP0Q18Z16t+yz4k/wCEW/aA8FXhbYkl+tqx9pQY8f8Aj9AH68UUUUAFFFFAH57+Pf2AfiH4n8c+ItYtdS0FLXUNSubuJZbmUOEklZ1BAjPOCKwv+HcvxL/6Cnh3/wACpf8A41X6S0UAfm1/w7l+Jf8A0FPDv/gVL/8AGq5Xxt+w78VvBdhLerpVrr1tECznR7jzXUDv5bBWP/AQa/U+igD8Yvht8M7v4leMI/DMOp6fouqykpDHqzSRLJIOsYKo2G9mxnp14r9WP2e/h7qXwr+Eeg+GNWlt5tQsVkWV7Vi0Z3SMwwSAehHavkP/AIKIfDGz8L+JPD/jjSIVsZ9Ud4LxrcbMzoAyScfxFc8/7Ar6z/Zr+Ilx8Uvgr4a1+8k83UHhNvdPnlpY2KMx9zt3fjQB6dRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAV+bH/AAUY/wCS5ab/ANgSD/0bNX6T1+bH/BRj/kuWm/8AYEg/9GzUAfLFfqH+wN/ybrpv/X9df+h1+XlfqH+wN/ybrpv/AF/XX/odAH0XRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFAHgn7bXw9i8efAXWJxHuvtEZdTt2A5GzIkH0KM34gelflZX7haxpVtruk3um3kfm2l5A9vNGf4kdSrD8ia/E/xNokvhnxHqukT/wCv0+6ltX4x8yOVP8qAPWf2OfG6+B/2gvDMs0nl2upSHTJTnj96NqZ/4Hsr9Y6/DzSdQk0nVbK+hYpNbTpMjDqGVgQfzFfttompprWi2GoRY8u7t451x6MoYfzoAu1V1X/kF3n/AFxf/wBBNWqq6r/yC7z/AK4v/wCgmgD8O63fAf8AyPHh3/sI2/8A6NWsKt3wH/yPHh3/ALCNv/6NWgD9saKKKAIL69i02xuLu4bZBBG0sjeiqMk/kK/Fr4i+Lp/HnjzxB4iuTmXU76a5xnO1WclVHsFwB7Cv1g/aW8TDwj8BvG+pb9jrpzwRt/tykRJ/484r8faAJIIZLqaOGJGklkYIiKMlmJwAK/Zn4P8AgOP4ZfDPw74ajC77C0RJmXo0pG6RvxYtX5bfst+F08XfH7wXYSp5kS3y3TrjtEDJ/wCyV+vVABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFZfijw/beLPDeqaLerutNQtpLWUEZ+V1Kn+dalFAH4jeKvD1z4S8T6vol4u27027ltJR/tI5U/yqppepXGjalaahaSGG7tZknhkHVXVgyn8CBXvP7dfhdPDf7Q2rzxJsj1S3hvuBwWK7GP4lCfqa+fKAP2x8C+KYPHHg3RPEFsMQ6lZxXQXOdu9QSv4EkfhW7Xgv7D/iQeIv2c/D6l90unSTWMg/u7XJUf8AfDL+de9UAFfI3/BRzxo2k/DPQ/DcUmyTWL7zZVB+9FCM4PtvZD+Ar65r83P+Ci3in+1vjNpujo+YtJ0uMMvpLK7O3/jnlUAfKlfVH/BPX4cL4p+LV54kuU3Wnh623xgjg3EuUT8lEh+u2vlev0n/AOCdvhQaP8FbzWWTbNrGpSMrescQEY/8eElAH1PRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFAHxZ/wUk+H6XXh7w14yhi/f2kx024cDkxuC8efYMH/77r4Er9fv2nPCMfjb4DeM9NdN8i2DXcPHIkhxKuPxTH0Jr8gaAPsP/gm/47GmePPEPhSd9seqWYu7cE/8tYThlHuUcn/gFfoXX5E/sqeIf+EZ/aC8FXZbYsl8LVj7SqY8f+PV+u1ABXxT/wAFMdUMfh7wNpoPEt1c3DD/AHERR/6G1fa1fCn/AAUzP+keAh223f8AOKgD4cr7n/4Jl6OP+K+1Vk5/0O1jbH/XZnH/AKB+VfDFfoH/AME0R/xQ/jM9/wC0Yf8A0UaAPsuiiigAooooAKKKKACiiigAooooAKKKKACiiigD59/bs0saj+zjrcm3JtLi2nB9P3oX/wBmr8s6/WL9s8Z/Zn8a/wDXK3/9KYq/J2gD2X9j3Rxrn7SXgmBk3rFcyXRyOB5UMkgP5qK/Wmvyy/YSGf2lvDvtb3n/AKTyV+ptABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABVXVLNdS0y7tHAK3ELxEH0ZSP61aooA/DnUIDa39zCw2mOVkI9MEir3hPVjoPirRtTB2myvYbnPpskVv6UvjAbfFutgdPt0/wD6MasigD9zqKahyik+lOoAKKKKACivkPxX/wAFENF8K+KNY0WTwffzyabeTWbSrdIA5jcoWAxwDtzWV/w8v0L/AKErUf8AwLj/AMKAPtGivi7/AIeX6F/0JWo/+Bcf+Fc94u/4KVXtxp8sXhnwhHZ3bjCXWpXPmrH77FAyf+BfnQBp/wDBSvxhanTvCHheORXvPOk1GZAeUQL5aZ+pL/8AfNepfsCadNY/s66fLLwt1f3U8YP93eE/mhr4G8PaB42/ab+KAj82fWNb1CQNc30wPl28fdmI4VFHQD6Cv1l+H/guy+HXgrRvDWnEtaabbJbq7DDOQOWPuTk/jQB0NFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABX5sf8ABRj/AJLlpv8A2BIP/Rs1fpPX5z/8FCtJa++NmnSC4hhH9iwjbJvz/rZvRTW1GjVxEuSlFyfZHPXxFHCw9pXmox7t2R8k1+of7A3/ACbrpv8A1/XX/odfmn/wjrf8/wBa/wDkT/4iv0y/YStfsf7PenxGRJSL65+aPOPv+4Fb1sFicPHnrU3Feasc2HzHB4qfs6FWMn2TTPoWiiiuI9EKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAr8hv2p9LXSP2hPHMCLsRtQaYD/AHwH/wDZq/Xmvy1/bM0P7R+0Z4qlW5t4gxtztffn/UR+ikV0UcPVxEuSjFyflqcuIxVDCR58RNRW127Hz3X7IfAHUv7W+CPgW7zuMmjWuT7iNQf1Br8hv+Edb/n+tf8AyJ/8RX6wfsqxtD+zz4HjZlcrY7dy5wcSP61pWweJw0VKtTcV5qxlh8wwmLk4YerGTXZpnq9VdV/5Bd5/1xf/ANBNWqrampbTbsDqYnH/AI6a4zvPw6rd8B/8jx4d/wCwjb/+jVqX/hANc/59F/7+p/jW34H8Ca1D400B2tVCrqFuxPmp0Ei+9ej/AGdjVq6Mv/AWeKs7ytuyxMP/AAKP+Z+yNFFFece0fNn/AAUC1T+z/wBnm5t84+3ala2+PXBaT/2nX5iV+of7cXgLVfiJ8L9L03SPJ8+PVEnbz5Ni7RHIOuDzzXw5/wAMs+Nv+ob/AOBJ/wDia2jRqVFeMW0YyrU4O0pJM9C/4J2aOuo/He7u3TcNP0aeZG9HaSKP/wBBdq/Syvi79hH4Pa78OPGfia81gWu2409IYzby7znzATngegr7RqJRlB8slZmkZRmrxd0FFFFQUFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQB8Af8FMNHW38XeCdVC4e6sbi2LevlSIw/9HfrXxhX6Qft6/C7V/iVpvgwaQLfzbOa6Lm4k2cOsXTg/wB2vj//AIZZ8bf9Q3/wJP8A8TW8aFWa5oxbRjKtTg+WUkmfV3/BNbVPO+GfirTc5+z6uLjHp5kKL/7Sr7Ar5P8A2Cvhjrfw1sfGcesfZ/8ATJLRovs8pf7olzngY+8K+sKylGUHyyVmaRkpLmi7oK/Jn9sbUP7S/aQ8ZvnPlzxwf98RIv8ASv1mr8z/AI+fs7+LvFHxl8X6rafYfs13qEkkfmXBDbTjGRtqoU51HaCuKdSNNXm7HzDX69/st6Omh/s9+A7ZF2BtMS4I/wBqUmU/q5r85P8Ahlnxt/1Df/Ak/wDxNfqL8LNLk0P4a+FtPmCiW10y3hcIcruWNQcflTnSqU9ZxaJhVhU+B3OpooorI1CiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAp6zYrqmj31k43LcQSQkHuGUj+tfiHeQ/Z7yeLGPLkZcfQ4r9yK/KXxX+zB4xuvFGsTQDThBJeTPGDcEHaXJH8PpWkKc6nwK5nOpCn8bseS+C9U/sPxloOpZ2/Y7+C43emyRW/pX7aV+SP8Awyz42/6hv/gSf/ia/Wm13fZot/3tgz9cU5050/jVghUhU+B3Ja+FP+Cmf/Hx4C/3Lv8AnFX3XXyZ+3Z8HfEXxUk8IPoSWzrZi5WX7RN5f3vLxjjnoayND85K/QT/AIJo/wDIjeM/+wjD/wCiq+Z/+GQfiF/zx07/AMCx/hX2J+wv8Mdc+FvhnxTYa4kCT3F5DPH5EokG3YV6+uRQB9PUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAeKftnf8AJs/jX/rlb/8ApTFX5OV+uH7W2kXGvfs8+L7G1CmeWKALvOBxcRHr+FfmN/wp7xF/ctv+/wB/9agD0r9hH/k5Xw9/173n/pO9fqbX5r/sY/D/AFfwz+0N4dvL1IRB5V0mY5AxybeTHH4V+lFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQB+JPjD/AJG7W/8Ar+n/APRjVj1p+JrhbzxJqs6AhJbuV1DdcFyeazKAP3Mj/wBWv0FOpqDaqg9hTqACiiigD5f8S/8ABPzwH4o8RarrNzrWvR3Oo3ct3KkUsIRWkcuQMx9Mk1nf8O3/AIef9B3xF/3+h/8AjVfQvxN+J2gfCPwnc+IPEV39ms4flSNRmWeTBIjjXuxx9O5wOa/Pr4q/t8ePvGdxPb+GnTwjpJbCfZ1D3TL/ALUhHyn/AHAPqaAPoD/h2/8ADz/oO+Iv+/0P/wAaq/pP/BO/4ZWE4e6utc1JQc+XNdIg/wDHEBr4Hvvi94/uZxPd+L9feWQbw8l/Nlh6j5uldd4K/ay+KvgG+R4fFN5qMKcNZawTcxMPT5/mX/gJBoA/UfwH8NvDPwx0j+zPDGjWukWhO5xAnzyN/edz8zH3JNdLXz3+zZ+17onxyxo+owpoXitFz9jMmYroActCTzkd1PI9+30JQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFfn//AMFCLEw/FLQrrtNpQQf8Blf/AOKr9AK+Kv8Agotob+Z4M1gLlMXFozeh+V1H4/N+VfTcOT5Mxgn1TX4Hx/FlNzymo10cX+KX6nxdX6L/ALBd99q+B7QZz9n1OdPzCt/Wvzor7f8A+CdfiTzNJ8Y6A74MM0F9EueodWRz+GxPzr7riSm55fJr7LT/AE/U/NeEaqp5rGL+0mvwv+h9j0UUV+Pn70FFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAV+Wn7WF9/aH7QXjB858u4SL/vmNV/pX6lV+QPxO8QjxZ8RvE2sK2+O81GeaNv8AYLnb/wCO4r7rhOm3iKlTsrfe/wDgH5txxVUcLRpdXK/3L/gnMV+sH7OunnTPgZ4IgPX+y4ZD9XG8/wDoVflDHGZZFRfvMQB+NfsR4H0k6B4L0LTSMG0sYYCPdUAP8q9LiydqNKHdt/cv+CeRwNTviK9Tskvvf/ANyoL7/jxuP+ubfyNT1Bff8eNx/wBc2/ka/NI7o/XpfCz8tq1fCf8AyNOjf9fsP/oYrKrV8J/8jTo3/X7D/wChiv3up8EvQ/j+j/Fj6o/TuiiivwM/sI4L4zwmTwnG4/5Z3KE/Qhh/hXh1fQ3xMsTfeCdSVfvRqso/4CwJ/TNfPNfT5bK9Frsz5vMY2rJ90eifBKfZ4kvIuz2pP4h1/wATXtVfPvwvvfsfjWw5wsu6I/ipx+uK+gq83Mo2r37o9HL5Xo27MKKKK8o9MKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigDyb46XGZNHhHYSufx2gfyNeVV3vxmvPtHipIQciCBV/Ekn+orgq+xwceXDxR8njJc1eTPYPgbAV07VZuzSon5An/2avTq4b4O2RtfB4lPW4neT8Bhf/Za7mvmsZLmrzZ9DhY8tCKCvnP4hQmHxnqq+su78wDX0ZXg3xesja+MppP4biJJR+W3+amuvLJWrNeRy5ir0k/M4qvpXwbN9o8J6TJ62yZ+oGK+aq98+Et/9s8F2yE5a3keI/nuH6MK7szjekpdmcWWytUa7o7Kiiivmj6IKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigBrsI0Zj0UZr5YupDNdTOerOWP4mvpfxLeDT/D+o3BOPLt3YfXBxXzJX0GVx0nL0PCzKWsY+o+3hNxcRRDrIwUficV9UgbQAOgr5q8IWhvvFGlw4zm4Qn6A5P8AKvpas80l70I+peWr3ZMK4T4pf6vTfrJ/7LXd1wnxS/1em/WT/wBlrxEeyzz+u9+Ff/MU/wC2X/s9cFXe/Cv/AJin/bL/ANnpsSO+oooqSgooooAKKKKACiiigAooooAKKKKACiiigDz39oD/AJJB4i/65xf+jkr4hr7e/aA/5JB4i/65xf8Ao5K+IapEs9I/Z1/5LJ4f/wC3j/0nlr7Yr4n/AGdf+SyeH/8At4/9J5a+2KTGgooopDCiiigAooooAKKKKACiiigAooooAKKKKAPw71T/AJCd3/12f/0I1Vq1qn/ITu/+uz/+hGqtAH7nUUUUAFFFNkYrGxAyQMgUAfmD+2H8SNS+Mnx2k8M6W8l5Y6Tdf2TYWkfSS5LBJGA7kyfLn0UV9ifAH9kXwl8JNDs7jU9Ottd8VMokuL67jEixOf4YlPCgevU9c9h8U/smxJr37Vugz6iRNMby6uv3n8UojkYH6g8/UV+qVAH5pf8ABRMBfjzZADAGh24AH/XWavuzWvhJ4Q+KHgzTbXxLoNnqQayiVZ3jAnj+QcrIPmX8DXwp/wAFFP8AkvVn/wBgO3/9GzV+jPhn/kW9J/69Iv8A0AUAflh8efhDrH7LfxXspNJv5Tbbxf6PqI4cBW+63bcpwD2II9cV+mXwh8fR/E/4a+HvE6KqPqFqsksa9ElHEij2DBq+af8AgpZZ2r/D/wAIXbBftseqSRRnv5bREv8AqiV3f7At3Nc/s56akpJWC+uo4s/3d+7+bNQB9F0UUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFeBftueET4n+BV9cxrun0e6i1BcDnaMxv+G2Qn/gIr32snxZ4dt/F3hfVtEuuLfULWS2c4zgOpXI9xnP4V2YOv9WxFOt/K0zgx+G+uYSrh/5k18+n4n4317x+xX4xTwp8dNNt5pfKt9Xhk09snALNhkH4soA9zXjPiTQLvwr4g1HRr9PLvLC4e2lXtuViDj24qtpuoT6TqVrfWsjRXNrKk8UinBV1IZSPoQK/cMTRjjMPOlfSS/PZn84YPETwGLhWtrCSdvR6o/Z2iuX+GPji1+JHgLRPEdm6tHfW6u6r/BIOHQ+4YMPwrqK/BpwlTk4SVmtD+mqdSNWEakHdNXXowoooqDQKKKKACiiigAooooAKKKKACiiigAooooAKKKKAPPf2gPGP/CCfB3xVqyy+TOtm8EDZwfNk+RMe+Wz+Ffk3X2d/wUG+JIkm0PwPaTcRn+0b5FP8RBWJT+Bdse6mvjGv1vhnCuhg/ay3m7/LZf5/M/C+MMasTmHsYvSmrfN6v9F8ju/gX4Pbx58XPCujBd0M19HJPx/yxQ75P/HVI/Gv1rr4O/4J9+AJdS8Ya14umjxaadB9jgYj700nLY/3UHP++K+8a+V4oxHtcYqSekF+L1/yPtuDcI6GAdeS1qP8FovxuFQX3/Hjcf8AXNv5Gp6gvv8AjxuP+ubfyNfHx3R95L4WfltWr4T/AORp0b/r9h/9DFZVavhP/kadG/6/Yf8A0MV+91Pgl6H8f0f4sfVH6d0UUV+Bn9hFbUrMahp11bHpNE0f5jFfL08LW80kTja8bFWB7EHFfVVfP/xQ0c6T4uumVcRXX+kL+P3v1z+de3ldS0pU31PGzKneMZ9jmdPvX02/t7qP78MiyD8DmvqCzuo761huIW3RSoHU+xGRXyvXuXwh8QLqfh37C7f6RZHbj1Q8qf5j8K6czpc0FUXQ58uqcs3TfU7yiiivmz6EKKKKACiiigAooooAKKKKACiiigAooooAKKKKACkZgilmOABkmlrlfiV4gGg+F7na2Li5HkRD69T+Az+laU4OpNQXUipNU4uT6HiHijVTrfiG/vc5WWVtn+6OF/QCsqitzwTo51zxPYWu3dH5geT02ryf5Y/GvtfdpQ8kj45c1Wfm2e9eEdNbSfDOnWrjbIkK7x6MeT+prYoor4iUnKTk+p9lGKilFdAryr446aWTTb8D7paFj+o/rXqtc58QdF/t3wnewKMzRr50f+8vP6jI/GunC1PZ1oyZz4mn7SjKKPnSvU/gfqwW41DTmbBdROg9ccN/MV5ZWv4U1r/hH/EFlfEnZG/7zHdTw36GvqcTT9tSlA+aw9T2VWMj6XopscizRrIjB0YBlZehB6GnV8WfXhRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAcF8ZNW+xeF1tFbD3coUjvtX5j+oFeHV2nxX1/wDtnxO8EbZt7MeSvoWzlj+fH4VxdfX4Kl7Kik93qfKYyp7Ss7bLQ7n4P6W194sFwR+7tImkJ9z8oH6k/hXutee/BnR2stAnvnXDXkny/wC6uRn8816FXgY6p7Su7dND3MFT5KK89QrhPil/q9N+sn/std3XCfFL/V6b9ZP/AGWuBHczz+u9+Ff/ADFP+2X/ALPXBV3vwr/5in/bL/2emxI76iiipKCiiigAooooAKKKKACiiigAooooAKKKKAPPf2gP+SQeIv8ArnF/6OSviGvt79oD/kkHiL/rnF/6OSviGqRLPSP2df8Aksnh/wD7eP8A0nlr7Yr4n/Z1/wCSyeH/APt4/wDSeWvtikxoKKKKQwooooAKKKKACiiigAooooAKKKKACiiigD8O9U/5Cd3/ANdn/wDQjVWrWqf8hO7/AOuz/wDoRqrQB+51FFFABRRRQB+UXxMtNS/Zr/akvNQs4jjT9V/tOzVuFmtpGLbM+hVmQ/Q1+mPwz+J/h74s+F7bXPDt/Hd28ijzYgw8y3cjJSReqsK87/ag/ZnsPj94diltpItO8U2Cn7HfOvyuvUxSY52k8g9j9SD8v/sg/DDxl8Kf2mrfTPEWkX2lK1ldIzkH7PPhMgq4+Vxnkc0AYf8AwUU/5L1Z/wDYDt//AEbNX6L+HZUh8L6ZJI6xxpZxMzMcAAIMkmvzo/4KKf8AJerP/sB2/wD6NmrybUvi18T/AIqWsfh+XXda1y3ZViGm2u4q6gYAKIPmH1oA9P8A24vjpp/xb8eWGjeH5/tuiaGrxrcx8pcXDkb2T1UBVUHvg44wT9z/ALM/gOf4b/BDwrol3GYb1bb7RcRsMFJJWMjKfcbsfhXzX+yj+xPf6TrFh4y+IFuLaS2Kz2GiMQXEgOVkm9MdQnXOM4xivuOgAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKAPz6/bw+Fr+GfiBb+LrRP+JdriBZsD7lygwf8Avpdp+oavl6v1p+OHwvtvi98N9V8PTBVuZF86zmb/AJZTryjfQ/dPsxr8otY0m70HVbzTb+B7a9tJWgmhkGGR1OCD+Ir9d4dx6xWFVKT96Gny6f5H4TxZljwWNdeC9ypr8+q/X5n1f+wb8ZI9F1i68A6nLst9Rc3OnOx4WcD54/8AgSgEe6+9fddfjFpuo3Wj6hb31lPJa3lvIssM0RwyMDkEH1Br9RP2cfjjZ/GzwNDdPLHH4gs1EWpWq8EP2kA/utjI9Dkdq+d4my106n12mvdl8Xk+/wA/z9T6rg/OFVpf2fWfvR+HzXb5fl6HrNFFFfCH6YFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFYPjrxlp3w98Jan4h1aXyrGwhMr+rHoqL6ljgD3NbvTk1+e/7Z37QQ+IHiD/hEdBulk8O6ZJm4mhOVu7gcde6pyB2JyeeK9jK8vnmOIVNfCtW/L/g9Dwc6zSGU4SVZ/E9Iru/8luzwHx54yvviD4x1fxFqLFrvULhpmGchB0VB7KoCj2FYccbzSJHGpeRyFVVGSSegFMr6I/Yw+DLfEb4hpr1/CW0LQXWdtw+Wa46xx/h94/QDvX7FiK9LAYZ1JaRiv+GR+A4XD1szxcaMdZTer/Ft/mfaH7OPwyb4UfCXRtGuFUalIpu73b2mk5K++0YX/gNenUUV+F1q0sRUlVnvJ3P6Uw9CGFowoU/hikl8gqC+/wCPG4/65t/I1PUF9/x43H/XNv5Gso7o2l8LPy2rV8J/8jTo3/X7D/6GKyq1fCf/ACNOjf8AX7D/AOhiv3up8EvQ/j+j/Fj6o/TuiiivwM/sIK4L4weHzqnh9b6JN09iSxx18s/e/LAP4Gu9pksazRvG6hkcFWU9CD1FbUajo1FNdDKrTVWDg+p8qV0PgbxM3hfxBDck5t3/AHc6/wCwe/1HX8Kj8aeGpPC2uz2rDMDHfC/95D0/EdPwrCr7L3K9PumfI+9Rn2aPqyORZY1dGDIwyGHQg96dXl/wj8aieFdDvJP3qD/RnY/eX+59R29vpXqFfHVqMqE3CR9bRqxrQU4hRRRWBsFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFeA/E3xV/wkevNHC2bO0zHHg8Mf4m/P9BXf/FTxqNEsDplo/8Ap1wuHZTzGh7/AFNeIV9Bl2Ht++l8jwswxF/3UfmFewfBXw+bezudXlTDT/uoSR/CD8xH1I/SvMfD2hz+ItXt7C3GGkb5m7Kvdj9BX0np9jFpdjBaQLtihQIo9gK1zKtyw9kt3+Rnl9Hmn7R7L8yzRRRXzR9CFIeeDyKWigD5y8eeHz4b8SXVuoxbyHzYf9wnp+HI/Cuer3j4qeFT4g0P7Tbx7ryzy6gDlk/iX+v4V4PX2GDre2pJvdbnyeLo+xqtLZ7Ht3wj8VDVdHOmTN/pVmMLz96Pt+XT8q9Ar5h0HWrjw/qkF9bNiSM8r2Ze6n2NfR2g63beIdLhvrV90cg5Xurd1PuK8TH4f2U/aR2f5ns4HEe0hyS3RoUUUV5R6YUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAVzvjrxOvhbQJrgMBdSfu4F9WI6/Qda3bm5is7eSeZ1jijUs7scAAd6+evHXiyTxZrLzDK2kWUgj/2fU+5r0MHh/b1NdlucOLxHsYabs5xmLsWYlmJySepq1pOmzaxqVvZW67ppnCL7ep+gHNVK9Z+DXhUqsmuXC/eBjt1Pp/E39Pzr6TEVlQpuf3HzuHpOtUUD0zTbGPS9PtrSIYjhjWNfwGKs0UV8Y227s+vSsrIK4T4pf6vTfrJ/7LXd1wnxS/1em/WT/wBloQM8/rvfhX/zFP8Atl/7PXBV3vwr/wCYp/2y/wDZ6bEjvqKKKkoKKKKACiiigAooooAKKKKACiiigAooooA89/aA/wCSQeIv+ucX/o5K+Ia+3v2gP+SQeIv+ucX/AKOSviGqRLPSP2df+SyeH/8At4/9J5a+2K+J/wBnX/ksnh//ALeP/SeWvtikxoKKKKQwooooAKKKKACiiigAooooAKKKKACiiigD8O9U/wCQnd/9dn/9CNVatap/yE7v/rs//oRqrQB+51FFFABRRRQBwF98fvhtpd9cWd3460C2u7eRoZoZdQjV43UkMpBPBBBGKg/4aL+FhIP/AAsDw5kdP+JjF/jXw58RP2J/ix4h+IHifVbHRLSSyvtUurqB21CFS0bysykgtkcEcVz3/DB/xi/6ANn/AODKD/4qgD7q1v4rfAvxNcLcav4h8E6rOq7FlvpbaZgvoC2Tjk1a0n41/BjQYRDpni7wjp0Q6R2l1BEo/BSK+C/+GD/jF/0AbP8A8GUH/wAVXK+M/wBlP4p+A7Ca+1TwnctZwgtJNZulyqKOSx8tiQPegD9Lv+GjPhb/ANFB8O/+DKL/ABrtdA8RaZ4q0mDVNHv7fU9OnBMV1ayCSN8Eg4YcHkEfhX44/DX4W658WNaOkeHjZS6ntLJa3V5HA8oHJ2byNxHoOa/VH9mvwPq/w3+C/h3w7rsCW2q2aSCaKORZAMysw+ZSQeCKAPTqKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAr4y/bj+AL3Qk+I2hwl3RVTVrdF/hHCzj6DAb2APrX2bUV1bRXlvLbzxrNBKpSSNxlWUjBBHcEV6OX42pl+IjXp/Nd12PKzTLqWaYWWHq9dn2fR/wBdD8Xq6/4V/E/WfhH4wtNf0abbJGds9ux/d3ERPzRsPQ+vY4NepftVfs1z/B/W21rRYpJ/CN9J+7OMmzkPPlMf7vXafw6jn5+r9po1qGY4fnj70JL+kz+ecRQxOU4rkn7s4PR/k15H64fCT4taH8YvCcGt6LLg/cubSQjzbaTujD+R6EV21fkP8Mvil4g+EviWLWvD92YJh8ssL8xTpnlHXuP1Hav0c+Bv7Sfhj412KQ20y6b4gjjDT6VcOA/u0Z/jXPccjjIFfl+b5HUwEnVormp/ivX/ADP2bIeJKOZxVGu+Wr+EvT/L7j1yiiivlT7UKKKKACiiigAooooAKKKKACiq99qFtpdnNd3lxFaWsKl5ZpnCIigZJJPAFfEv7SH7ajatFceG/h7cSQ2jBo7rW1BR3HTbD3Uf7fX0x1r08Dl9fMKnJRWnV9EePmWa4bKqXtK8tei6v0/zOh/a7/apj0m3vfA3g+736g48rUtShPECn70MZ/vnoSOgOOvT4boZizFmJJJySansLC51S+t7Ozgkubu4kWKKGJSzuxOAoA6kmv2LAYCjltH2VP5vufgWZ5nXzbEe2q+iXZdl/Wpq+B/Bmp/ELxVp3h/R4fPv72URp/dUd3Y9lAySfav1Y+Evw00/4SeBNO8N6dh1t13T3G3BnmP35D9T+QAHavOP2Wv2cbf4MeH/AO09USOfxbqEYFxIBkW0ZOfJQ/gCx7kegFe8V+b5/m316p7Gi/3cfxff07H63wxkby2l9Yrr97P8F29e/wBwUUUV8kfdBUF9/wAeNx/1zb+RqeoL7/jxuP8Arm38jTjuiZfCz8tq1fCf/I06N/1+w/8AoYrKrV8J/wDI06N/1+w/+hiv3up8EvQ/j+j/ABY+qP07ooor8DP7CCiiigDlviB4PXxZo5WMAX0GXgbpn1U+x/nivn2aF7eV45EZJEO1lYYII7V9V15n8Ufh/wDblk1jTo/9JUZuIV/jA/iA9f517OAxXs37Kb0ex5GOw3tF7SG/U8ghme3lSWN2jkRgyspwQR0Ir3b4e/ECLxPbLaXTLFqca8jOBKP7w9/UV4NUlvcS2k6TQyNFLGdyuhwQfUV7OJw0cRGz36HkYfESw8rrY+qqK858D/FaDVFjstXdbe8+6s54ST6+h/SvRc55HIr5OrRnRlyzR9RSqwrR5oMWiiisTYKKKKACiiigAooooAKKKKACuX8ceOLbwjZYBWa/kH7qHPT/AGm9v51m+N/idaeH0ktLFlu9R6HBykR9z3PtXimoahc6peSXV3M088hyzsef/wBVevhMC6jU6mkfzPKxWMVP3Ker/IbfX0+pXkt1cyNLPK253bqTUIBYgAZNJXqHwt+H32hotZ1KP90p3W0LfxH++R6ele/Wqww8OaR4dKlKvPlR03wv8F/8I7ppvLpMahdKCQesadQv17n/AOtXcUUV8dVqSqzc5bs+tp040oKEegUUUVkaBRRRQAleFfE/wWfDupG9tkP9n3TEjA4jfqV+ncV7tVPVtLtta0+ayu08yCUYYd/qPeuvC4h4efN06nLiaCrw5evQ+Xa6fwL41m8Iahk7pbGU4mhB/wDHh7iqvi/wnc+EtUa3mBeBstDNjh1/xHcVhV9Y1DEU+6Z8unOhPs0fUun6hb6pZxXVrKs0Eg3Ky1Zr518HeN73wjdZjPnWbnMtux4PuPQ17p4d8T6f4ns/PsZg+Pvxtw6H0Ir5fE4SeHd949z6XD4qNdW2ZrUUUVwHaFFFFABRRRQAUUUUAFFFFABTZJFijZ3YIijJZjgAetVtU1W00aze6vJ1ggTqzH9B6mvE/HXxKuPErPaWZa203OCOjS+7e3tXZh8NPES027nLXxEKC137Fj4lfEL/AISCQ6dYORp0bfPIOPOYf+yiuAoq7o+j3Ou6hDZWkfmTSHA9AO5PsK+rp04YeHKtEj5epUnXnzPVs0fBnhWbxZrCWyZS3T555f7q/wCJ7V9FWlrFY2sVvAgjhiUIir0AFZXhLwtbeE9KW1g+eVvmmmxy7ev09BW3Xy+MxP1ienwrY+kwmH9hDXdhRRRXAdwVwnxS/wBXpv1k/wDZa7uuE+KX+r036yf+y00Jnn9d78K/+Yp/2y/9nrgq734V/wDMU/7Zf+z02JHfUUUVJQUUUUAFFFFABRRRQAUUUUAFFFFABRRRQB57+0B/ySDxF/1zi/8ARyV8Q19vftAf8kg8Rf8AXOL/ANHJXxDVIlnpH7Ov/JZPD/8A28f+k8tfbFfE/wCzr/yWTw//ANvH/pPLX2xSY0FFFFIYUUUUAFFFFABRRRQAUUUUAFFFFABRRRQB+Heqf8hO7/67P/6Eaq1+jdx/wTf8BXFxLK3iPxGGkYsQJLfHJz/zyqP/AIds+Af+hk8Sf9/Lf/41QB9b0UUUAFFFFABRRRQAUlLRQB+ZP7bXw/g+EHxus9a8MltJTVIl1KIWp2eRcK5DlMdMkBvqx7V94/s9/EiX4sfB/wAO+JLnb9uuIDHdbRgGaNijnHbJXOPesj42/sz+Fvj1qGmXniG41CCXT4mhiFlKqAqxBOcqfSum+EPwm0j4L+D18N6HNdTWCzvcBrxw77nxkZAHHFAHbUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQBR1vRLDxJpN1pmqWkV9YXSGOa3mXcrqexr86v2k/2VNT+Ed7PrOhRTal4QkO7zAC0llk/ck/2emH/Pnr+kdR3FvFd28kE8azQyKUeORQVZSMEEHqK9nLc0rZbU5oaxe67/8ABPn84ybD5xS5amkltLqv815H4u1YsdQudLvIruzuJbW6hbfHNC5R0PqCORX2t8e/2Gkv5LrXfh5sgmYGSTQpGCox7+Sx+7n+63HoR0r4u1jRr/w/qE1hqdnPYXsLbZLe4jKOp9wa/XMFmGHzGnzUX6rqvVf0j8LzHKsXlNXlrxt2a2fo/wCmfU/wd/bx1bw/Fb6Z46tJNcs0wg1O2wLpV9XU4En14P1NfYfgL4teEfiZaibw5rtrqLbdzW6vtnQf7UZww/KvyIqazvLjT7qO5tZ5La4ibck0LlHQ+oI5Brxcdw3hcU3Oj7kvLb7v8j6DLeLsbg0qdf8AeR89/v8A87n7QUV+YXg79sD4oeDzEo10azbJx9n1aITAj0LcP+TV7PoH/BRaQRqut+DVZ/4pNPuyAforrx/30a+Pr8NY+k/cSmvJ/wCdj77DcX5ZWX7xuD81/lc+1qK+WrL/AIKEeB5cfatD1u3/ANxIpP8A2cVbk/4KA/DtVJTTdfZvQ20Q/wDatec8lzBO3sWequIMqav7eJ9NUV8k6l/wUQ8NQqfsHhbU7l+3nzRxj9M15v4u/wCCgnjHVY2i0DRdN0FDx50u66lHuM7VH4qa6aXD+Y1XZ07erX/DnHW4qyqirqrzPsk/+AvxPvuaaO3ieWV1ijQbmdyAFA7k9q8H+Kn7ZfgP4exzW+nXX/CUauuVW305gYVb/bl+6B/u7j7V8D+OPjH40+I2V8Q+Ir7UICc/ZjJsh/79rhf0rjK+nwfCsItSxU+byWi+/f8AI+Ox/G1SacMFT5fOWr+7b8z1D4wftFeMPjNdMuq3v2TSAcxaVZkpAvoW7u3u34Yry+ivS/g7+z94s+NGpKmkWZttLU/v9VugVgjHoD/G3+yuffHWvsv9nwFHpCC+R8B/teaYjrUqS+b/AOG/BHCaDoOo+KNXtdL0mzmv9QuX2RW8ClmY/T9c9q/Q/wDZi/ZYsvhHZxa9ryRXvi+ZPXdHYqeqJ6t6t+A4yT23wR/Z78NfBHS9unR/bdZmTbdarOo82T1VR/An+yPxJr1GvzXOM/ljE6GG0h1fV/5L+vI/Xcg4YhgGsTi/eqdF0j/m/Pp07hRRRXxp+gBRRRQAVBff8eNx/wBc2/kanqC+/wCPG4/65t/I047omXws/LatXwn/AMjTo3/X7D/6GKyq1fCf/I06N/1+w/8AoYr97qfBL0P4/o/xY+qP07ooor8DP7CCiiigAooooA8v+Inwx+1NJqejxYmPzTWqjAb1Zff2ryNlaNirKVZTgqRgg19WVxnjT4a2XijdcwEWeof89FHyyf7w/rXt4TH8loVdu54+KwPP79LfseCV2HhX4map4b2wyN9ush/yxlPK/wC63b6dKwdc8O3/AIcu2t763aJs/K/VH9we9Zte5KNOvHXVHiRlUoy00Z9E+H/iFoviJUWK5FvcN/ywuMK2fQdj+FdLXyjW7pPjjXNFVUtdQlEa9I5PnUe2DXj1cs60pfeetTzLpUX3H0jRXjun/G+9jULe6fDOf78LFD+RzW1D8b9NYDzbC6jPfaVb+orz5YHER+yd8cbQl9o9IorgP+F1aHj/AFF7n/rmv/xVV5vjdpa58qxupP8Ae2r/AFqPqdf+Rl/WqH8x6PRXkOofHC5dSLLTYoj2edy36DH865HVfiBr2sKyzahIkbdY4cRj6cV008urS+LQ555hRj8Op7dr/jjR/DisLq7Vpl/5YQ/M/wBMdvxryjxV8VtS1xXt7POnWh4Ow/vGHu3b8K4ekr16OApUdXqzyq2NqVdFohSSeTyaSrmlaPea3dLbWVu9xK3ZRwPcnsK9k8F/Cu20FkvNRK3l8OVXGY4z7ep962r4mnh172/YxoYedd+7t3Od+Hnwwe6aPUtYiKQDDRWrjl/dh6e3evX1UIoVQFUDAA7UtFfLV688RLmkfTUaMKEeWIUUUVzHQFFFFABRRRQAUUUUAZ2vaDZ+I9Pks7yMOjfdb+JD2IPY14F4u8GX3hK8KTKZLVj+6uFHyt7H0PtX0dVe/wBPt9UtZLa7hWeCQYZHGRXfhcXLDu28exxYnCxxCvsz5Zq1p+pXWk3S3FnO9vMvR4zj/wDXXdeMfhLdaX5l3pO68tByYf8Alog9v7w/WvPGUoxVgVYcEHqK+np1adeN4u6PmqlOpQlaSsz1vwz8Z4pNkGtQ+W3T7VCMqfdl7fhXo+natZ6vB51lcx3Mf96NgcfX0r5cqezvrjT5hNazyW8o6PGxU/pXn1stpz1puz/A76OYThpNXPqeivBtL+Lev6cQJZY76P8Au3Cc/mMH866a1+OURA+06U6nuYpQf5gV5c8vrx2Vz04Y6hLd2PU6K89j+NmjMPntbxD7Kp/rSyfGrRFHy214x90Uf+zVj9Tr/wAjNvrVD+Y9BorzC6+OVqoP2fTJnP8A00kCj9Aa53VPjJrd7lbVYLBP9hd7fmf8K1jl9eW6sZSx1CPW57Zc3UNnC01xKkMS9XkYKB+JrgfEnxh0/T1aLS0N/cf89DxEv49T+H515DqWs32sSeZe3ctyw6eYxIH0HaqVenRy2EdajuebVzGctKasaeu+JNQ8SXRnv7hpjn5U6InsB2rMorsfCHw11HxMyzzBrKwz/rZB8z/7o7/XpXpylToQu9EjzYxqVpWWrOf0PQb3xFfLaWMJlkPJPRUHqT2Fe+eDvBlp4RsfLi/e3Ug/e3BHLew9BV/QfD1j4bsVtbGHy06sx5Zz6k9zWlXzWKxkq/ux0j+Z9FhcJGh70tZBRRRXmnohRRRQAVwnxS/1em/WT/2Wu7rhPil/q9N+sn/stNCZ5/Xe/Cv/AJin/bL/ANnrgq734V/8xT/tl/7PTYkd9RRRUlBRRRQAUUUUAFFFFABRRRQAUUUUAFFFFAHnv7QH/JIPEX/XOL/0clfENfb37QH/ACSDxF/1zi/9HJXxDVIlnpH7Ov8AyWTw/wD9vH/pPLX2xXxP+zr/AMlk8P8A/bx/6Ty19sUmNBRRRSGFFFFABRRRQAUUUUAFFFFABRRRQAUUVgePPGFn8P8AwbrHiO/5tdNtmuGUHBcgcKPcnAH1pNpK7NaVKdapGlTV5SaSXdvY2rq7gsYHmuZo7eFBlpJWCqPqTUdhqVpqkPnWV1DeQ5x5lvIHX8wa/I/4qfGTxP8AGDXptQ17UJJITIWgsI2It7deyomccDjJ5Pc1keCfH3iD4da1Hqnh3VLjTLtCCTC/yyAfwuvRh7EV5X9oLm+HQ/d6fhPiJYXnnikqtvh5fd9Oa9/nb5H7IUV578B/itF8ZPhnpniMRpBdvugvII/uxzpwwHschh7MK9Cr1IyUkpI/DcVhauCrzw1dWnBtNeaCiiiqOUovrumxuyPqFqjqcFWmUEH060JrumyOqJqFqzMcBVnUkn0618bftQfsq+GPBvg7xR49tNT1abVZbz7SbeaSIwbppvmGBGGwN5xzUX7LP7LPhnxx4L8NePb3U9Wh1WG+adbeCSIQFoZztBBjLYOwZ59elfS/2bg/qn1v27te3w9bX7/ifIf2tj/rv1H6sua3N8f2b2v8P4H2jcatY2cnl3F5bwSYztklVT+RNWgc8jkV+dn7b2m3GrftDfZLSIzXEmm2+yNerEBzgflX1d+yX8SG+I3wZ0p7mbzdT0v/AIl10xPzEoBsY+5Qrz3OaxxWUvD4KnjIyvzWurbX2N8FnixWYVcBKHK4Xs77236fM9hubqCzj8y4mjgjzjdIwUZ+potrqC8j8y3mjnjzjdGwYZ+or4j/AG9/HVxr/iLS/A+ms00emwNql/HGeA5U7d3+7Hub/gderfsG/wDJCF/7Clx/JKVXKnRy+ONlLWT2t0d7O/yKo51Gvmk8uhDSKfvX6q11a3S/c+i6KKK8E+mCiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACuJ+Jfwa8JfFrT/s3iPSYrmVRiK8jGy4i/wB2Qc49jx7V21FaU6k6MlOm7NdUY1aNOvB06sVKL6PU+Bfib+wL4k0OSa68HahF4gsuWW0uSIblR6Z+6/1+X6V81eI/COt+EL57LXNJvdJulODFeQNGfqMjke44r9j6o6voeneILVrXU7C21C2brFdRLIv5EV9jhOKMRSXLiIqa77P/ACPgcdwXhK7csLJ0323X+a+8/Geiv038Wfsa/C3xUzyJocmi3D8mXS7hoh/3wcoPwWvLdY/4J16TKzHS/GF5bA9FurVZcfirLX1FHibAVF77cfVf5XPja/B+Z0n+7SmvJ/52Phqivrq8/wCCdfiGMn7J4v0ycdvOtpI/5FqqR/8ABPDxgWHmeJtEVfVRMT+WwV3LPMuav7Zfj/kea+G82Tt7B/ev8z5Qor7K03/gnReMwN/42gUd1trBm/UuP5V3Ph3/AIJ+eCNPkV9W1fVtXxyY1ZIEPscAn8iK56nEWXU9p39E/wBbHVS4Tzao9aaj6tfo2fn6qliABknsK9L+HP7Ofj/4nsj6ToFxDYt/zEL5TBBj1DMPm/4CDX6N+DfgH8PvAO1tF8K2FvMvS4mQzy/99yFm/Wu+AwMAYFfP4rizS2Gp/OX+S/zPqcHwOk1LGVflH/N/5Hy38J/2D/Dfhdob7xhd/wDCS6guG+xxgx2iH0I+9J+OAfSvp6xsbbTLSK1s7eK1tolCRwwoERFHQADgCp6K+KxWOxGNlz153/JeiP0PBZdhcuhyYaCj+b9XuFFFFcJ6QUUUUAFFFFABUF9/x43H/XNv5Gp6iuYzNbyxrgFkKjPuKa3Jlsz8tK1fCf8AyNOjf9fsP/oYr2n/AIYs8b/9BTw//wCBE/8A8Zq7of7HPjTTdasLuXU9BaO3uI5WCXExJCsCcfuevFfslTN8A4NKqj+ZKXDebxqRbw8t0fYtFFFfjR/ToUUUUAFFFFABRRRQBWv9OtdUtnt7uCO4hbqki5FebeI/gtHIWm0a48o9fs8/I/Bv8a9SoropYipRd4Mwq0KdZWmj5m1nwvqugSFb6ylhXtJtyh+jDisqvqxlWRSrKGU9QRkVz+qfD7QNWJabTo0kP/LSHMZ/Tr+NexTzRbVI/ceTUy1/8u5fefOdFey3nwR06Riba/uIR2WQB/8ACsqb4G3I/wBTqsTD/biI/kTXbHH4eX2rHHLA119k8vor0f8A4Ufquf8Aj/s8f8D/AMKsQ/A27bHm6rCn+5EW/qKv67h19oj6nX/lPMKK9itPgfYowNzqM8o7iNQv+NdLpfw38PaWVZNPWaQfx3DGQ/keP0rCeZUY/Ddm8cvrS30PCNJ8P6jrkwjsbOa4PdlX5R9T0FeieHfgrIzLLrFyEXr9nt+Sfq3b8Pzr1eKFIUCRosaDoqjAFPrzKuZVZ6Q0PRpZfThrPUpaTo1lodqtvY20dvEOyjk+5Pc/WrtFFeU25O7PTSUVZBRRRSGFFFFABRRRQAUUUUAFFFFABRRRQAVzfibwBpPifLzw+RdY4uIcK34+v410lFXCcqb5oOzIlCNRcsldHhOvfCPWdJ3vaBdSgHOYhh8f7v8AhmuLnt5bWQxzRPFIvBWRSpH4GvqqqmoaTZarHsvLSG5Xp+8QGvXpZnOOlRXPKqZdGWtN2PlyiveNR+EPh+9y0Mc1k3/TGQkfk2awbn4GxnP2fVmX/rpDn+Rr0Y5hQlu7HBLAV47K55LRXpUnwP1Ef6vUrVv95WH+NInwP1Mn59QtVH+yGP8AStfruH/nMvqdf+U82or1a3+Bh48/Vs+0cP8Aia29P+DOh2pBuHuLw/3WfYv/AI7z+tZyzDDx2dzSOBry3VjxBVZ2AUFiewFdVoPwz1zXNr/ZvsUB/wCWl1lfyXqa9w0zw3pejKBZWMNuR/EqfN+Z5rSrz6maSelONvU7qeWpa1JXOL8M/CzSdBZJpx/aF2vPmTL8oPsv+Oa7MccDgUtFeRUqTqvmm7nrU6cKatBWCiiisjQKKKKACiiigArhPil/q9N+sn/std3XNeNPDV14iS0FtJCnkli3mkjrjpgH0piPKa734V/8xT/tl/7PVD/hWWqf897P/vt//ia6bwX4ZuvDn2z7TJC/nbNvlEnGN2c5A9aYjp6KKKkoKKKKACiiigAooooAKKKKACiiigAooooA89/aA/5JB4i/65xf+jkr4hr72+KHhW78beA9V0WxkhiurtUCPcMQgxIrHJAJ6Ke1fOv/AAyX4v8A+gjon/f+b/41TQmc3+zr/wAlk8P/APbx/wCk8tfbFfPHwp/Z38R+BfH2l65f3ulzWlr5u9LaWRpDuidBgGMDqw719D0MEFFFFIYUUUUAFFFFABRRRQAUUUUAFFFFABXk/wC1V4bvPFX7P/jCwsFZ7kW8dyEXqyxTJKw/75Q16xTWVZFKsAysMEEcEVE488XHud2BxUsDi6WLgrunKMl/260/0PxRor75+Ln7Aul+KtautW8H6tH4fe4cyPp1xEXtwx5Owrygz2wQO2BxWL8Pf+Cd6Wepw3XjLxFFfWsbBmsNMRlEoHZpGwQD7DPvXz/1OtzWsf1xT8ROH5YX6xKs07fDyvmv22t8728zvv2BfDd5ofwRmu7tWjTVNUlu7dW/55hI4934mNvwAr6Tqrpum2mjafb2Njbx2lnbxrFDBCoVEUDAAA6DFWq9+nD2cFHsfyjnGYvNswrY5q3tJN27LovuCiiitDxzw/8AbP8A+TevEP8A10t//Ry1D+xL/wAm76D/ANfF3/6Peuz+Pnw3vviz8MdT8M6ddW9nd3TxMs11u8sbXDHO0E9vSmfs/fDO/wDhF8L9N8MaldW95d2ssztNa7vLIeRnGNwB6H0r3vb0v7J9hze/7S9vLltc+Z+rVv7c+s8vueztfz5r2Pm34yRrJ+3Z4MR1DIxsQVYZBGX4pPh7rVt+yz+0f4x8OajcfZfCeqW0l9btIflVVVpYse4HmR+5x7V6146/Z21rxV+0doHxEt9SsIdL042xktZC/nN5ZJOMLt5z60/9qL9mmb47DRb3Sb2003WLAvFJNdhtssDchTtBOVYZH+81ezDHYWcaOGqz9yVPll5Nap/L9T5+pluMpyr4yhD95Gq5R/vRas181+R4H4H0C58bfC340/FjV4ma81aCe2s2k52x7lZ9vsMIgPbYR617b+wb/wAkIX/sKXH8krvdS+Doi+AM/wAOtHlgtnOmfYknlBCGQ8s7YBPLbieO9R/s3/CfUfgx8OB4d1S8tb66+2S3Hm2m7ZtYLgfMAc8elcmMzClisJVinZua5V/dSsjuy/K62Dx1CbV0qb5pf35Suz1Kiiivkz7gKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD/2Q==" style="height:30px;object-fit:contain" alt="Bloom"/>
       <div>
-        <div style="font-size:18px;font-weight:800;letter-spacing:-.3px">Bloom Cases Tracker</div>
-        <div style="font-size:11px;color:var(--mu);margin-top:1px">Upload daily CSV · Full history · Status change tracking</div>
+        <div style="font-size:18px;font-weight:800">Bloom Cases Tracker</div>
+        <div style="font-size:11px;color:var(--mu)" id="lastInfo">Upload daily CSV · Track status changes</div>
       </div>
     </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn bgh" onclick="loadData()">↻ Refresh</button>
-      <button class="btn bb" onclick="document.getElementById('uploadSection').scrollIntoView({behavior:'smooth'})">📥 Upload CSV</button>
+    <button class="btn bgh" onclick="loadAll()">↻ Refresh</button>
+  </div>
+
+
+  <!-- DIAGNOSTIC CARD - shows on load, can be dismissed -->
+  <div id="diagCard" style="background:#1e293b;color:#fff;padding:16px 28px;font-size:12px;font-family:monospace;border-bottom:2px solid #3b5fe2">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-weight:700;font-size:13px">🔍 System Check</div>
+      <button onclick="document.getElementById('diagCard').style.display='none'" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px">✕ Dismiss</button>
     </div>
+    <div id="diagResults" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px"></div>
   </div>
 
   <div class="body">
-
     <!-- KPIs -->
     <div class="kpi-grid">
-      <div class="kpi" style="border-top-color:#3b5fe2">
-        <div class="kpi-val" id="kTotal" style="color:var(--blue)">—</div>
-        <div class="kpi-lbl">Total Cases</div>
-        <div class="kpi-sub">All time</div>
-      </div>
-      <div class="kpi" style="border-top-color:#16a34a">
-        <div class="kpi-val" id="kNew" style="color:var(--green)">—</div>
-        <div class="kpi-lbl">New Cases</div>
-        <div class="kpi-sub">Last import</div>
-      </div>
-      <div class="kpi" style="border-top-color:#d97706">
-        <div class="kpi-val" id="kChanged" style="color:var(--amber)">—</div>
-        <div class="kpi-lbl">Status Changes</div>
-        <div class="kpi-sub">Last import</div>
-      </div>
-      <div class="kpi" style="border-top-color:#dc2626">
-        <div class="kpi-val" id="kOverdue" style="color:var(--red)">—</div>
-        <div class="kpi-lbl">Overdue</div>
-        <div class="kpi-sub">Need action</div>
-      </div>
-      <div class="kpi" style="border-top-color:#7c3aed">
-        <div class="kpi-val" id="kTotalChanges" style="color:var(--purple)">—</div>
-        <div class="kpi-lbl">Total Changes</div>
-        <div class="kpi-sub">All history</div>
-      </div>
-      <div class="kpi" style="border-top-color:#64748b">
-        <div class="kpi-val" id="kImports">—</div>
-        <div class="kpi-lbl">Imports</div>
-        <div class="kpi-sub">CSV uploads</div>
-      </div>
+      <div class="kpi" style="border-top-color:#3b5fe2"><div class="kpi-val" id="kTotal" style="color:var(--blue)">—</div><div class="kpi-lbl">Total Cases</div></div>
+      <div class="kpi" style="border-top-color:#16a34a"><div class="kpi-val" id="kNew" style="color:var(--green)">—</div><div class="kpi-lbl">New (last import)</div></div>
+      <div class="kpi" style="border-top-color:#d97706"><div class="kpi-val" id="kChanged" style="color:var(--amber)">—</div><div class="kpi-lbl">Status Changes</div></div>
+      <div class="kpi" style="border-top-color:#dc2626"><div class="kpi-val" id="kOverdue" style="color:var(--red)">—</div><div class="kpi-lbl">Overdue</div></div>
+      <div class="kpi" style="border-top-color:#7c3aed"><div class="kpi-val" id="kHistory" style="color:var(--purple)">—</div><div class="kpi-lbl">Total Changes</div></div>
+      <div class="kpi" style="border-top-color:#64748b"><div class="kpi-val" id="kImports">—</div><div class="kpi-lbl">Imports</div></div>
     </div>
 
     <!-- UPLOAD -->
-    <div class="card" id="uploadSection">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <div>
-          <div style="font-size:15px;font-weight:800">📥 Upload Daily CSV</div>
-          <div style="font-size:12px;color:var(--mu);margin-top:2px">bloomaligner.fr → Cases → EXPORT CSV → drop file here</div>
+    <div class="card">
+      <div style="font-size:15px;font-weight:800;margin-bottom:4px">📥 Daily Upload</div>
+      <div style="font-size:12px;color:var(--mu);margin-bottom:14px">Upload from bloomaligner.fr every day — auto-detects new cases and status changes</div>
+      <div class="upload-grid">
+        <div class="upload-box">
+          <div style="font-size:32px">📄</div>
+          <div style="font-size:14px;font-weight:800;color:var(--blue);margin:8px 0 4px">Cases CSV</div>
+          <div style="font-size:11px;color:var(--mu);margin-bottom:14px">bloomaligner.fr → Cases → EXPORT CSV</div>
+          <button class="btn bb" style="width:100%;justify-content:center" onclick="document.getElementById('csvInput').click()">📂 Choose CSV File</button>
+          <input type="file" id="csvInput" accept=".csv" style="display:none"/>
         </div>
-        <div id="lastImportBadge" style="font-size:11px;color:var(--mu)"></div>
+        <div class="upload-box">
+          <div style="font-size:32px">📊</div>
+          <div style="font-size:14px;font-weight:800;color:var(--green);margin:8px 0 4px">Aligners Excel</div>
+          <div style="font-size:11px;color:var(--mu);margin-bottom:14px" id="xlsxInfo">Reads SHIPPING + ALIGNER sheets automatically</div>
+          <button class="btn bg" style="width:100%;justify-content:center" onclick="document.getElementById('xlsxInput').click()">📂 Choose Excel File</button>
+          <input type="file" id="xlsxInput" accept=".xlsx,.xls" style="display:none"/>
+        </div>
       </div>
-      <!-- TWO UPLOAD BUTTONS — reliable click to browse -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px">
-        
-        <!-- CSV UPLOAD -->
-        <div style="background:var(--b50);border:2px dashed var(--blue);border-radius:14px;padding:22px;text-align:center">
-          <div style="font-size:30px;margin-bottom:8px">📄</div>
-          <div style="font-size:14px;font-weight:800;color:var(--blue);margin-bottom:4px">Cases CSV</div>
-          <div style="font-size:11px;color:var(--mu);margin-bottom:14px">bloomaligner.fr → Cases → Export CSV</div>
-          <button onclick="document.getElementById('csvFile').click()" 
-                  style="background:var(--blue);color:#fff;border:none;border-radius:9px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--f);width:100%">
-            📂 Choose CSV File
-          </button>
-          <input type="file" id="csvFile" accept=".csv,.CSV" style="display:none" onchange="handleFile(this.files[0])"/>
-        </div>
-        
-        <!-- EXCEL UPLOAD -->
-        <div style="background:var(--g50);border:2px dashed var(--green);border-radius:14px;padding:22px;text-align:center">
-          <div style="font-size:30px;margin-bottom:8px">📊</div>
-          <div style="font-size:14px;font-weight:800;color:var(--green);margin-bottom:4px">Aligners Excel</div>
-          <div style="font-size:11px;color:var(--mu);margin-bottom:14px">Extended Excel with aligner counts</div>
-          <button onclick="document.getElementById('alignerFileMain').click()" 
-                  style="background:var(--green);color:#fff;border:none;border-radius:9px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--f);width:100%">
-            📂 Choose Excel File
-          </button>
-          <input type="file" id="alignerFileMain" accept=".xlsx,.xls,.XLSX,.XLS" style="display:none" onchange="handleAlignerFile(this.files[0])"/>
-        </div>
-        
+      <div id="uploadProg" style="display:none;padding:12px;background:var(--b50);border-radius:10px;border:1px solid var(--b100);margin-bottom:10px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:6px" id="progTitle">Processing…</div>
+        <div class="prog-wrap"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+        <div style="font-size:11px;color:var(--mu);margin-top:4px" id="progSub"></div>
       </div>
-      <div id="dropZone" style="display:none"></div>
-      <div id="uploadMsg" style="margin-top:10px;font-size:13px;min-height:16px"></div>
+      <div id="uploadMsg" style="font-size:13px;min-height:18px"></div>
     </div>
 
     <!-- PREVIEW -->
     <div id="previewCard" class="card" style="display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
         <div>
-          <div style="font-size:15px;font-weight:800" id="previewTitle">Preview</div>
-          <div style="font-size:12px;color:var(--mu);margin-top:2px" id="previewSub"></div>
+          <div style="font-size:15px;font-weight:800" id="prevTitle">Preview</div>
+          <div style="font-size:12px;color:var(--mu)" id="prevSub"></div>
         </div>
         <div style="display:flex;gap:8px">
           <button class="btn bgh" onclick="cancelPreview()">✕ Cancel</button>
-          <button class="btn bg" id="confirmBtn" onclick="confirmImport()">⚡ Confirm & Save Import</button>
+          <button class="btn bg" id="confirmBtn" onclick="confirmImport()">⚡ Confirm Import</button>
         </div>
       </div>
-      <div id="changeSummaryGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px"></div>
+      <div id="prevSummary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px"></div>
       <div class="tw"><table>
-        <thead><tr><th>Change</th><th>ID</th><th>Patient</th><th>Doctor</th><th>Status</th><th>Created</th><th>Overdue</th></tr></thead>
-        <tbody id="previewRows"></tbody>
+        <thead><tr><th>Type</th><th>ID</th><th>Patient</th><th>Doctor</th><th>Status</th><th>Overdue</th></tr></thead>
+        <tbody id="prevRows"></tbody>
       </table></div>
-      <div style="color:var(--mu);font-size:11px;margin-top:8px;text-align:center" id="previewMore"></div>
     </div>
 
-    <!-- MAIN TABLE CARD -->
+    <!-- TABS -->
     <div class="card">
       <div class="tab-bar">
-        <button class="tab on" onclick="switchTab('cases')">📋 All Cases (<span id="tabCaseCount">—</span>)</button>
-        <button class="tab" onclick="switchTab('changes')">🔄 Change History (<span id="tabChangeCount">—</span>)</button>
-        <button class="tab" onclick="switchTab('aligners')">🦷 Aligners Data (<span id="tabAlignerCount">—</span>)</button>
-        <button class="tab" onclick="switchTab('imports')">📥 Import Log</button>
+        <button class="tab on" onclick="switchTab('cases')">📋 Cases (<span id="tcCases">—</span>)</button>
+        <button class="tab" onclick="switchTab('changes')">🔄 History (<span id="tcChanges">—</span>)</button>
+        <button class="tab" onclick="switchTab('aligners')">🦷 Aligners (<span id="tcAligners">—</span>)</button>
+        <button class="tab" onclick="switchTab('imports')">📥 Imports</button>
       </div>
-
-      <!-- CASES TAB -->
+      <!-- CASES -->
       <div id="tabCases">
         <div class="filters">
-          <input class="fi" id="srch" placeholder="🔍 Patient, doctor, ID…" style="flex:1;min-width:180px" oninput="casePage=0;renderCases()"/>
-          <select class="fi" id="fStatus" onchange="casePage=0;renderCases()"><option value="">All statuses</option></select>
-          <select class="fi" id="fDoctor" onchange="casePage=0;renderCases()"><option value="">All doctors</option></select>
-          <select class="fi" id="fDistrib" onchange="casePage=0;renderCases()"><option value="">All distributors</option></select>
-          <select class="fi" id="fOverdue" onchange="casePage=0;renderCases()">
-            <option value="">All</option>
-            <option value="overdue">Overdue only</option>
-            <option value="ok">On time only</option>
-          </select>
+          <input class="fi" id="srch" placeholder="🔍 Patient, doctor, ID…" style="flex:1;min-width:180px" oninput="casePg=0;renderCases()"/>
+          <select class="fi" id="fStatus" onchange="casePg=0;renderCases()"><option value="">All statuses</option></select>
+          <select class="fi" id="fDoctor" onchange="casePg=0;renderCases()"><option value="">All doctors</option></select>
+          <select class="fi" id="fOverdue" onchange="casePg=0;renderCases()"><option value="">All</option><option value="1">Overdue only</option><option value="0">On time</option></select>
         </div>
         <div class="tw"><table>
-          <thead><tr>
-            <th onclick="sortBy('case_id')">ID ↕</th>
-            <th onclick="sortBy('patient_name')">Patient ↕</th>
-            <th onclick="sortBy('doctor')">Doctor ↕</th>
-            <th onclick="sortBy('distributor')">Distributor ↕</th>
-            <th>Clinic</th>
-            <th onclick="sortBy('current_status')">Status ↕</th>
-            <th onclick="sortBy('status_change_date')">Changed ↕</th>
-            <th onclick="sortBy('creation_date')">Created ↕</th>
-            <th onclick="sortBy('overdue_for')">Overdue ↕</th>
-            <th>History</th>
-          </tr></thead>
-          <tbody id="casesTable"><tr><td colspan="10" class="ec">Loading…</td></tr></tbody>
+          <thead><tr><th>ID</th><th>Patient</th><th>Doctor</th><th>Distributor</th><th>Status</th><th>Changed</th><th>Created</th><th>Overdue</th><th>×</th></tr></thead>
+          <tbody id="tCases"><tr><td colspan="9" class="ec">Loading…</td></tr></tbody>
         </table></div>
-        <div class="pager" id="casesPager"></div>
+        <div class="pager" id="pCases"></div>
       </div>
-
-      <!-- CHANGES TAB -->
+      <!-- CHANGES -->
       <div id="tabChanges" style="display:none">
         <div class="filters">
-          <input class="fi" id="srchChange" placeholder="🔍 Patient, ID…" style="flex:1;min-width:180px" oninput="renderChanges()"/>
-          <select class="fi" id="fChangeDoctor" onchange="renderChanges()"><option value="">All doctors</option></select>
-          <select class="fi" id="fChangeImport" onchange="renderChanges()"><option value="">All imports</option></select>
+          <input class="fi" id="srchH" placeholder="🔍 Patient, ID…" style="flex:1" oninput="renderHistory()"/>
         </div>
         <div class="tw"><table>
-          <thead><tr>
-            <th>Date</th><th>ID</th><th>Patient</th><th>Doctor</th>
-            <th>Previous Status</th><th>→</th><th>New Status</th>
-            <th>Overdue change</th><th>Import</th>
-          </tr></thead>
-          <tbody id="changesTable"><tr><td colspan="9" class="ec">Loading…</td></tr></tbody>
+          <thead><tr><th>Date</th><th>ID</th><th>Patient</th><th>Doctor</th><th>From</th><th></th><th>To</th></tr></thead>
+          <tbody id="tHistory"><tr><td colspan="7" class="ec">No history yet</td></tr></tbody>
         </table></div>
-        <div class="pager" id="changesPager"></div>
       </div>
-
-      <!-- ALIGNERS TAB -->
+      <!-- ALIGNERS -->
       <div id="tabAligners" style="display:none">
-        <!-- ALIGNER UPLOAD -->
-        <div style="background:var(--g50);border:1px solid var(--g100);border-radius:12px;padding:16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
-          <div>
-            <div style="font-size:13px;font-weight:700;color:#15803d">📥 Upload Aligner Excel File</div>
-            <div style="font-size:11px;color:#16a34a;margin-top:2px">bloomaligner.fr → Export extended Excel · Reads SHIPPING + ALIGNER sheets · Replaces previous data</div>
-            <div style="font-size:11px;color:#16a34a;margin-top:2px" id="lastAlignerImport"></div>
-          </div>
-          <div style="display:flex;gap:8px">
-            <button class="btn bg" onclick="document.getElementById('alignerFile').click()" style="gap:8px">
-              📂 Upload Excel (.xlsx)
-            </button>
-            <input type="file" id="alignerFile" accept=".xlsx,.xls" style="display:none" onchange="handleAlignerFile(this.files[0])"/>
-          </div>
-        </div>
-        <div id="alignerUploadMsg" style="font-size:12px;margin-bottom:10px;min-height:16px"></div>
-        <!-- KPI ROW -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px" id="alignerKpis">
-          <div style="background:var(--card);border-radius:10px;box-shadow:var(--sh);padding:12px;border-top:3px solid var(--amber)">
-            <div style="font-size:20px;font-weight:800;font-family:var(--mono);color:var(--amber)" id="akTotal">—</div>
-            <div style="font-size:11px;color:var(--mu);margin-top:2px">Total Aligners</div>
-          </div>
-          <div style="background:var(--card);border-radius:10px;box-shadow:var(--sh);padding:12px;border-top:3px solid var(--blue)">
-            <div style="font-size:20px;font-weight:800;font-family:var(--mono);color:var(--blue)" id="akCases">—</div>
-            <div style="font-size:11px;color:var(--mu);margin-top:2px">Cases with Aligners</div>
-          </div>
-          <div style="background:var(--card);border-radius:10px;box-shadow:var(--sh);padding:12px;border-top:3px solid var(--green)">
-            <div style="font-size:20px;font-weight:800;font-family:var(--mono);color:var(--green)" id="akLinked">—</div>
-            <div style="font-size:11px;color:var(--mu);margin-top:2px">Linked to Cases</div>
-          </div>
-          <div style="background:var(--card);border-radius:10px;box-shadow:var(--sh);padding:12px;border-top:3px solid var(--mu)">
-            <div style="font-size:20px;font-weight:800;font-family:var(--mono)" id="akAvg">—</div>
-            <div style="font-size:11px;color:var(--mu);margin-top:2px">Avg per Case</div>
-          </div>
-        </div>
-        <!-- FILTERS -->
         <div class="filters">
-          <input class="fi" id="srchAligner" placeholder="🔍 Case number, shipping…" style="flex:1;min-width:180px" oninput="renderAligners()"/>
-          <input class="fi" id="fAlignerDateFrom" type="text" placeholder="Date from (DD.MM.YYYY)" style="width:170px" oninput="renderAligners()"/>
-          <input class="fi" id="fAlignerDateTo" type="text" placeholder="Date to (DD.MM.YYYY)" style="width:170px" oninput="renderAligners()"/>
+          <input class="fi" id="srchA" placeholder="🔍 Case number…" style="flex:1" oninput="alPg=0;renderAligners()"/>
         </div>
         <div class="tw"><table>
-          <thead><tr>
-            <th onclick="sortAligners('case_number')">Case # ↕</th>
-            <th>Bloom Case Status</th>
-            <th onclick="sortAligners('total_aligners')">Total Aligners ↕</th>
-            <th>Boxes</th>
-            <th onclick="sortAligners('last_shipment')">Last Shipment ↕</th>
-            <th>First Shipment</th>
-            <th>Shipping #</th>
-            <th>Label</th>
-          </tr></thead>
-          <tbody id="alignersTable"><tr><td colspan="8" class="ec">Upload aligner Excel file to see data</td></tr></tbody>
+          <thead><tr><th>Case #</th><th>Status</th><th>Total</th><th>Upper 🔼</th><th>Lower 🔽</th><th>Refinements</th><th>Package</th><th>Last Shipment</th></tr></thead>
+          <tbody id="tAligners"><tr><td colspan="8" class="ec">Upload Excel to see aligner data</td></tr></tbody>
         </table></div>
-        <div class="pager" id="alignersPager"></div>
+        <div class="pager" id="pAligners"></div>
       </div>
-
-      <!-- IMPORTS TAB -->
+      <!-- IMPORTS -->
       <div id="tabImports" style="display:none">
         <div class="tw"><table>
-          <thead><tr>
-            <th>Date & Time</th><th>File</th><th>Total</th>
-            <th>🆕 New</th><th>🔄 Updated</th><th>Same</th><th>Action</th>
-          </tr></thead>
-          <tbody id="importsTable"><tr><td colspan="7" class="ec">Loading…</td></tr></tbody>
+          <thead><tr><th>Date</th><th>File</th><th>Total</th><th>🆕 New</th><th>🔄 Updated</th><th>Same</th></tr></thead>
+          <tbody id="tImports"><tr><td colspan="6" class="ec">No imports yet</td></tr></tbody>
         </table></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- CASE DETAIL MODAL -->
-<div class="modal-bg" id="caseModal">
+<!-- MODAL -->
+<div class="modal-bg" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-      <div>
-        <div style="font-size:18px;font-weight:800" id="modalTitle">Case Details</div>
-        <div style="font-size:12px;color:var(--mu);margin-top:2px" id="modalSub"></div>
-      </div>
-      <button class="btn bgh" onclick="closeModal()">✕ Close</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div><div style="font-size:18px;font-weight:800" id="mTitle">Case</div><div style="font-size:12px;color:var(--mu)" id="mSub"></div></div>
+      <button class="btn bgh" onclick="closeModal()">✕</button>
     </div>
-    <div id="modalContent"></div>
+    <div id="mBody"></div>
   </div>
 </div>
 
 <div class="notif" id="notif"></div>
 
-<script type="module">
-import{createClient}from"https://esm.sh/@supabase/supabase-js@2"
-import{SUPABASE_CONFIG}from"./config.js"
-const sb=createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey)
+<script>
 
-const ntf=(m,t="ok")=>{const e=document.getElementById("notif");e.textContent=(t==="ok"?"✅ ":"❌ ")+m;e.className="notif on "+t;setTimeout(()=>e.classList.remove("on"),4000)}
-const fdt=v=>v?new Date(v).toLocaleString("en-GB",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):"—"
-const fd=v=>v?new Date(v).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}):"—"
-
-let allCases=[],allChanges=[],allImports=[],parsedCSV=[],currentFilename=""
-let casePage=0,changePage=0
-const PAGE=100
-let sortCol="case_id",sortDir=1
-
-// STATUS BADGE
-function sBadge(s){
-  if(!s)return'<span class="badge b-gray">—</span>'
-  const map={ALIGNERS_ORDER_CREATED:"s-aligners",DRAFT:"s-draft",DELIVERED:"s-delivered",
-    REFINEMENT_ORDER_CREATED:"s-refinement",REPLACEMENT_ORDER_CREATED:"s-replacement",
-    RETAINER_ALIGNERS_ARE_MADE:"s-retainer",RETAINER_ORDER_PROCESSED:"s-retainer",
-    RETAINER_ORDER_CREATED:"s-retainer",PLAN_WITH_BLOOM_ADDED:"s-plan",PLAN_WITH_BLOOM_PROCESSED:"s-plan"}
-  const cls=map[s]||"s-other"
-  const label=s.replace(/_/g," ").toLowerCase().replace(/\b\w/g,c=>c.toUpperCase())
-  return`<span class="badge ${cls}" title="${s}">${label}</span>`
-}
-
-// LOAD ALL DATA
-async function loadData(){
-  // Load cases (paginate for 3000+)
-  let allC=[],from=0,batchSize=1000
-  while(true){
-    const{data,error}=await sb.from("bloom_cases").select("*").order("case_id",{ascending:false}).range(from,from+batchSize-1)
-    if(error||!data?.length)break
-    allC=[...allC,...data]
-    if(data.length<batchSize)break
-    from+=batchSize
+// ── DIAGNOSTICS ───────────────────────────────────────────────────────
+async function runDiagnostics() {
+  var results = [];
+  
+  // 1. Supabase loaded?
+  if (typeof supabase !== 'undefined') {
+    results.push({ok:true, label:'Supabase SDK', detail:'Loaded ✓'});
+  } else {
+    results.push({ok:false, label:'Supabase SDK', detail:'NOT LOADED - CDN failed'});
   }
-  allCases=allC
-
-  // Load changes (last 2000)
-  const{data:hd}=await sb.from("bloom_case_history").select("*").order("changed_at",{ascending:false}).limit(2000)
-  allChanges=hd||[]
-
-  // Load imports
-  const{data:id}=await sb.from("bloom_imports").select("*").order("imported_at",{ascending:false}).limit(100)
-  allImports=id||[]
-
-  // KPIs
-  document.getElementById("kTotal").textContent=allCases.length.toLocaleString()
-  document.getElementById("kOverdue").textContent=allCases.filter(c=>c.overdue_for>0).length.toLocaleString()
-  document.getElementById("kImports").textContent=allImports.length
-  document.getElementById("kTotalChanges").textContent=allChanges.length.toLocaleString()
   
-  const last=allImports[0]
-  document.getElementById("kNew").textContent=last?.new_cases||0
-  document.getElementById("kChanged").textContent=last?.updated_cases||0
+  // 2. XLSX loaded?
+  if (typeof XLSX !== 'undefined') {
+    results.push({ok:true, label:'Excel (XLSX)', detail:'Loaded ✓'});
+  } else {
+    results.push({ok:false, label:'Excel (XLSX)', detail:'NOT LOADED - CDN failed'});
+  }
   
-  if(last)document.getElementById("lastImportBadge").textContent=`Last import: ${fdt(last.imported_at)}`
-
-  // Populate filters
-  const statuses=[...new Set(allCases.map(c=>c.current_status).filter(Boolean))].sort()
-  const doctors=[...new Set(allCases.map(c=>c.doctor).filter(Boolean))].sort()
-  const distribs=[...new Set(allCases.map(c=>c.distributor).filter(Boolean))].sort()
-
-  document.getElementById("fStatus").innerHTML='<option value="">All statuses</option>'+statuses.map(s=>`<option value="${s}">${s.replace(/_/g," ")}</option>`).join("")
-  document.getElementById("fDoctor").innerHTML='<option value="">All doctors</option>'+doctors.map(d=>`<option value="${d}">${d}</option>`).join("")
-  document.getElementById("fDistrib").innerHTML='<option value="">All distributors</option>'+distribs.map(d=>`<option value="${d}">${d}</option>`).join("")
-  document.getElementById("fChangeDoctor").innerHTML='<option value="">All doctors</option>'+doctors.map(d=>`<option value="${d}">${d}</option>`).join("")
-  document.getElementById("fChangeImport").innerHTML='<option value="">All imports</option>'+allImports.map(i=>`<option value="${i.id}">${fdt(i.imported_at)} (${i.total_cases} cases)</option>`).join("")
-
-  document.getElementById("tabCaseCount").textContent=allCases.length.toLocaleString()
-  document.getElementById("tabChangeCount").textContent=allChanges.length.toLocaleString()
-
-  renderCases()
-  renderChanges()
-  renderImports()
-}
-window.loadData=loadData
-
-// SORT
-window.sortBy=(col)=>{
-  if(sortCol===col)sortDir*=-1
-  else{sortCol=col;sortDir=1}
-  casePage=0;renderCases()
-}
-
-// RENDER CASES
-window.renderCases=()=>{
-  const term=(document.getElementById("srch").value||"").toLowerCase()
-  const fs=document.getElementById("fStatus").value
-  const fd2=document.getElementById("fDoctor").value
-  const fdi=document.getElementById("fDistrib").value
-  const fo=document.getElementById("fOverdue").value
-
-  let fl=allCases.filter(c=>
-    (!term||c.patient_name?.toLowerCase().includes(term)||c.case_id?.toLowerCase().includes(term)||
-     c.doctor?.toLowerCase().includes(term)||c.clinic?.toLowerCase().includes(term)||
-     c.distributor?.toLowerCase().includes(term))&&
-    (!fs||c.current_status===fs)&&
-    (!fd2||c.doctor===fd2)&&
-    (!fdi||c.distributor===fdi)&&
-    (!fo||(fo==="overdue"?c.overdue_for>0:c.overdue_for===0))
-  )
-
-  // Sort
-  fl.sort((a,b)=>{
-    const av=a[sortCol]||"",bv=b[sortCol]||""
-    if(typeof av==="number")return(av-bv)*sortDir
-    return av.toString().localeCompare(bv.toString())*sortDir
-  })
-
-  const total=fl.length
-  const page=fl.slice(casePage*PAGE,(casePage+1)*PAGE)
-
-  document.getElementById("casesTable").innerHTML=page.length?page.map(c=>{
-    const isChanged=c.previous_status&&c.previous_status!==c.current_status
-    return`<tr class="${isChanged?"row-changed":""}" onclick="showCase('${c.case_id}')">
-      <td class="mono" style="font-weight:700;color:var(--blue)">${c.case_id}</td>
-      <td style="font-weight:600">${c.patient_name||"—"}</td>
-      <td style="color:var(--mu)">${c.doctor||"—"}</td>
-      <td style="color:var(--dim);font-size:11px">${c.distributor||"—"}</td>
-      <td style="color:var(--dim);font-size:11px">${c.clinic||"—"}</td>
-      <td>${sBadge(c.current_status)}</td>
-      <td class="mono" style="font-size:10px">${c.status_change_date||"—"}</td>
-      <td class="mono" style="font-size:10px">${c.creation_date||"—"}</td>
-      <td>${c.overdue_for>0?`<span style="color:var(--red);font-weight:700">⚠ ${c.overdue_for}d</span>`:'<span style="color:var(--green);font-size:11px">✓</span>'}</td>
-      <td><span class="badge b-gray" style="cursor:pointer">${c.status_changed_count||0} changes</span></td>
-    </tr>`}).join("")
-  :`<tr><td colspan="10" class="ec">No cases found</td></tr>`
-
-  const totalPages=Math.ceil(total/PAGE)||1
-  document.getElementById("casesPager").innerHTML=`
-    <span style="font-size:12px;color:var(--mu)">${total.toLocaleString()} cases · page ${casePage+1}/${totalPages}</span>
-    <div style="display:flex;gap:6px">
-      <button class="btn bgh" style="padding:5px 10px;font-size:11px" onclick="casePage=0;renderCases()">«</button>
-      <button class="btn bgh" style="padding:5px 10px;font-size:11px" onclick="if(casePage>0){casePage--;renderCases()}" ${casePage===0?"disabled":""}>‹ Prev</button>
-      <button class="btn bgh" style="padding:5px 10px;font-size:11px" onclick="if((casePage+1)*PAGE<${total}){casePage++;renderCases()}" ${(casePage+1)*PAGE>=total?"disabled":""}>Next ›</button>
-      <button class="btn bgh" style="padding:5px 10px;font-size:11px" onclick="casePage=${totalPages-1};renderCases()">»</button>
-    </div>`
-}
-window.changePage=(dir)=>{casePage=Math.max(0,casePage+dir);renderCases()}
-
-// RENDER CHANGES
-window.renderChanges=()=>{
-  const term=(document.getElementById("srchChange").value||"").toLowerCase()
-  const fd2=document.getElementById("fChangeDoctor").value
-  const fi=document.getElementById("fChangeImport").value
-
-  let fl=allChanges.filter(h=>
-    (!term||h.patient_name?.toLowerCase().includes(term)||h.case_id?.includes(term))&&
-    (!fd2||h.doctor===fd2)&&
-    (!fi||h.import_id===fi)
-  )
-
-  const total=fl.length
-  const page=fl.slice(changePage*PAGE,(changePage+1)*PAGE)
-
-  document.getElementById("changesTable").innerHTML=page.length?page.map(h=>`
-    <tr onclick="showCase('${h.case_id}')">
-      <td class="mono" style="font-size:10px">${fdt(h.changed_at)}</td>
-      <td class="mono" style="color:var(--blue);font-weight:700">${h.case_id}</td>
-      <td style="font-weight:600">${h.patient_name||"—"}</td>
-      <td style="color:var(--mu)">${h.doctor||"—"}</td>
-      <td>${sBadge(h.old_status)}</td>
-      <td style="color:var(--mu)">→</td>
-      <td>${sBadge(h.new_status)}</td>
-      <td>${h.new_overdue>h.old_overdue?`<span style="color:var(--red)">+${h.new_overdue-h.old_overdue}d</span>`:h.new_overdue<h.old_overdue?`<span style="color:var(--green)">-${h.old_overdue-h.new_overdue}d</span>`:'—'}</td>
-      <td class="mono" style="font-size:10px;color:var(--dim)">${fdt(h.changed_at).slice(0,6)}</td>
-    </tr>`).join("")
-  :`<tr><td colspan="9" class="ec">No changes recorded yet. Upload a CSV to start tracking.</td></tr>`
-
-  document.getElementById("changesPager").innerHTML=total>PAGE?`
-    <span style="font-size:12px;color:var(--mu)">${total.toLocaleString()} changes · page ${changePage+1}/${Math.ceil(total/PAGE)}</span>
-    <div style="display:flex;gap:6px">
-      <button class="btn bgh" style="padding:5px 10px;font-size:11px" onclick="changePage>0&&(changePage--,renderChanges())" ${changePage===0?"disabled":""}>‹ Prev</button>
-      <button class="btn bgh" style="padding:5px 10px;font-size:11px" onclick="(changePage+1)*PAGE<${total}&&(changePage++,renderChanges())" ${(changePage+1)*PAGE>=total?"disabled":""}>Next ›</button>
-    </div>`:""
-}
-
-// RENDER IMPORTS
-function renderImports(){
-  document.getElementById("importsTable").innerHTML=allImports.length?allImports.map(i=>`
-    <tr>
-      <td class="mono" style="font-size:11px">${fdt(i.imported_at)}</td>
-      <td style="font-size:11px;color:var(--mu);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${i.filename||"CSV"}</td>
-      <td class="mono" style="font-weight:700">${i.total_cases||0}</td>
-      <td><span style="color:var(--green);font-weight:700">+${i.new_cases||0}</span></td>
-      <td><span style="color:var(--amber);font-weight:700">↻${i.updated_cases||0}</span></td>
-      <td style="color:var(--dim)">${(i.total_cases||0)-(i.new_cases||0)-(i.updated_cases||0)}</td>
-      <td><button class="btn bgh" style="padding:4px 10px;font-size:11px" onclick="showImportDetails('${i.id}')">View Changes</button></td>
-    </tr>`).join("")
-  :`<tr><td colspan="7" class="ec">No imports yet</td></tr>`
-}
-
-// SHOW CASE DETAIL MODAL
-window.showCase=async(caseId)=>{
-  const c=allCases.find(x=>x.case_id===caseId)
-  if(!c)return
-  
-  const history=allChanges.filter(h=>h.case_id===caseId).sort((a,b)=>new Date(a.changed_at)-new Date(b.changed_at))
-  
-  document.getElementById("modalTitle").textContent=`Case #${c.case_id} — ${c.patient_name||"Unknown"}`
-  document.getElementById("modalSub").textContent=`${c.doctor||"—"} · ${c.clinic||"—"} · ${c.distributor||"—"}`
-  
-  // Get aligner data for this case
-  const alignerData=allAligners.find(a=>String(a.case_number)===String(caseId))
-  
-  document.getElementById("modalContent").innerHTML=`
-    <!-- CURRENT STATUS -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
-      <div style="background:var(--bg);border-radius:10px;padding:12px;border:1px solid var(--bdr)">
-        <div style="font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;margin-bottom:4px">Current Status</div>
-        <div>${sBadge(c.current_status)}</div>
-      </div>
-      <div style="background:var(--bg);border-radius:10px;padding:12px;border:1px solid var(--bdr)">
-        <div style="font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;margin-bottom:4px">Created</div>
-        <div style="font-size:13px;font-weight:700">${c.creation_date||"—"}</div>
-      </div>
-      <div style="background:${c.overdue_for>0?"var(--r50)":"var(--g50)"};border-radius:10px;padding:12px;border:1px solid ${c.overdue_for>0?"var(--r100)":"var(--g100)"}">
-        <div style="font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;margin-bottom:4px">Overdue</div>
-        <div style="font-size:16px;font-weight:800;color:${c.overdue_for>0?"var(--red)":"var(--green)"}">${c.overdue_for>0?c.overdue_for+"d overdue":"✓ On time"}</div>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
-      <div style="background:var(--bg);border-radius:10px;padding:12px;border:1px solid var(--bdr)">
-        <div style="font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;margin-bottom:4px">Doctor</div>
-        <div style="font-size:13px;font-weight:700">${c.doctor||"—"}</div>
-      </div>
-      <div style="background:var(--bg);border-radius:10px;padding:12px;border:1px solid var(--bdr)">
-        <div style="font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;margin-bottom:4px">Distributor</div>
-        <div style="font-size:13px;font-weight:700">${c.distributor||"—"}</div>
-      </div>
-    </div>
-    
-    <!-- STATUS TIMELINE -->
-    <div style="font-size:12px;font-weight:800;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid var(--bdr)">
-      📅 Status Timeline (${history.length} changes)
-    </div>
-    ${history.length?`
-    <div style="display:flex;flex-direction:column;gap:0">
-      <!-- First entry: creation -->
-      <div style="display:flex;gap:12px;align-items:flex-start">
-        <div style="display:flex;flex-direction:column;align-items:center">
-          <div style="width:12px;height:12px;border-radius:50%;background:var(--blue);flex-shrink:0;margin-top:3px"></div>
-          <div style="width:2px;flex:1;background:var(--bdr);min-height:20px"></div>
-        </div>
-        <div style="padding-bottom:16px">
-          <div style="font-size:11px;color:var(--mu)">${c.creation_date||"—"} — Case created</div>
-          <div>${sBadge(history[0].old_status||c.current_status)}</div>
-        </div>
-      </div>
-      ${history.map((h,i)=>`
-      <div style="display:flex;gap:12px;align-items:flex-start">
-        <div style="display:flex;flex-direction:column;align-items:center">
-          <div style="width:12px;height:12px;border-radius:50%;background:var(--amber);flex-shrink:0;margin-top:3px"></div>
-          ${i<history.length-1?`<div style="width:2px;flex:1;background:var(--bdr);min-height:20px"></div>`:""}
-        </div>
-        <div style="padding-bottom:16px">
-          <div style="font-size:11px;color:var(--mu)">${fdt(h.changed_at)}</div>
-          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:3px">
-            ${sBadge(h.old_status)}
-            <span style="color:var(--mu);font-size:13px">→</span>
-            ${sBadge(h.new_status)}
-            ${h.new_overdue>h.old_overdue?`<span style="color:var(--red);font-size:11px">overdue +${h.new_overdue-h.old_overdue}d</span>`:""}
-          </div>
-        </div>
-      </div>`).join("")}
-      <!-- Current -->
-      <div style="display:flex;gap:12px;align-items:flex-start">
-        <div style="width:12px;height:12px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:3px;animation:pulse 2s infinite"></div>
-        <div>
-          <div style="font-size:11px;color:var(--mu)">Now — Current status</div>
-          <div style="margin-top:3px">${sBadge(c.current_status)}</div>
-        </div>
-      </div>
-    </div>`:`
-    <div style="text-align:center;padding:20px;color:var(--dim);font-size:13px">
-      No status changes recorded yet.<br>Status changes appear here after each CSV upload.
-    </div>`}
-    
-    <!-- ALIGNER DATA SECTION -->
-    ${alignerData?`
-    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--bdr)">
-      <div style="font-size:12px;font-weight:800;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">🦷 Aligner Shipment Data</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-        <div style="background:var(--a50);border:1px solid var(--a100);border-radius:10px;padding:12px;text-align:center">
-          <div style="font-size:24px;font-weight:800;color:var(--amber)">${alignerData.total_aligners}</div>
-          <div style="font-size:11px;color:#92400e;font-weight:600">Total Aligners</div>
-        </div>
-        <div style="background:var(--bg);border:1px solid var(--bdr);border-radius:10px;padding:12px;text-align:center">
-          <div style="font-size:24px;font-weight:800">${alignerData.total_boxes}</div>
-          <div style="font-size:11px;color:var(--mu);font-weight:600">Boxes</div>
-        </div>
-        <div style="background:var(--bg);border:1px solid var(--bdr);border-radius:10px;padding:12px;text-align:center">
-          <div style="font-size:14px;font-weight:700;color:var(--blue);font-family:var(--mono)">${alignerData.last_shipment}</div>
-          <div style="font-size:11px;color:var(--mu);font-weight:600">Last Shipment</div>
-        </div>
-      </div>
-      <div style="margin-top:8px;font-size:11px;color:var(--mu)">Shipping: ${alignerData.shipping_numbers.slice(0,3).join(", ")}${alignerData.shipping_numbers.length>3?" +more":""}</div>
-    </div>`:""}
-    
-    <!-- STATS -->
-    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--bdr);display:flex;gap:16px;font-size:12px;color:var(--mu)">
-      <span>First seen: <strong>${fd(c.first_seen_at)}</strong></span>
-      <span>Last updated: <strong>${fd(c.last_updated_at)}</strong></span>
-      <span>Imported: <strong>${c.import_count||1}x</strong></span>
-      <span>Total changes: <strong>${c.status_changed_count||0}</strong></span>
-      ${c.number_of_extra_refinements>0?`<span>Extra refinements: <strong>${c.number_of_extra_refinements}</strong></span>`:""}
-    </div>`
-  
-  document.getElementById("caseModal").classList.add("on")
-}
-window.closeModal=()=>document.getElementById("caseModal").classList.remove("on")
-document.getElementById("caseModal").addEventListener("click",e=>{if(e.target===document.getElementById("caseModal"))closeModal()})
-
-// SHOW IMPORT DETAILS
-window.showImportDetails=async(importId)=>{
-  const changes=allChanges.filter(h=>h.import_id===importId)
-  const imp=allImports.find(i=>i.id===importId)
-  
-  document.getElementById("modalTitle").textContent=`Import: ${fdt(imp?.imported_at)}`
-  document.getElementById("modalSub").textContent=`${imp?.total_cases||0} cases · ${imp?.new_cases||0} new · ${imp?.updated_cases||0} updated · File: ${imp?.filename||"CSV"}`
-  
-  document.getElementById("modalContent").innerHTML=changes.length?`
-    <div style="font-size:12px;font-weight:700;color:var(--mu);text-transform:uppercase;margin-bottom:10px">${changes.length} Status Changes in This Import</div>
-    <div class="tw"><table>
-      <thead><tr><th>ID</th><th>Patient</th><th>Doctor</th><th>Previous</th><th>→</th><th>New Status</th></tr></thead>
-      <tbody>${changes.map(h=>`<tr>
-        <td class="mono" style="color:var(--blue);font-weight:700">${h.case_id}</td>
-        <td style="font-weight:600">${h.patient_name||"—"}</td>
-        <td style="color:var(--mu)">${h.doctor||"—"}</td>
-        <td>${sBadge(h.old_status)}</td>
-        <td style="color:var(--mu)">→</td>
-        <td>${sBadge(h.new_status)}</td>
-      </tr>`).join("")}</tbody>
-    </table></div>`
-  :`<div style="text-align:center;padding:30px;color:var(--dim)">No status changes in this import — all cases were new or unchanged.</div>`
-  
-  document.getElementById("caseModal").classList.add("on")
-}
-
-// TAB SWITCH
-window.switchTab=(tab)=>{
-  ["cases","changes","aligners","imports"].forEach(t=>{
-    document.getElementById("tab"+t.charAt(0).toUpperCase()+t.slice(1)).style.display=t===tab?"block":"none"
-  })
-  document.querySelectorAll(".tab").forEach((b,i)=>{
-    b.className="tab"+(["cases","changes","aligners","imports"][i]===tab?" on":"")
-  })
-  if(tab==="aligners")renderAligners()
-}
-
-// CSV UPLOAD
-window.handleDrop=(e)=>{
-  e.preventDefault()
-  document.getElementById("dropZone").classList.remove("drag")
-  const file=e.dataTransfer.files[0]
-  if(file?.name.endsWith(".csv"))handleFile(file)
-  else ntf("Please upload a CSV file","err")
-}
-window.handleFile=(file)=>{
-  if(!file)return
-  currentFilename=file.name
-  const msg=document.getElementById("uploadMsg")
-  msg.innerHTML=`<span style="color:var(--blue)">⏳ Reading ${file.name} (${(file.size/1024).toFixed(0)} KB)…</span>`
-  
-  const reader=new FileReader()
-  reader.onprogress=(e)=>{
-    if(e.lengthComputable){
-      const pct=Math.round(e.loaded/e.total*100)
-      msg.innerHTML=`<span style="color:var(--blue)">⏳ Reading file… ${pct}%</span>`
+  // 3. Database connection?
+  try {
+    var res = await SB.from('bloom_cases').select('count').limit(1);
+    if (res.error) {
+      results.push({ok:false, label:'Database', detail:'Error: '+res.error.message});
+    } else {
+      results.push({ok:true, label:'Database', detail:'Connected ✓'});
     }
+  } catch(e) {
+    results.push({ok:false, label:'Database', detail:'Failed: '+e.message});
   }
-  reader.onload=e=>{
-    msg.innerHTML=`<span style="color:var(--mu)">⏳ Parsing CSV…</span>`
-    // Use setTimeout to let UI update before heavy parsing
-    setTimeout(()=>parseCSV(e.target.result,file.name),50)
+  
+  // 4. Tables exist?
+  try {
+    var t1 = await SB.from('bloom_cases').select('count').limit(1);
+    var t2 = await SB.from('bloom_aligner_details').select('count').limit(1);
+    var t3 = await SB.from('bloom_aligners').select('count').limit(1);
+    var missing = [];
+    if (t1.error && t1.error.message.includes('exist')) missing.push('bloom_cases');
+    if (t2.error && t2.error.message.includes('exist')) missing.push('bloom_aligner_details');
+    if (t3.error && t3.error.message.includes('exist')) missing.push('bloom_aligners');
+    if (missing.length) {
+      results.push({ok:false, label:'Tables', detail:'MISSING: '+missing.join(', ')+'<br>→ Run SETUP_ONE_TIME_ONLY.sql!'});
+    } else {
+      results.push({ok:true, label:'Tables', detail:'All tables exist ✓'});
+    }
+  } catch(e) {
+    results.push({ok:false, label:'Tables', detail:'Check failed'});
   }
-  reader.onerror=()=>msg.innerHTML=`<span style="color:var(--red)">❌ Error reading file. Try again.</span>`
-  reader.readAsText(file,"UTF-8")
-}
-window.cancelPreview=()=>{
-  document.getElementById("previewCard").style.display="none"
-  parsedCSV=[]
+  
+  // 5. File inputs?
+  var csv = document.getElementById('csvInput');
+  var xlsx = document.getElementById('xlsxInput');
+  if (csv && xlsx) {
+    results.push({ok:true, label:'File Inputs', detail:'CSV + Excel ready ✓'});
+  } else {
+    results.push({ok:false, label:'File Inputs', detail:'MISSING inputs: '+(csv?'':'csvInput ')+(xlsx?'':'xlsxInput')});
+  }
+  
+  // Render
+  var el = document.getElementById('diagResults');
+  if (!el) return;
+  el.innerHTML = results.map(function(r) {
+    return '<div style="background:'+(r.ok?'rgba(22,163,74,.3)':'rgba(220,38,38,.3)')+';border:1px solid '+(r.ok?'#16a34a':'#dc2626')+';border-radius:6px;padding:8px 10px">' +
+      '<div style="font-weight:700;font-size:11px;margin-bottom:2px">'+(r.ok?'✅':'❌')+' '+r.label+'</div>' +
+      '<div style="font-size:10px;opacity:.8">'+r.detail+'</div>' +
+      '</div>';
+  }).join('');
+  
+  // Auto-dismiss if all OK
+  var allOk = results.every(function(r){ return r.ok; });
+  if (allOk) setTimeout(function(){ document.getElementById('diagCard').style.display='none'; }, 3000);
 }
 
-function parseCSV(text,filename){
-  const lines=text.replace(/\r\n/g,"\n").replace(/\r/g,"\n").split("\n").filter(l=>l.trim())
-  if(lines.length<2){ntf("CSV empty","err");return}
-  
-  const sep=lines[0].split(",").length>lines[0].split(";").length?",":";"
-  const headers=lines[0].split(sep).map(h=>h.trim().replace(/"/g,""))
-  
-  const G=(name)=>headers.findIndex(h=>h.toLowerCase()===name.toLowerCase())
-  
-  const idx={
-    patient:G("patient"),doctor:G("doctor"),distributor:G("distributor"),
-    clinic:G("clinic"),creation_date:G("creation_date"),status:G("status"),
-    status_change_date:G("status_change_date"),action_required_for:G("action_required_for"),
-    overdue_for:G("overdue_for"),id:G("id"),extra:G("number_of_extra_refinements")
+// ── SETUP ─────────────────────────────────────────────────────────────
+var SB = supabase.createClient('https://oaauobugpbcixnbmlakc.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hYXVvYnVncGJjaXhuYm1sYWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzYyNTksImV4cCI6MjA5MTQxMjI1OX0.EpOUpmwRx_LAUqpGQcVMyJFB5NqX_HM7aMZ2gWW9oAA');
+var PAGE = 100;
+var allCases = [], allHistory = [], allImports = [], allAligners = [];
+var casePg = 0, alPg = 0, parsedCSV = [], csvFilename = '';
+
+// ── HELPERS ───────────────────────────────────────────────────────────
+function ntf(msg, type) {
+  var el = document.getElementById('notif');
+  el.textContent = msg; el.className = 'notif on ' + (type || 'ok');
+  setTimeout(function(){ el.classList.remove('on'); }, 4000);
+}
+function fdt(v) {
+  if (!v) return '—';
+  return new Date(v).toLocaleString('en-GB', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function sBadge(s) {
+  if (!s) return '<span class="badge b-gray">—</span>';
+  var map = {
+    ALIGNERS_ORDER_CREATED:'s-aligners', DRAFT:'s-draft', DELIVERED:'s-delivered',
+    REFINEMENT_ORDER_CREATED:'s-refinement', REPLACEMENT_ORDER_CREATED:'s-replacement',
+    RETAINER_ALIGNERS_ARE_MADE:'s-retainer', RETAINER_ORDER_PROCESSED:'s-retainer',
+    RETAINER_ORDER_CREATED:'s-retainer', PLAN_WITH_BLOOM_ADDED:'s-plan', PLAN_WITH_BLOOM_PROCESSED:'s-plan'
+  };
+  var cls = map[s] || 's-other';
+  var label = s.replace(/_/g,' ').toLowerCase().replace(/\b\w/g, function(c){ return c.toUpperCase(); });
+  return '<span class="badge ' + cls + '">' + label + '</span>';
+}
+function setProgress(pct, title, sub) {
+  document.getElementById('uploadProg').style.display = 'block';
+  document.getElementById('progTitle').textContent = title || 'Processing…';
+  document.getElementById('progFill').style.width = pct + '%';
+  if (sub) document.getElementById('progSub').textContent = sub;
+}
+function hideProgress() { document.getElementById('uploadProg').style.display = 'none'; }
+function msg(html, color) {
+  document.getElementById('uploadMsg').innerHTML = '<span style="color:' + (color||'var(--green)') + ';font-weight:600">' + html + '</span>';
+}
+
+// ── LOAD DATA ─────────────────────────────────────────────────────────
+async function loadAll() {
+  document.getElementById('tCases').innerHTML = '<tr><td colspan="9" class="ec">Loading…</td></tr>';
+  var all = [], from = 0;
+  while (true) {
+    var res = await SB.from('bloom_cases').select('*').order('case_id', {ascending:false}).range(from, from+999);
+    if (res.error || !res.data || !res.data.length) break;
+    all = all.concat(res.data);
+    if (res.data.length < 1000) break;
+    from += 1000;
   }
-  
-  const get=(cols,i)=>i>=0?cols[i]?.trim().replace(/^"|"$/g,"")||"":""
-  
-  parsedCSV=lines.slice(1).map(line=>{
-    const cols=line.split(sep)
-    return{
-      case_id:get(cols,idx.id),
-      patient_name:get(cols,idx.patient),
-      doctor:get(cols,idx.doctor),
-      distributor:get(cols,idx.distributor),
-      clinic:get(cols,idx.clinic),
-      creation_date:get(cols,idx.creation_date),
-      current_status:get(cols,idx.status),
+  allCases = all;
+  var hr = await SB.from('bloom_case_history').select('*').order('changed_at',{ascending:false}).limit(2000);
+  var ir = await SB.from('bloom_imports').select('*').order('imported_at',{ascending:false}).limit(100);
+  allHistory = hr.data || [];
+  allImports = ir.data || [];
+
+  document.getElementById('kTotal').textContent = allCases.length.toLocaleString();
+  document.getElementById('kOverdue').textContent = allCases.filter(function(c){ return c.overdue_for > 0; }).length;
+  document.getElementById('kHistory').textContent = allHistory.length.toLocaleString();
+  document.getElementById('kImports').textContent = allImports.length;
+  var last = allImports[0];
+  document.getElementById('kNew').textContent = last ? (last.new_cases || 0) : 0;
+  document.getElementById('kChanged').textContent = last ? (last.updated_cases || 0) : 0;
+  if (last) document.getElementById('lastInfo').textContent = 'Last import: ' + fdt(last.imported_at) + ' · ' + (last.total_cases||0) + ' cases';
+
+  var statuses = [...new Set(allCases.map(function(c){ return c.current_status; }).filter(Boolean))].sort();
+  var doctors = [...new Set(allCases.map(function(c){ return c.doctor; }).filter(Boolean))].sort();
+  document.getElementById('fStatus').innerHTML = '<option value="">All statuses</option>' +
+    statuses.map(function(s){ return '<option value="'+s+'">'+s.replace(/_/g,' ')+'</option>'; }).join('');
+  document.getElementById('fDoctor').innerHTML = '<option value="">All doctors</option>' +
+    doctors.map(function(d){ return '<option value="'+d+'">'+d+'</option>'; }).join('');
+
+  document.getElementById('tcCases').textContent = allCases.length.toLocaleString();
+  document.getElementById('tcChanges').textContent = allHistory.length.toLocaleString();
+  renderCases(); renderHistory(); renderImports();
+  await loadAligners();
+}
+
+// ── CASES ─────────────────────────────────────────────────────────────
+function renderCases() {
+  var term = (document.getElementById('srch').value||'').toLowerCase();
+  var fs = document.getElementById('fStatus').value;
+  var fd = document.getElementById('fDoctor').value;
+  var fo = document.getElementById('fOverdue').value;
+  var fl = allCases.filter(function(c) {
+    return (!term || (c.patient_name||'').toLowerCase().includes(term) || String(c.case_id).includes(term) || (c.doctor||'').toLowerCase().includes(term)) &&
+           (!fs || c.current_status === fs) && (!fd || c.doctor === fd) &&
+           (fo === '' || (fo==='1' ? c.overdue_for > 0 : c.overdue_for === 0));
+  });
+  var total = fl.length;
+  var page = fl.slice(casePg*PAGE, (casePg+1)*PAGE);
+  document.getElementById('tCases').innerHTML = page.length ? page.map(function(c) {
+    var changed = c.previous_status && c.previous_status !== c.current_status;
+    return '<tr class="'+(changed?'row-changed':'')+'" onclick="showCase(''+c.case_id+'')">' +
+      '<td class="mono" style="font-weight:700;color:var(--blue)">'+c.case_id+'</td>' +
+      '<td style="font-weight:600">'+(c.patient_name||'—')+'</td>' +
+      '<td style="color:var(--mu)">'+(c.doctor||'—')+'</td>' +
+      '<td style="color:var(--dim);font-size:11px">'+(c.distributor||'—')+'</td>' +
+      '<td>'+sBadge(c.current_status)+'</td>' +
+      '<td class="mono" style="font-size:10px">'+(c.status_change_date||'—')+'</td>' +
+      '<td class="mono" style="font-size:10px">'+(c.creation_date||'—')+'</td>' +
+      '<td>'+(c.overdue_for>0 ? '<span style="color:var(--red);font-weight:700">⚠ '+c.overdue_for+'d</span>' : '<span style="color:var(--green)">✓</span>')+'</td>' +
+      '<td class="mono" style="color:var(--mu)">'+(c.import_count||1)+'×</td>' +
+      '</tr>';
+  }).join('') : '<tr><td colspan="9" class="ec">No cases found</td></tr>';
+  var tp = Math.ceil(total/PAGE) || 1;
+  document.getElementById('pCases').innerHTML =
+    '<span>'+total.toLocaleString()+' cases · page '+(casePg+1)+'/'+tp+'</span>' +
+    '<div style="display:flex;gap:6px">' +
+    '<button class="btn bgh" style="padding:5px 10px;font-size:11px" onclick="casePg=0;renderCases()">«</button>' +
+    '<button class="btn bgh" style="padding:5px 10px;font-size:11px" onclick="if(casePg>0){casePg--;renderCases()}" '+(casePg===0?'disabled':'')+'>‹</button>' +
+    '<button class="btn bgh" style="padding:5px 10px;font-size:11px" onclick="if((casePg+1)*PAGE<'+total+'){casePg++;renderCases()}" '+((casePg+1)*PAGE>=total?'disabled':'')+'>›</button>' +
+    '<button class="btn bgh" style="padding:5px 10px;font-size:11px" onclick="casePg='+(tp-1)+';renderCases()">»</button>' +
+    '</div>';
+}
+
+// ── HISTORY ───────────────────────────────────────────────────────────
+function renderHistory() {
+  var term = (document.getElementById('srchH').value||'').toLowerCase();
+  var fl = allHistory.filter(function(h){ return !term || (h.patient_name||'').toLowerCase().includes(term) || String(h.case_id).includes(term); });
+  document.getElementById('tHistory').innerHTML = fl.slice(0,200).map(function(h) {
+    return '<tr onclick="showCase(''+h.case_id+'')">' +
+      '<td class="mono" style="font-size:10px">'+fdt(h.changed_at)+'</td>' +
+      '<td class="mono" style="color:var(--blue);font-weight:700">'+h.case_id+'</td>' +
+      '<td style="font-weight:600">'+(h.patient_name||'—')+'</td>' +
+      '<td style="color:var(--mu)">'+(h.doctor||'—')+'</td>' +
+      '<td>'+sBadge(h.old_status)+'</td>' +
+      '<td style="color:var(--mu)">→</td>' +
+      '<td>'+sBadge(h.new_status)+'</td>' +
+      '</tr>';
+  }).join('') || '<tr><td colspan="7" class="ec">No history yet</td></tr>';
+}
+
+// ── ALIGNERS ──────────────────────────────────────────────────────────
+async function loadAligners() {
+  var sRes = await SB.from('bloom_aligners').select('case_number,aligners_per_box,date_of_shipment,shipping_number').order('case_number',{ascending:false});
+  var dRes = await SB.from('bloom_aligner_details').select('case_number,aligner_upper,aligner_lower,number_of_aligners,package_type,order_type').order('case_number',{ascending:false});
+  var ship = sRes.data || [], det = dRes.data || [];
+  var sm = {}, dm = {};
+  ship.forEach(function(r) {
+    var k = String(r.case_number);
+    if (!sm[k]) sm[k] = {total:0, last:'', nums:[]};
+    sm[k].total += (r.aligners_per_box||0);
+    if (!sm[k].last || r.date_of_shipment > sm[k].last) sm[k].last = r.date_of_shipment;
+    if (r.shipping_number && sm[k].nums.indexOf(r.shipping_number)<0) sm[k].nums.push(r.shipping_number);
+  });
+  det.forEach(function(r) {
+    var k = String(r.case_number);
+    if (!dm[k]) dm[k] = {upper:0,lower:0,total:0,refs:0,reftotal:0,pkg:''};
+    if (r.order_type === 'TreatmentPlan') { dm[k].upper=r.aligner_upper||0; dm[k].lower=r.aligner_lower||0; dm[k].total=r.number_of_aligners||0; }
+    else if (r.order_type === 'RefinementOrder') { dm[k].refs++; dm[k].reftotal+=(r.number_of_aligners||0); }
+    if (r.package_type) dm[k].pkg = r.package_type;
+  });
+  var keys = Object.keys(Object.assign({}, sm, dm));
+  allAligners = keys.map(function(k) {
+    var s = sm[k]||{}, d = dm[k]||{};
+    return {case_number:k, total:d.total||s.total||0, upper:d.upper||0, lower:d.lower||0, refs:d.refs||0, reftotal:d.reftotal||0, pkg:d.pkg||'', last:s.last||''};
+  }).sort(function(a,b){ return Number(b.case_number)-Number(a.case_number); });
+  document.getElementById('tcAligners').textContent = allAligners.length.toLocaleString();
+  renderAligners();
+}
+function renderAligners() {
+  var term = (document.getElementById('srchA').value||'').toLowerCase();
+  var fl = allAligners.filter(function(a){ return !term || String(a.case_number).includes(term); });
+  var total = fl.length, page = fl.slice(alPg*PAGE, (alPg+1)*PAGE);
+  var cmap = {};
+  allCases.forEach(function(c){ cmap[String(c.case_id)] = c; });
+  document.getElementById('tAligners').innerHTML = page.length ? page.map(function(a) {
+    var bc = cmap[String(a.case_number)];
+    return '<tr onclick="showCase(''+a.case_number+'')">' +
+      '<td class="mono" style="font-weight:700;color:var(--blue)">'+a.case_number+'</td>' +
+      '<td>'+(bc ? sBadge(bc.current_status) : '<span class="badge b-gray">No CSV data</span>')+'</td>' +
+      '<td style="font-weight:800;color:var(--amber);font-family:var(--mono);font-size:14px">'+(a.total||'—')+'</td>' +
+      '<td class="mono" style="color:var(--blue)">'+(a.upper||'—')+'</td>' +
+      '<td class="mono" style="color:var(--green)">'+(a.lower||'—')+'</td>' +
+      '<td>'+(a.refs>0 ? '<span style="color:var(--purple);font-weight:700">'+a.refs+'× ('+a.reftotal+')</span>' : '<span style="color:var(--dim)">—</span>')+'</td>' +
+      '<td style="font-size:11px;color:var(--mu)">'+(a.pkg||'—')+'</td>' +
+      '<td class="mono" style="font-size:11px;color:var(--mu)">'+(a.last||'—')+'</td></tr>';
+  }).join('') : '<tr><td colspan="8" class="ec">No aligner data — upload Excel file</td></tr>';
+  var tp = Math.ceil(total/PAGE)||1;
+  document.getElementById('pAligners').innerHTML = total > PAGE ?
+    '<span>'+total.toLocaleString()+' cases</span>' +
+    '<div style="display:flex;gap:6px">' +
+    '<button class="btn bgh" style="padding:5px 10px;font-size:11px" onclick="alPg=0;renderAligners()">«</button>' +
+    '<button class="btn bgh" style="padding:5px 10px;font-size:11px" onclick="if(alPg>0){alPg--;renderAligners()}" '+(alPg===0?'disabled':'')+'>‹</button>' +
+    '<button class="btn bgh" style="padding:5px 10px;font-size:11px" onclick="if((alPg+1)*PAGE<'+total+'){alPg++;renderAligners()}" '+((alPg+1)*PAGE>=total?'disabled':'')+'>›</button>' +
+    '</div>' : '';
+}
+
+// ── IMPORTS TABLE ─────────────────────────────────────────────────────
+function renderImports() {
+  document.getElementById('tImports').innerHTML = allImports.length ? allImports.map(function(i) {
+    return '<tr><td class="mono" style="font-size:11px">'+fdt(i.imported_at)+'</td>' +
+      '<td style="font-size:11px;color:var(--mu)">'+(i.filename||'CSV')+'</td>' +
+      '<td class="mono" style="font-weight:700">'+(i.total_cases||0)+'</td>' +
+      '<td style="color:var(--green);font-weight:700">+'+(i.new_cases||0)+'</td>' +
+      '<td style="color:var(--amber);font-weight:700">↻'+(i.updated_cases||0)+'</td>' +
+      '<td style="color:var(--dim)">'+(i.unchanged_cases||0)+'</td></tr>';
+  }).join('') : '<tr><td colspan="6" class="ec">No imports yet</td></tr>';
+}
+
+// ── TAB SWITCH ────────────────────────────────────────────────────────
+function switchTab(tab) {
+  var tabs = ['cases','changes','aligners','imports'];
+  tabs.forEach(function(t) {
+    document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).style.display = t===tab?'block':'none';
+  });
+  document.querySelectorAll('.tab').forEach(function(b,i){ b.className='tab'+(tabs[i]===tab?' on':''); });
+}
+
+// ── CSV UPLOAD ────────────────────────────────────────────────────────
+document.getElementById('csvInput').addEventListener('change', function() {
+  var file = this.files[0];
+  if (!file) return;
+  csvFilename = file.name;
+  msg('⏳ Reading ' + file.name + ' (' + Math.round(file.size/1024) + ' KB)…', 'var(--blue)');
+  var reader = new FileReader();
+  reader.onload = function(e) { setTimeout(function(){ parseCSV(e.target.result, file.name); }, 50); };
+  reader.onerror = function() { msg('❌ Error reading file', 'var(--red)'); };
+  reader.readAsText(file, 'UTF-8');
+  this.value = '';
+});
+
+function parseCSV(text, filename) {
+  var lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n').filter(function(l){ return l.trim(); });
+  if (lines.length < 2) { msg('❌ CSV is empty','var(--red)'); return; }
+  var sep = (lines[0].split(',').length >= lines[0].split(';').length) ? ',' : ';';
+  var hdrs = lines[0].split(sep).map(function(h){ return h.trim().replace(/"/g,''); });
+  function G(n) { return hdrs.findIndex(function(h){ return h.toLowerCase()===n.toLowerCase(); }); }
+  var idx = { patient:G('patient'), doctor:G('doctor'), distributor:G('distributor'), clinic:G('clinic'),
+    creation_date:G('creation_date'), status:G('status'), status_change_date:G('status_change_date'),
+    action_required_for:G('action_required_for'), overdue_for:G('overdue_for'), id:G('id'),
+    extra:G('number_of_extra_refinements') };
+  function get(cols,i){ return i>=0 ? (cols[i]||'').trim().replace(/^"|"$/g,'') : ''; }
+  parsedCSV = lines.slice(1).map(function(line) {
+    var cols = line.split(sep);
+    return { case_id:get(cols,idx.id), patient_name:get(cols,idx.patient), doctor:get(cols,idx.doctor),
+      distributor:get(cols,idx.distributor), clinic:get(cols,idx.clinic),
+      creation_date:get(cols,idx.creation_date), current_status:get(cols,idx.status),
       status_change_date:get(cols,idx.status_change_date),
       action_required_for:parseInt(get(cols,idx.action_required_for))||0,
       overdue_for:parseInt(get(cols,idx.overdue_for))||0,
-      number_of_extra_refinements:parseInt(get(cols,idx.extra))||0
-    }
-  }).filter(r=>r.case_id&&r.patient_name)
-  
-  if(!parsedCSV.length){ntf("No valid cases found","err");return}
-  
-  // Compare with existing
-  const existingMap=new Map(allCases.map(c=>[c.case_id,c]))
-  let newCount=0,changedCount=0,sameCount=0
-  
-  const preview=parsedCSV.map(row=>{
-    const ex=existingMap.get(row.case_id)
-    let type="same"
-    if(!ex){type="new";newCount++}
-    else if(ex.current_status!==row.current_status){type="changed";changedCount++}
-    else sameCount++
-    return{...row,_type:type,_oldStatus:ex?.current_status}
-  })
-  
-  // Show preview
-  document.getElementById("previewCard").style.display="block"
-  document.getElementById("previewTitle").textContent=`📋 Preview — ${parsedCSV.length.toLocaleString()} cases from ${filename}`
-  document.getElementById("previewSub").textContent=`${newCount} new · ${changedCount} status changes · ${sameCount} unchanged`
-  
-  document.getElementById("changeSummaryGrid").innerHTML=`
-    <div style="background:var(--g50);border:1px solid var(--g100);border-radius:10px;padding:14px;text-align:center">
-      <div style="font-size:28px;font-weight:800;color:var(--green)">${newCount}</div>
-      <div style="font-size:12px;font-weight:700;color:#15803d;margin-top:4px">🆕 New Cases</div>
-    </div>
-    <div style="background:var(--a50);border:1px solid var(--a100);border-radius:10px;padding:14px;text-align:center">
-      <div style="font-size:28px;font-weight:800;color:var(--amber)">${changedCount}</div>
-      <div style="font-size:12px;font-weight:700;color:#92400e;margin-top:4px">🔄 Status Changes</div>
-    </div>
-    <div style="background:#f8fafc;border:1px solid var(--bdr);border-radius:10px;padding:14px;text-align:center">
-      <div style="font-size:28px;font-weight:800;color:var(--mu)">${sameCount}</div>
-      <div style="font-size:12px;font-weight:700;color:var(--mu);margin-top:4px">⬜ Unchanged</div>
-    </div>`
-  
-  // Show only new/changed in preview (max 50)
-  const interesting=preview.filter(r=>r._type!=="same").slice(0,50)
-  document.getElementById("previewRows").innerHTML=interesting.length?interesting.map(r=>`
-    <tr class="${r._type==="new"?"row-new":"row-changed"}">
-      <td>${r._type==="new"?'<span class="badge b-g">🆕 New</span>':'<span class="badge b-a">🔄 Changed</span>'}</td>
-      <td class="mono" style="color:var(--blue);font-weight:700">${r.case_id}</td>
-      <td style="font-weight:600">${r.patient_name}</td>
-      <td style="color:var(--mu)">${r.doctor}</td>
-      <td>${r._type==="changed"?`${sBadge(r._oldStatus)}<span style="color:var(--mu);margin:0 4px">→</span>`:""} ${sBadge(r.current_status)}</td>
-      <td class="mono" style="font-size:10px">${r.creation_date}</td>
-      <td>${r.overdue_for>0?`<span style="color:var(--red);font-weight:700">${r.overdue_for}d</span>`:'<span style="color:var(--green)">✓</span>'}</td>
-    </tr>`).join("")
-  :`<tr><td colspan="7" class="ec">All ${sameCount} cases unchanged — no new cases or status changes.</td></tr>`
-  
-  if(preview.length>50)document.getElementById("previewMore").textContent=`Showing ${interesting.length} changed/new of ${parsedCSV.length} total cases`
-  
-  document.getElementById("uploadMsg").innerHTML=`<span style="color:var(--green);font-weight:600">✅ ${parsedCSV.length.toLocaleString()} cases parsed · ${newCount} new · ${changedCount} status changes</span>`
-  document.getElementById("dropZone").className="drop-zone ok"
-  document.getElementById("previewCard").scrollIntoView({behavior:"smooth"})
+      number_of_extra_refinements:parseInt(get(cols,idx.extra))||0 };
+  }).filter(function(r){ return r.case_id && r.patient_name; });
+  if (!parsedCSV.length) { msg('❌ No valid cases found','var(--red)'); return; }
+
+  var existMap = {};
+  allCases.forEach(function(c){ existMap[String(c.case_id)] = c; });
+  var nNew=0, nChanged=0, nSame=0;
+  var preview = parsedCSV.map(function(r) {
+    var ex = existMap[String(r.case_id)];
+    var type = 'same';
+    if (!ex) { type='new'; nNew++; }
+    else if (ex.current_status !== r.current_status) { type='changed'; nChanged++; }
+    else nSame++;
+    return Object.assign({}, r, {_type:type, _old:ex?ex.current_status:''});
+  });
+  document.getElementById('previewCard').style.display = 'block';
+  document.getElementById('prevTitle').textContent = 'Preview — ' + parsedCSV.length.toLocaleString() + ' cases from ' + filename;
+  document.getElementById('prevSub').textContent = nNew + ' new · ' + nChanged + ' status changes · ' + nSame + ' unchanged';
+  document.getElementById('prevSummary').innerHTML =
+    '<div style="background:var(--g50);border:1px solid var(--g100);border-radius:10px;padding:14px;text-align:center"><div style="font-size:28px;font-weight:800;color:var(--green)">'+nNew+'</div><div style="font-size:12px;font-weight:700;color:#15803d;margin-top:4px">🆕 New Cases</div></div>' +
+    '<div style="background:var(--a50);border:1px solid var(--a100);border-radius:10px;padding:14px;text-align:center"><div style="font-size:28px;font-weight:800;color:var(--amber)">'+nChanged+'</div><div style="font-size:12px;font-weight:700;color:#92400e;margin-top:4px">🔄 Status Changes</div></div>' +
+    '<div style="background:#f8fafc;border:1px solid var(--bdr);border-radius:10px;padding:14px;text-align:center"><div style="font-size:28px;font-weight:800;color:var(--mu)">'+nSame+'</div><div style="font-size:12px;font-weight:700;color:var(--mu);margin-top:4px">⬜ Unchanged</div></div>';
+  var interesting = preview.filter(function(r){ return r._type!=='same'; }).slice(0,30);
+  document.getElementById('prevRows').innerHTML = interesting.length ? interesting.map(function(r){
+    return '<tr class="'+(r._type==='new'?'row-new':'row-changed')+'">' +
+      '<td>'+(r._type==='new'?'<span class="badge b-g">🆕 New</span>':'<span class="badge b-a">🔄 Changed</span>')+'</td>' +
+      '<td class="mono" style="color:var(--blue);font-weight:700">'+r.case_id+'</td>' +
+      '<td style="font-weight:600">'+r.patient_name+'</td>' +
+      '<td style="color:var(--mu)">'+r.doctor+'</td>' +
+      '<td>'+(r._type==='changed' ? sBadge(r._old)+'<span style="color:var(--mu);margin:0 4px">→</span>' : '')+sBadge(r.current_status)+'</td>' +
+      '<td>'+(r.overdue_for>0?'<span style="color:var(--red);font-weight:700">'+r.overdue_for+'d</span>':'✓')+'</td></tr>';
+  }).join('') : '<tr><td colspan="6" class="ec">All '+nSame+' cases unchanged</td></tr>';
+  msg('✅ ' + parsedCSV.length.toLocaleString() + ' cases ready · ' + nNew + ' new · ' + nChanged + ' changed · Click Confirm to save', 'var(--green)');
+  document.getElementById('previewCard').scrollIntoView({behavior:'smooth'});
 }
 
-// CONFIRM IMPORT
-window.confirmImport=async()=>{
-  if(!parsedCSV.length)return
-  const btn=document.getElementById("confirmBtn")
-  btn.textContent="⏳ Importing…";btn.disabled=true
-  
-  const existingMap=new Map(allCases.map(c=>[c.case_id,c]))
-  const now=new Date().toISOString()
-  let newCount=0,changedCount=0
-  const historyRows=[]
-  
-  // Create import record first
-  const{data:impData,error:impErr}=await sb.from("bloom_imports").insert([{
-    imported_at:now,filename:currentFilename,
-    total_cases:parsedCSV.length,new_cases:0,updated_cases:0,unchanged_cases:0,status:"importing"
-  }]).select()
-  
-  if(impErr){ntf("Failed to create import: "+impErr.message,"err");btn.textContent="⚡ Confirm & Save Import";btn.disabled=false;return}
-  const importId=impData[0].id
-  
-  // Process in batches of 100 for performance
-  const BATCH=100
-  for(let i=0;i<parsedCSV.length;i+=BATCH){
-    const batch=parsedCSV.slice(i,i+BATCH)
-    
-    // Collect history for changed cases
-    batch.forEach(row=>{
-      const ex=existingMap.get(row.case_id)
-      if(!ex){newCount++}
-      else if(ex.current_status!==row.current_status){
-        changedCount++
-        historyRows.push({
-          case_id:row.case_id,patient_name:row.patient_name,
-          doctor:row.doctor,distributor:row.distributor,clinic:row.clinic,
-          old_status:ex.current_status,new_status:row.current_status,
-          old_overdue:ex.overdue_for||0,new_overdue:row.overdue_for||0,
-          status_change_date:row.status_change_date,
-          import_id:importId,changed_at:now
-        })
+function cancelPreview() { document.getElementById('previewCard').style.display='none'; parsedCSV=[]; }
+
+async function confirmImport() {
+  if (!parsedCSV.length) return;
+  var btn = document.getElementById('confirmBtn');
+  btn.disabled=true; btn.textContent='⏳ Saving…';
+  var now = new Date().toISOString();
+  var existMap = {};
+  allCases.forEach(function(c){ existMap[String(c.case_id)] = c; });
+  var nNew=0, nChanged=0, histRows=[];
+  var impRes = await SB.from('bloom_imports').insert([{
+    imported_at:now, filename:csvFilename, total_cases:parsedCSV.length,
+    new_cases:0, updated_cases:0, unchanged_cases:0, status:'importing'
+  }]).select();
+  if (impRes.error) { ntf('❌ '+impRes.error.message,'err'); btn.disabled=false; btn.textContent='⚡ Confirm Import'; return; }
+  var importId = impRes.data[0].id;
+  var BATCH = 200;
+  for (var i=0; i<parsedCSV.length; i+=BATCH) {
+    var batch = parsedCSV.slice(i, i+BATCH);
+    batch.forEach(function(row) {
+      var ex = existMap[String(row.case_id)];
+      if (!ex) nNew++;
+      else if (ex.current_status !== row.current_status) {
+        nChanged++;
+        histRows.push({case_id:row.case_id, patient_name:row.patient_name, doctor:row.doctor,
+          distributor:row.distributor, clinic:row.clinic,
+          old_status:ex.current_status, new_status:row.current_status,
+          old_overdue:ex.overdue_for||0, new_overdue:row.overdue_for||0,
+          status_change_date:row.status_change_date, import_id:importId, changed_at:now});
       }
-    })
-    
-    // Upsert batch
-    const upsertRows=batch.map(row=>{
-      const ex=existingMap.get(row.case_id)
-      const isChanged=ex&&ex.current_status!==row.current_status
-      return{
-        case_id:row.case_id,patient_name:row.patient_name,
-        doctor:row.doctor,distributor:row.distributor,clinic:row.clinic,
-        creation_date:row.creation_date,
-        previous_status:ex?.current_status||null,
-        current_status:row.current_status,
-        status_change_date:row.status_change_date,
-        action_required_for:row.action_required_for||0,
-        overdue_for:row.overdue_for||0,
-        number_of_extra_refinements:row.number_of_extra_refinements||0,
-        first_seen_at:ex?.first_seen_at||now,
-        last_updated_at:now,
-        last_import_id:importId,
-        import_count:(ex?.import_count||0)+1,
-        status_changed_count:(ex?.status_changed_count||0)+(isChanged?1:0)
+    });
+    await SB.from('bloom_cases').upsert(batch.map(function(row) {
+      var ex = existMap[String(row.case_id)];
+      var isChanged = ex && ex.current_status !== row.current_status;
+      return {case_id:row.case_id, patient_name:row.patient_name, doctor:row.doctor,
+        distributor:row.distributor, clinic:row.clinic, creation_date:row.creation_date,
+        previous_status:ex ? ex.current_status : null, current_status:row.current_status,
+        status_change_date:row.status_change_date, action_required_for:row.action_required_for||0,
+        overdue_for:row.overdue_for||0, number_of_extra_refinements:row.number_of_extra_refinements||0,
+        first_seen_at:ex ? ex.first_seen_at : now, last_updated_at:now,
+        last_import_id:importId, import_count:(ex?ex.import_count:0)+1,
+        status_changed_count:(ex?ex.status_changed_count:0)+(isChanged?1:0)};
+    }), {onConflict:'case_id'});
+    var pct = Math.round((i+BATCH)/parsedCSV.length*100);
+    setProgress(Math.min(pct,100), 'Saving cases…', Math.min(i+BATCH,parsedCSV.length).toLocaleString()+' / '+parsedCSV.length.toLocaleString());
+  }
+  if (histRows.length) {
+    for (var j=0; j<histRows.length; j+=BATCH) { await SB.from('bloom_case_history').insert(histRows.slice(j,j+BATCH)); }
+  }
+  await SB.from('bloom_imports').update({new_cases:nNew,updated_cases:nChanged,unchanged_cases:parsedCSV.length-nNew-nChanged,status:'completed'}).eq('id',importId);
+  hideProgress();
+  btn.disabled=false; btn.textContent='⚡ Confirm Import';
+  document.getElementById('previewCard').style.display='none';
+  ntf('✅ '+parsedCSV.length.toLocaleString()+' cases saved · '+nNew+' new · '+nChanged+' changed');
+  parsedCSV=[];
+  await loadAll();
+}
+
+// ── EXCEL UPLOAD ──────────────────────────────────────────────────────
+document.getElementById('xlsxInput').addEventListener('change', function() {
+  var file = this.files[0];
+  if (!file) return;
+  msg('⏳ Reading ' + file.name + '…', 'var(--blue)');
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var wb = XLSX.read(e.target.result, {type:'array'});
+      var shipRows=[], alRows=[];
+      // SHIPPING sheet
+      var ss = wb.Sheets['SHIPPING'] || wb.Sheets[wb.SheetNames[0]];
+      if (ss) {
+        XLSX.utils.sheet_to_json(ss).forEach(function(r) {
+          var cn = String(r['Case number']||r['case_number']||'').trim();
+          if (cn) shipRows.push({case_number:cn,
+            label_printed:String(r['Label printed']||'').trim(),
+            box_number:parseInt(r['Box number']||1)||1,
+            aligners_per_box:parseInt(r['Aligners per box']||0)||0,
+            box_details:String(r['Box details']||'').trim(),
+            date_of_shipment:String(r['Date of shipment']||'').trim(),
+            shipping_number:String(r['Shipping number']||'').trim(),
+            imported_at:new Date().toISOString()});
+        });
       }
-    })
-    
-    await sb.from("bloom_cases").upsert(upsertRows,{onConflict:"case_id"})
-    
-    // Update progress
-    btn.textContent=`⏳ Saving ${Math.min(i+BATCH,parsedCSV.length).toLocaleString()}/${parsedCSV.length.toLocaleString()}…`
-    // Show progress bar
-    const pct=Math.round(Math.min(i+BATCH,parsedCSV.length)/parsedCSV.length*100)
-    document.getElementById("uploadMsg").innerHTML=`
-      <div style="background:var(--bdr);border-radius:999px;height:8px;margin-bottom:4px">
-        <div style="background:var(--blue);height:8px;border-radius:999px;width:${pct}%;transition:width .3s"></div>
-      </div>
-      <span style="color:var(--mu);font-size:11px">Saving to database… ${Math.min(i+BATCH,parsedCSV.length).toLocaleString()} of ${parsedCSV.length.toLocaleString()} cases (${pct}%)</span>`
-  }
-  
-  // Save history
-  if(historyRows.length){
-    for(let i=0;i<historyRows.length;i+=BATCH){
-      await sb.from("bloom_case_history").insert(historyRows.slice(i,i+BATCH))
-    }
-  }
-  
-  // Update import stats
-  await sb.from("bloom_imports").update({
-    total_cases:parsedCSV.length,new_cases:newCount,
-    updated_cases:changedCount,
-    unchanged_cases:parsedCSV.length-newCount-changedCount,
-    status:"completed"
-  }).eq("id",importId)
-  
-  ntf(`✅ Import complete · ${parsedCSV.length.toLocaleString()} cases · ${newCount} new · ${changedCount} changed`)
-  btn.textContent="✅ Done!";btn.disabled=false
-  document.getElementById("previewCard").style.display="none"
-  document.getElementById("dropZone").className="drop-zone"
-  parsedCSV=[]
-  loadData()
-}
-
-
-// ── ALIGNER DATA ─────────────────────────────────────────────
-let allAligners=[], alignerPage=0, alignerSortCol="case_number", alignerSortDir=1
-
-async function loadAligners(){
-  // Load all aligner data — paginate for large datasets
-  let allA=[],from=0,batchSize=1000
-  while(true){
-    const{data,error}=await sb.from("bloom_aligners").select("case_number,box_number,aligners_per_box,date_of_shipment,shipping_number,label_printed").order("case_number",{ascending:true}).range(from,from+batchSize-1)
-    if(error||!data?.length)break
-    allA=[...allA,...data]
-    if(data.length<batchSize)break
-    from+=batchSize
-  }
-  
-  // Aggregate by case_number
-  const caseMap=new Map()
-  allA.forEach(r=>{
-    const k=String(r.case_number)
-    if(!caseMap.has(k))caseMap.set(k,{case_number:k,total_aligners:0,total_boxes:0,last_shipment:"",first_shipment:"",shipping_numbers:[],label:r.label_printed})
-    const c=caseMap.get(k)
-    c.total_aligners+=(r.aligners_per_box||0)
-    c.total_boxes++
-    if(!c.last_shipment||r.date_of_shipment>c.last_shipment)c.last_shipment=r.date_of_shipment
-    if(!c.first_shipment||r.date_of_shipment<c.first_shipment)c.first_shipment=r.date_of_shipment
-    if(r.shipping_number&&!c.shipping_numbers.includes(r.shipping_number))c.shipping_numbers.push(r.shipping_number)
-  })
-  allAligners=[...caseMap.values()].sort((a,b)=>Number(b.case_number)-Number(a.case_number))
-  
-  // Update KPIs
-  const totalAligners=allAligners.reduce((s,c)=>s+c.total_aligners,0)
-  const linkedCases=allAligners.filter(a=>allCases.some(c=>String(c.case_id)===String(a.case_number))).length
-  document.getElementById("akTotal").textContent=totalAligners.toLocaleString()
-  document.getElementById("akCases").textContent=allAligners.length.toLocaleString()
-  document.getElementById("akLinked").textContent=linkedCases.toLocaleString()
-  document.getElementById("akAvg").textContent=allAligners.length?Math.round(totalAligners/allAligners.length):0
-  document.getElementById("tabAlignerCount").textContent=allAligners.length.toLocaleString()
-  
-  // Show last import date
-  if(allA.length){
-    const lastDate=allA.reduce((max,r)=>r.imported_at>max?r.imported_at:max,"")
-    const el=document.getElementById("lastAlignerImport")
-    if(el&&lastDate) el.textContent=`Last upload: ${new Date(lastDate).toLocaleString("en-GB",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}`
-  }
-}
-
-window.renderAligners=()=>{
-  const term=(document.getElementById("srchAligner")?.value||"").toLowerCase()
-  const dateFrom=document.getElementById("fAlignerDateFrom")?.value||""
-  const dateTo=document.getElementById("fAlignerDateTo")?.value||""
-  
-  let fl=allAligners.filter(a=>{
-    if(term&&!String(a.case_number).includes(term)&&!a.shipping_numbers.join(",").toLowerCase().includes(term))return false
-    return true
-  })
-  
-  // Sort
-  fl.sort((a,b)=>{
-    const av=a[alignerSortCol]||"",bv=b[alignerSortCol]||""
-    if(typeof av==="number")return(av-bv)*alignerSortDir
-    return String(av).localeCompare(String(bv))*alignerSortDir
-  })
-  
-  const total=fl.length
-  const page=fl.slice(alignerPage*PAGE,(alignerPage+1)*PAGE)
-  
-  // Find linked case status
-  const caseMap=new Map(allCases.map(c=>[String(c.case_id),c]))
-  
-  document.getElementById("alignersTable").innerHTML=page.length?page.map(a=>{
-    const linkedCase=caseMap.get(String(a.case_number))
-    return`<tr onclick="showCase('${a.case_number}')" style="${linkedCase?'':'opacity:.6'}">
-      <td class="mono" style="font-weight:700;color:var(--blue)">${a.case_number}</td>
-      <td>${linkedCase?sBadge(linkedCase.current_status):'<span class="badge b-gray">Not in Cases CSV</span>'}</td>
-      <td style="font-weight:800;color:var(--amber);font-family:var(--mono);font-size:14px">${a.total_aligners.toLocaleString()}</td>
-      <td class="mono">${a.total_boxes}</td>
-      <td class="mono" style="font-size:11px">${a.last_shipment||"—"}</td>
-      <td class="mono" style="font-size:11px;color:var(--mu)">${a.first_shipment||"—"}</td>
-      <td style="font-size:11px;color:var(--mu);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.shipping_numbers.slice(0,2).join(", ")}</td>
-      <td><span class="badge ${a.label==="YES"?"b-g":"b-gray"}">${a.label||"—"}</span></td>
-    </tr>`}).join("")
-  :`<tr><td colspan="8" class="ec">No aligner data yet. Upload the Excel file above.</td></tr>`
-  
-  const totalPages=Math.ceil(total/PAGE)||1
-  document.getElementById("alignersPager").innerHTML=`
-    <span style="font-size:12px;color:var(--mu)">${total.toLocaleString()} cases · page ${alignerPage+1}/${totalPages}</span>
-    <div style="display:flex;gap:6px">
-      <button class="btn bgh" style="padding:5px 10px;font-size:11px" onclick="alignerPage=0;renderAligners()">«</button>
-      <button class="btn bgh" style="padding:5px 10px;font-size:11px" onclick="if(alignerPage>0){alignerPage--;renderAligners()}" ${alignerPage===0?"disabled":""}>‹</button>
-      <button class="btn bgh" style="padding:5px 10px;font-size:11px" onclick="if((alignerPage+1)*PAGE<${total}){alignerPage++;renderAligners()}" ${(alignerPage+1)*PAGE>=total?"disabled":""}>›</button>
-      <button class="btn bgh" style="padding:5px 10px;font-size:11px" onclick="alignerPage=${totalPages-1};renderAligners()">»</button>
-    </div>`
-}
-
-window.sortAligners=(col)=>{
-  if(alignerSortCol===col)alignerSortDir*=-1
-  else{alignerSortCol=col;alignerSortDir=1}
-  alignerPage=0;renderAligners()
-}
-
-// HANDLE EXCEL UPLOAD
-window.handleAlignerFile=async(file)=>{
-  if(!file)return
-  const msgEl=document.getElementById("alignerUploadMsg")
-  msgEl.innerHTML=`<span style="color:var(--blue)">⏳ Loading ${file.name}…</span>`
-  
-  // Load SheetJS if not already loaded
-  if(!window.XLSX){
-    await new Promise((resolve,reject)=>{
-      const s=document.createElement("script")
-      s.src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"
-      s.onload=resolve; s.onerror=reject
-      document.head.appendChild(s)
-    })
-  }
-  
-  try{
-    const buf=await file.arrayBuffer()
-    const wb=XLSX.read(buf,{type:"array"})
-    
-    msgEl.innerHTML=`<span style="color:var(--mu)">📑 Sheets found: ${wb.SheetNames.join(", ")}</span>`
-    
-    // Read SHIPPING sheet
-    const shippingData=[]
-    const shipSheet=wb.Sheets["SHIPPING"]||wb.Sheets[wb.SheetNames[0]]
-    if(shipSheet){
-      const rows=XLSX.utils.sheet_to_json(shipSheet)
-      rows.forEach(r=>{
-        const caseNum=String(r["Case number"]||r["case_number"]||"").trim()
-        if(!caseNum)return
-        shippingData.push({
-          case_number:caseNum,
-          label_printed:String(r["Label printed"]||"").trim(),
-          box_number:parseInt(r["Box number"]||1)||1,
-          aligners_per_box:parseInt(r["Aligners per box"]||0)||0,
-          box_details:String(r["Box details"]||"").trim(),
-          date_of_shipment:String(r["Date of shipment"]||"").trim(),
-          shipping_number:String(r["Shipping number"]||"").trim(),
-          imported_at:new Date().toISOString()
-        })
-      })
-    }
-    
-    // Read ALIGNER sheet
-    const alignerData=[]
-    const alignSheet=wb.Sheets["ALIGNER"]||wb.Sheets[wb.SheetNames[1]]
-    if(alignSheet){
-      const rows=XLSX.utils.sheet_to_json(alignSheet)
-      rows.forEach(r=>{
-        const caseNum=String(r["Case number"]||"").trim()
-        if(!caseNum)return
-        alignerData.push({
-          case_number:caseNum,
-          aligner_upper:parseInt(r["Aligner Upper"]||0)||0,
-          aligner_lower:parseInt(r["Aligner lower"]||0)||0,
-          number_of_aligners:parseInt(r["Number of aligners"]||0)||0,
-          package_type:String(r["Package type"]||"").trim(),
-          order_type:String(r["Order type"]||"").trim(),
-          imported_at:new Date().toISOString()
-        })
-      })
-    }
-    
-    msgEl.innerHTML=`<span style="color:var(--mu)">📦 Shipping: ${shippingData.length} rows · 🦷 Aligners: ${alignerData.length} rows · Saving…</span>`
-    
-    const BATCH=500
-    let saved=0
-    
-    // Clear and save SHIPPING data
-    if(shippingData.length){
-      await sb.from("bloom_aligners").delete().neq("id","00000000-0000-0000-0000-000000000000")
-      for(let i=0;i<shippingData.length;i+=BATCH){
-        const{error}=await sb.from("bloom_aligners").insert(shippingData.slice(i,i+BATCH))
-        if(error){msgEl.innerHTML=`<span style="color:var(--red)">❌ Shipping error: ${error.message}</span>`;return}
-        saved+=Math.min(BATCH,shippingData.length-i)
-        const pct=Math.round(saved/shippingData.length*50)
-        msgEl.innerHTML=`
-          <div style="background:var(--bdr);border-radius:999px;height:6px;margin-bottom:4px">
-            <div style="background:var(--blue);height:6px;border-radius:999px;width:${pct}%;transition:width .2s"></div>
-          </div>
-          <span style="font-size:11px;color:var(--mu)">Saving shipping data… ${saved}/${shippingData.length}</span>`
+      // ALIGNER sheet
+      var as = wb.Sheets['ALIGNER'] || (wb.SheetNames[1] ? wb.Sheets[wb.SheetNames[1]] : null);
+      if (as) {
+        XLSX.utils.sheet_to_json(as).forEach(function(r) {
+          var cn = String(r['Case number']||'').trim();
+          if (cn) alRows.push({case_number:cn,
+            aligner_upper:parseInt(r['Aligner Upper']||0)||0,
+            aligner_lower:parseInt(r['Aligner lower']||0)||0,
+            number_of_aligners:parseInt(r['Number of aligners']||0)||0,
+            package_type:String(r['Package type']||'').trim(),
+            order_type:String(r['Order type']||'').trim(),
+            imported_at:new Date().toISOString()});
+        });
       }
+      saveExcelData(shipRows, alRows, file.name);
+    } catch(err) {
+      msg('❌ Error: '+err.message, 'var(--red)');
     }
-    
-    // Clear and save ALIGNER details
-    if(alignerData.length){
-      await sb.from("bloom_aligner_details").delete().neq("id","00000000-0000-0000-0000-000000000000")
-      saved=0
-      for(let i=0;i<alignerData.length;i+=BATCH){
-        const{error}=await sb.from("bloom_aligner_details").insert(alignerData.slice(i,i+BATCH))
-        if(error){
-          // Table might not exist yet — show clear message
-          if(error.message.includes("does not exist")){
-            msgEl.innerHTML=`<span style="color:var(--red)">❌ Table missing! Run bloom_aligner_setup.sql in Supabase first.</span>`
-          }else{
-            msgEl.innerHTML=`<span style="color:var(--red)">❌ Aligner error: ${error.message}</span>`
-          }
-          return
-        }
-        saved+=Math.min(BATCH,alignerData.length-i)
-        const pct=Math.round(50+saved/alignerData.length*50)
-        msgEl.innerHTML=`
-          <div style="background:var(--bdr);border-radius:999px;height:6px;margin-bottom:4px">
-            <div style="background:var(--green);height:6px;border-radius:999px;width:${pct}%;transition:width .2s"></div>
-          </div>
-          <span style="font-size:11px;color:var(--mu)">Saving aligner details… ${saved}/${alignerData.length}</span>`
-      }
+  };
+  reader.readAsArrayBuffer(file);
+  this.value = '';
+});
+
+async function saveExcelData(shipRows, alRows, filename) {
+  var BATCH = 500;
+  if (shipRows.length) {
+    await SB.from('bloom_aligners').delete().neq('id','00000000-0000-0000-0000-000000000000');
+    for (var i=0; i<shipRows.length; i+=BATCH) {
+      await SB.from('bloom_aligners').insert(shipRows.slice(i,i+BATCH));
+      setProgress(Math.round((i+BATCH)/shipRows.length*50), 'Saving shipping data…', Math.min(i+BATCH,shipRows.length)+'/'+shipRows.length);
     }
-    
-    msgEl.innerHTML=`<span style="color:var(--green);font-weight:700">✅ Import complete! Shipping: ${shippingData.length} rows · Aligners: ${alignerData.length} rows from ${file.name}</span>`
-    ntf(\`✅ Excel imported: ${shippingData.length} shipping + ${alignerData.length} aligner rows\`)
-    await loadAligners()
-    renderAligners()
-    
-  }catch(err){
-    msgEl.innerHTML=\`<span style="color:var(--red)">❌ Error: \${err.message}</span>\`
-    console.error("Excel import error:",err)
   }
+  if (alRows.length) {
+    var delRes = await SB.from('bloom_aligner_details').delete().neq('id','00000000-0000-0000-0000-000000000000');
+    if (delRes.error && delRes.error.message.includes('does not exist')) {
+      msg('❌ Table missing! Run SETUP_ONE_TIME_ONLY.sql in Supabase first.', 'var(--red)');
+      hideProgress(); return;
+    }
+    for (var j=0; j<alRows.length; j+=BATCH) {
+      var res = await SB.from('bloom_aligner_details').insert(alRows.slice(j,j+BATCH));
+      if (res.error) { msg('❌ '+res.error.message,'var(--red)'); hideProgress(); return; }
+      setProgress(50+Math.round((j+BATCH)/alRows.length*50), 'Saving aligner details…', Math.min(j+BATCH,alRows.length)+'/'+alRows.length);
+    }
+  }
+  hideProgress();
+  msg('✅ Excel imported! Shipping: '+shipRows.length.toLocaleString()+' rows · Aligners: '+alRows.length.toLocaleString()+' rows from '+filename);
+  document.getElementById('xlsxInfo').textContent = 'Last upload: '+new Date().toLocaleDateString('en-GB')+' · '+shipRows.length+' shipping + '+alRows.length+' aligner rows';
+  ntf('✅ Excel saved: '+shipRows.length+' shipping + '+alRows.length+' aligner rows');
+  await loadAligners();
 }
 
->
+// ── CASE MODAL ────────────────────────────────────────────────────────
+function showCase(caseId) {
+  var c = allCases.find(function(x){ return String(x.case_id)===String(caseId); });
+  var history = allHistory.filter(function(h){ return String(h.case_id)===String(caseId); })
+    .sort(function(a,b){ return new Date(a.changed_at)-new Date(b.changed_at); });
+  var al = allAligners.find(function(a){ return String(a.case_number)===String(caseId); });
+  document.getElementById('mTitle').textContent = 'Case #'+caseId+(c?' — '+c.patient_name:'');
+  document.getElementById('mSub').textContent = c ? (c.doctor||'—')+' · '+(c.clinic||'—')+' · '+(c.distributor||'—') : '';
+  var html = '';
+  if (c) {
+    html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">' +
+      '<div style="background:var(--bg);border-radius:10px;padding:12px;border:1px solid var(--bdr)"><div style="font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;margin-bottom:4px">Status</div>'+sBadge(c.current_status)+'</div>' +
+      '<div style="background:var(--bg);border-radius:10px;padding:12px;border:1px solid var(--bdr)"><div style="font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;margin-bottom:4px">Created</div><div style="font-size:13px;font-weight:700">'+(c.creation_date||'—')+'</div></div>' +
+      '<div style="background:'+(c.overdue_for>0?'var(--r50)':'var(--g50)')+';border-radius:10px;padding:12px;border:1px solid '+(c.overdue_for>0?'var(--r100)':'var(--g100)')+'"><div style="font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;margin-bottom:4px">Overdue</div><div style="font-size:16px;font-weight:800;color:'+(c.overdue_for>0?'var(--red)':'var(--green)')+';">'+(c.overdue_for>0?c.overdue_for+'d overdue':'✓ On time')+'</div></div>' +
+      '</div>';
+  }
+  if (al) {
+    html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">' +
+      '<div style="background:var(--a50);border:1px solid var(--a100);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--amber)">'+al.total+'</div><div style="font-size:11px;color:#92400e;font-weight:600">Total Aligners</div></div>' +
+      '<div style="background:var(--b50);border:1px solid var(--b100);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--blue)">'+(al.upper||'—')+'</div><div style="font-size:11px;color:var(--blue);font-weight:600">Upper 🔼</div></div>' +
+      '<div style="background:var(--g50);border:1px solid var(--g100);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--green)">'+(al.lower||'—')+'</div><div style="font-size:11px;color:var(--green);font-weight:600">Lower 🔽</div></div>' +
+      '<div style="background:var(--p50);border:1px solid #ddd6fe;border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--purple)">'+(al.refs||0)+'</div><div style="font-size:11px;color:var(--purple);font-weight:600">Refinements</div></div>' +
+      '</div>';
+  }
+  html += '<div style="font-size:12px;font-weight:800;color:var(--mu);text-transform:uppercase;margin-bottom:10px;border-top:1px solid var(--bdr);padding-top:12px">📅 Status Timeline ('+history.length+' changes)</div>';
+  if (history.length) {
+    html += history.map(function(h) {
+      return '<div style="display:flex;gap:12px;margin-bottom:12px">' +
+        '<div style="width:10px;height:10px;border-radius:50%;background:var(--amber);flex-shrink:0;margin-top:3px"></div>' +
+        '<div><div style="font-size:11px;color:var(--mu)">'+fdt(h.changed_at)+'</div>' +
+        '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:3px">'+sBadge(h.old_status)+'<span style="color:var(--mu)">→</span>'+sBadge(h.new_status)+'</div></div></div>';
+    }).join('');
+  } else {
+    html += '<div style="text-align:center;padding:16px;color:var(--dim);font-size:13px">No changes recorded yet</div>';
+  }
+  if (c) {
+    html += '<div style="border-top:1px solid var(--bdr);padding-top:12px;margin-top:4px;font-size:11px;color:var(--mu);display:flex;gap:16px;flex-wrap:wrap">' +
+      '<span>First seen: <strong>'+fdt(c.first_seen_at)+'</strong></span>' +
+      '<span>Imports: <strong>'+(c.import_count||1)+'×</strong></span>' +
+      '<span>Total changes: <strong>'+(c.status_changed_count||0)+'</strong></span></div>';
+  }
+  document.getElementById('mBody').innerHTML = html;
+  document.getElementById('modal').classList.add('on');
+}
+function closeModal() { document.getElementById('modal').classList.remove('on'); }
+
+// ── START ─────────────────────────────────────────────────────────────
+runDiagnostics();
+loadAll();
+</script>
+</body>
+</html>
