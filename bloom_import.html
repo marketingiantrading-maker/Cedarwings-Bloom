@@ -246,9 +246,7 @@ var SB = {
       'apikey': SUPA_KEY,
       'Authorization': 'Bearer ' + SUPA_KEY,
       'Content-Type': 'application/json',
-      'Prefer': 'return=representation',
-      'Range': '0-9999',
-      'Range-Unit': 'items'
+      'Prefer': 'return=representation'
     };
     var _filters = [];
     var _select = '*';
@@ -270,7 +268,8 @@ var SB = {
         if (_order) url += '&order=' + _order;
         if (_limit) url += '&limit=' + _limit;
         if (_offset) url += '&offset=' + _offset;
-        return fetch(url, { headers: hdrs })
+        var getHdrs = Object.assign({}, hdrs, {'Range':'0-9999','Range-Unit':'items'});
+        return fetch(url, { headers: getHdrs })
           .then(function(r) { return r.json().then(function(d) { return { data: Array.isArray(d) ? d : [], error: r.ok ? null : d }; }); })
           .catch(function(e) { return { data: [], error: e }; });
       },
