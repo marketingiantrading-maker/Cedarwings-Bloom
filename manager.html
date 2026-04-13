@@ -59,7 +59,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh
 /* PAGE BODY */
 .body{padding:22px 28px 60px}
 /* KPI GRID */
-.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:22px}
+.kpi-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:14px;margin-bottom:22px}
 .kpi{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:20px 18px 16px;position:relative;overflow:hidden;transition:box-shadow .2s;cursor:default;cursor:pointer;transition:box-shadow .15s,transform .12s;text-decoration:none;display:block;color:inherit}
 .kpi:hover{box-shadow:var(--sh2);transform:translateY(-2px)}
 .kpi:hover{box-shadow:var(--sh2);transform:translateY(-1px)}
@@ -122,7 +122,7 @@ tbody tr:hover{background:#f8fafc}
 .req-i{background:var(--bg);border:1px solid var(--bdr);border-radius:10px;padding:12px;margin-bottom:7px;display:flex;gap:10px;align-items:flex-start}
 .req-name{font-size:13px;font-weight:700}
 .req-meta{font-size:11px;color:var(--mu);margin-top:3px}
-@media(max-width:1300px){.kpi-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:1400px){.kpi-grid{grid-template-columns:repeat(4,1fr)}}@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:768px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.g2,.g3{grid-template-columns:1fr}.sidebar{display:none}.content{margin-left:0}}
 @media(max-width:640px){.kpi-grid{grid-template-columns:1fr 1fr}.g2e{grid-template-columns:1fr}}
 </style>
@@ -232,6 +232,20 @@ tbody tr:hover{background:#f8fafc}
         <div class="kpi-val" id="kReq">—</div>
         <div class="kpi-lbl">Open Requisitions</div>
         <div class="kpi-sub" id="kReqSub">Loading…</div>
+      </a>
+      <a href="bloom_import.html" class="kpi">
+        <div class="kpi-stripe" style="background:linear-gradient(90deg,#2563eb,#3b82f6)"></div>
+        <div class="kpi-ico" style="background:#eff6ff">🔵</div>
+        <div class="kpi-val" id="kBloomC">—</div>
+        <div class="kpi-lbl">Bloom Cases</div>
+        <div class="kpi-sub" id="kBloomCSub">Total imported</div>
+      </a>
+      <a href="bloom_import.html" class="kpi">
+        <div class="kpi-stripe" style="background:linear-gradient(90deg,#7c3aed,#a855f7)"></div>
+        <div class="kpi-ico" style="background:var(--p50)">🦷</div>
+        <div class="kpi-val" id="kBloomA">—</div>
+        <div class="kpi-lbl">Bloom Aligners</div>
+        <div class="kpi-sub" id="kBloomASub">Total planned</div>
       </a>
     </div>
 
@@ -464,21 +478,35 @@ async function load(){
   const{s,e}=getRange()
   const[sR,pR,lR,rR,bCR,bAR,cSR]=await Promise.all([
     sb.from('time_sessions').select('*').gte('started_at',s.toISOString()).lte('started_at',e.toISOString()).order('started_at',{ascending:false}).limit(500),
-    sb.from('production_entries').select('*').gte('created_at',s.toISOString()).lte('created_at',e.toISOString()).order('created_at',{ascending:false}).limit(50),
+    sb.from('production_records').select('*').gte('created_at',s.toISOString()).lte('created_at',e.toISOString()).order('created_at',{ascending:false}).limit(200),
     sb.from('inventory_lots_enriched_view').select('item_name,available_qty,min_qty,min_stock,expiry_date,lot_no').limit(200),
     sb.from('inventory_requisitions').select('*').in('status',['pending','approved']).order('created_at',{ascending:false}).limit(10),
     sb.from('bloom_cases').select('case_id,current_status,creation_date,last_updated_at').order('last_updated_at',{ascending:false}).limit(5000),
     sb.from('bloom_aligner_details').select('case_number,aligner_upper,aligner_lower,number_of_aligners,order_type').limit(20000),
-    sb.from('order_step_tracking').select('order_no,step,status').eq('status','complete')
+    sb.from('order_step_tracking').select('order_no,step,status,completed_at').eq('status','complete').gte('completed_at',s.toISOString()).lte('completed_at',e.toISOString())
   ])
   allSess=sR.data||[];allProd=pR.data||[]
   const bloomCases=bCR.data||[]
   const bloomAligners=bAR.data||[]
-  const completedSteps=cSR.data||[]
-  // Cases fully completed = orders where ALL 6 steps are complete
+  const completedStepsInPeriod=cSR.data||[]
+
+  // Cases that completed PACKAGING (final step) in this period = produced this period
+  const packagingDoneInPeriod=completedStepsInPeriod.filter(r=>r.step==='Packaging').map(r=>r.order_no)
+  const uniqueProducedOrders=[...new Set(packagingDoneInPeriod)]
+
+  // For each produced order, get aligner count from bloom_aligner_details
+  const alignersByCase={}
+  bloomAligners.filter(r=>r.order_type==='TreatmentPlan').forEach(r=>{
+    alignersByCase[String(r.case_number)]=(r.number_of_aligners||0)
+  })
+  const producedAligners=uniqueProducedOrders.reduce((sum,ord)=>sum+(alignersByCase[String(ord)]||0),0)
+
+  // All-time completed cases (for "fully produced" counter)
+  const allCompletedStepsR=await sb.from('order_step_tracking').select('order_no,step').eq('status','complete')
+  const allCompletedSteps=allCompletedStepsR.data||[]
   const PRODUCTION_STEPS=['Printing','Cleaning','Thermoforming','Line Cut','Laser Marking','Packaging']
   const stepsByOrder={}
-  completedSteps.forEach(r=>{
+  allCompletedSteps.forEach(r=>{
     if(!stepsByOrder[r.order_no])stepsByOrder[r.order_no]=new Set()
     stepsByOrder[r.order_no].add(r.step)
   })
@@ -499,11 +527,10 @@ async function load(){
     if(!r.ended_at){it.active=true;it.order=r.order_no;it.machine=r.machine;it.wt=r.work_type;it.st=r.started_at;it.stype=t}
   })
 
-  // Aligner totals from Bloom Import data
-  // Total aligners = sum of TreatmentPlan number_of_aligners from bloom_aligner_details
-  const totAl=bloomAligners.filter(r=>r.order_type==='TreatmentPlan').reduce((a,r)=>a+(r.number_of_aligners||0),0)
-  // Total cases = count of bloom_cases
-  const totCs=bloomCases.length
+  // Aligner totals: aligners PRODUCED in selected period (cases that completed Packaging)
+  const totAl=producedAligners
+  // Cases produced in period
+  const totCs=allProd.reduce((a,r)=>a+(r.cases_count||0),0)
   const tot=pMin+wMin,eff=tot>0?Math.round(pMin/tot*100):0
   const lowItems=lots.filter(r=>{const q=Number(r.available_qty||0),m=Number(r.min_qty||r.min_stock||0);return q<=0||(m>0&&q<=m)})
   const nearExp=lots.filter(r=>{const d=dUntil(r.expiry_date);return d!==null&&d>=0&&d<=30})
@@ -516,13 +543,24 @@ async function load(){
   document.getElementById('kEffSub').textContent=`${hm(pMin)} productive`
   document.getElementById('kEffSub').style.color=eff>=70?'var(--green)':eff>=40?'var(--amber)':'var(--red)'
   document.getElementById('kAl').textContent=totAl.toLocaleString()
-  document.getElementById('kAlSub').textContent=`From Bloom Import · ${bloomAligners.filter(r=>r.order_type==="TreatmentPlan").length} cases with aligners`
+  document.getElementById('kAlSub').textContent=`${uniqueProducedOrders.length} cases produced this period`
   document.getElementById('kCs').textContent=totCs.toLocaleString()
-  document.getElementById('kCsSub').textContent=`${bloomCases.filter(r=>r.current_status&&!["DELIVERED","ARCHIVE"].includes(r.current_status)).length} active · ${fullyCompletedOrders.length} fully produced`
+  document.getElementById('kCsSub').textContent=`${fullyCompletedOrders.length} fully produced all-time · ${bloomCases.filter(r=>r.current_status&&!["DELIVERED","ARCHIVE"].includes(r.current_status)).length} active in Bloom`
   document.getElementById('kLow').textContent=lowItems.length
   document.getElementById('kLowSub').textContent=lowItems.length>0?`⏰ ${nearExp.length} near expiry`:'All stock OK'
   document.getElementById('kLowSub').style.color=lowItems.length>0?'var(--red)':'var(--green)'
   document.getElementById('kReq').textContent=reqs.length
+
+  // Bloom KPIs - total cases and total aligners
+  const totalBloomCases=bloomCases.length
+  const activeBloom=bloomCases.filter(r=>r.current_status&&!['DELIVERED','ARCHIVE','delivered','archive'].includes((r.current_status||'').toLowerCase())).length
+  const totalBloomAl=bloomAligners.reduce((a,r)=>a+(r.number_of_aligners||0),0)
+  const upperAl=bloomAligners.filter(r=>r.order_type==='TreatmentPlan').reduce((a,r)=>a+(r.aligner_upper||0),0)
+  const lowerAl=bloomAligners.filter(r=>r.order_type==='TreatmentPlan').reduce((a,r)=>a+(r.aligner_lower||0),0)
+  document.getElementById('kBloomC').textContent=totalBloomCases.toLocaleString()
+  document.getElementById('kBloomCSub').textContent=`${activeBloom} active · ${totalBloomCases-activeBloom} delivered`
+  document.getElementById('kBloomA').textContent=totalBloomAl.toLocaleString()
+  document.getElementById('kBloomASub').textContent=`↑${upperAl} upper · ↓${lowerAl} lower`
   document.getElementById('kReqSub').textContent=`${reqs.filter(r=>r.status==='approved').length} approved`
   document.getElementById('kReqSub').style.color=reqs.length>0?'var(--amber)':'var(--dim)'
 
@@ -531,15 +569,10 @@ async function load(){
   const dp={},dw={},dal={},dcs={}
   days7.forEach(d=>{dp[d]=0;dw[d]=0;dal[d]=0;dcs[d]=0})
   allSess.forEach(r=>{const k=(r.started_at||'').slice(0,10);if(dp[k]!==undefined){const m=dur(r);if(r.session_type==='productive')dp[k]+=m;if(r.session_type==='waste')dw[k]+=m}})
-  // Use bloom data for aligner/case charts
-  bloomAligners.filter(r=>r.order_type==='TreatmentPlan').forEach(r=>{
-    // Find the case's last_updated_at from bloomCases
-    const bc=bloomCases.find(c=>String(c.case_id)===String(r.case_number))
-    const k=bc?(bc.last_updated_at||'').slice(0,10):(r.imported_at||'').slice(0,10)
-    if(dal[k]!==undefined){dal[k]+=(r.number_of_aligners||0)}
-  })
-  bloomCases.forEach(r=>{
-    const k=(r.last_updated_at||r.creation_date||'').slice(0,10)
+  // Use Packaging completions for production charts (actual production dates)
+  completedStepsInPeriod.filter(r=>r.step==='Packaging').forEach(r=>{
+    const k=(r.completed_at||'').slice(0,10)
+    if(dal[k]!==undefined){dal[k]+=(alignersByCase[String(r.order_no)]||0)}
     if(dcs[k]!==undefined){dcs[k]+=1}
   })
   const dayLabels=days7.map(d=>new Date(d+'T12:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}))
@@ -630,8 +663,8 @@ async function load(){
 
   // Production table
   document.getElementById('prodTable').innerHTML=allProd.slice(0,8).map(r=>`<tr style="cursor:pointer" onclick="location.href='tracabilite.html?order='+encodeURIComponent(r.order_no||'')">\n    <td class="mono">${r.order_no||'—'}</td>
-    <td><span style="font-weight:700;color:var(--amber);font-family:var(--mono)">${r.aligners_done||0}</span></td>
-    <td><span style="font-weight:700;color:var(--purple);font-family:var(--mono)">${r.aligners_done||0}</span></td>
+    <td><span style="font-weight:700;color:var(--amber);font-family:var(--mono)">${r.aligners_count||0}</span></td>
+    <td><span style="font-weight:700;color:var(--purple);font-family:var(--mono)">${r.aligners_count||0}</span></td>
     <td>${r.employee_name||'—'}</td>
     <td class="mono" style="font-size:11px;color:var(--mu)">${fdt(r.created_at)}</td>
   </tr>`).join('')||'<tr><td colspan="5" class="empty-cell">No production records yet.</td></tr>'
@@ -732,8 +765,8 @@ window.saveQuickEntry=async()=>{
 // Check daily report trigger on open
 setTimeout(async()=>{
   const{data:pr}=await sb.from('production_entries').select('aligners_count,cases_count').gte('created_at',new Date().toISOString().slice(0,10))
-  const al=(pr||[]).reduce((a,r)=>a+(r.aligners_done||0),0)
-  const ca=(pr||[]).reduce((a,r)=>a+(r.aligners_done||0),0)
+  const al=(pr||[]).reduce((a,r)=>a+(r.aligners_count||0),0)
+  const ca=(pr||[]).reduce((a,r)=>a+(r.aligners_count||0),0)
   const{data:sr}=await sb.from('time_sessions').select('employee_name,session_type,started_at,ended_at').gte('started_at',new Date().toISOString().slice(0,10))
   const recs=sr||[];let pM=0,wM=0
   recs.forEach(r=>{const m=r.ended_at?Math.round((new Date(r.ended_at)-new Date(r.started_at))/60000):0;if(r.session_type==='productive')pM+=m;if(r.session_type==='waste')wM+=m})

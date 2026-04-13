@@ -321,6 +321,30 @@ function renderKPIs(){
     document.getElementById("kpiResin").textContent="—"
     document.getElementById("kpiEstim").textContent="—"
   }
+  // Load Bloom counts
+  loadBloomKPIs()
+}
+
+async function loadBloomKPIs(){
+  try{
+    // Total cases
+    const{count:cCount}=await sb.from("bloom_cases").select("*",{count:"exact",head:true})
+    // Total aligners from treatment plans
+    const{data:alData}=await sb.from("bloom_aligner_details").select("number_of_aligners").eq("order_type","TreatmentPlan").limit(10000)
+    const totalAl=(alData||[]).reduce((a,r)=>a+(r.number_of_aligners||0),0)
+    // Active cases (not delivered/archive)
+    const{data:activeCases}=await sb.from("bloom_cases").select("current_status").not("current_status","in","(DELIVERED,ARCHIVE,delivered,archive)").limit(5000)
+    const activeCount=(activeCases||[]).length
+    
+    document.getElementById("kpiBloomCases").textContent=(cCount||0).toLocaleString()
+    document.getElementById("kpiBloomCasesSub").textContent=`${activeCount} active · ${(cCount||0)-activeCount} delivered`
+    document.getElementById("kpiBloomAl").textContent=totalAl.toLocaleString()
+    document.getElementById("kpiBloomAlSub").textContent="Total planned aligners"
+  }catch(e){
+    document.getElementById("kpiBloomCases").textContent="—"
+    document.getElementById("kpiBloomAl").textContent="—"
+    document.getElementById("kpiBloomCasesSub").textContent="Check bloom_cases table"
+  }
 }
 
 function renderYieldRules(){
