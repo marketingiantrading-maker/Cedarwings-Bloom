@@ -313,7 +313,7 @@ document.getElementById('tabBtnImports').addEventListener('click', function() { 
 // ---- LOAD ALL DATA ----
 async function loadAll() {
   dbg('Fetching cases from Supabase...');
-  var r = await SB.from('bloom_cases').select('*').order('creation_date', { ascending: false });
+  var r = await SB.from('bloom_cases').select('*').order('creation_date', { ascending: false }).range(0, 9999);
   console.log('[Bloom] loadAll result - error:', JSON.stringify(r.error), 'rows:', r.data ? r.data.length : 'null');
   if (r.error) {
     dbg('ERROR: ' + (r.error.message||r.error.hint||JSON.stringify(r.error)));
@@ -323,6 +323,7 @@ async function loadAll() {
   allCases = r.data || [];
   // Default sort: newest first by creation_date
   allCases.sort(function(a,b){ var av=a.creation_date||'', bv=b.creation_date||''; return bv>av?1:bv<av?-1:0; });
+  var sarr = document.getElementById('sh_creation_date'); if (sarr) sarr.textContent = '↓';
   dbg('Loaded ' + allCases.length + ' cases OK!');
 
   // Aligners
