@@ -373,23 +373,23 @@ async function renderBloomToday(){
       (c.current_status||'').toUpperCase().includes('RECEIVED')?'#16a34a':
       (c.current_status||'').toUpperCase().includes('OVERDUE')?'#dc2626':
       (c.current_status||'').toUpperCase().includes('DELIVERED')?'#3b5fe2':'#d97706'
-    return \`<tr>
-      <td><strong style="font-family:var(--mono);font-size:13px">\${c.case_id}</strong>
-          <div style="font-size:10px;color:var(--mu)">\${c.patient_name||''}</div></td>
+    return `<tr>
+      <td><strong style="font-family:var(--mono);font-size:13px">${c.case_id}</strong>
+          <div style="font-size:10px;color:var(--mu)">${c.patient_name||''}</div></td>
       <td>
-        <span style="font-size:14px;font-weight:800;color:var(--amber);font-family:var(--mono)">\${total||'—'}</span>
-        \${total?'<span style="font-size:10px;color:var(--mu);margin-left:4px">↑'+upper+' ↓'+lower+'</span>':''}
+        <span style="font-size:14px;font-weight:800;color:var(--amber);font-family:var(--mono)">${total||'—'}</span>
+        ${total?'<span style="font-size:10px;color:var(--mu);margin-left:4px">↑'+upper+' ↓'+lower+'</span>':''}
       </td>
       <td style="font-size:11px">
-        <span style="color:\${statusColor};font-weight:700">\${c.current_status||'—'}</span>
-        <div style="font-size:10px;color:var(--mu)">\${c.doctor||''}</div>
+        <span style="color:${statusColor};font-weight:700">${c.current_status||'—'}</span>
+        <div style="font-size:10px;color:var(--mu)">${c.doctor||''}</div>
       </td>
-      <td style="font-size:11px;color:var(--mu);font-family:var(--mono)">\${(c.creation_date||'').slice(0,10)}</td>
-    </tr>\`
+      <td style="font-size:11px;color:var(--mu);font-family:var(--mono)">${(c.creation_date||'').slice(0,10)}</td>
+    </tr>`
   }).join('')
 
   document.getElementById("bloomTodayTotal").textContent=
-    \`\${caseList.length} cases today · ↑\${totalUpper} upper · ↓\${totalLower} lower · \${totalAl.toLocaleString()} total aligners\`
+    `${caseList.length} cases today · ↑${totalUpper} upper · ↓${totalLower} lower · ${totalAl.toLocaleString()} total aligners`
 }
 
 function renderKPIs(){
