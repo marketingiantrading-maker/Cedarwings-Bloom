@@ -236,7 +236,7 @@ async function load(){
   if(orderNos.length){
     const[cRes,eRes]=await Promise.all([
       sb.from('material_consumption_log').select('*').in('order_no',orderNos).order('recorded_at'),
-      sb.from('production_entries').select('*').in('order_no',orderNos).order('entered_at')
+      sb.from('bloom_aligner_details').select('case_number,aligner_upper,aligner_lower,number_of_aligners,order_type').in('case_number',orderNos)
     ])
     consumption=cRes.data||[]
     prodEntries=eRes.data||[]
@@ -492,7 +492,7 @@ function renderMaterials(o){
     if(!entries.length){
       alnEl.innerHTML='<div style="background:#f8fafc;border:1px solid var(--bdr);border-radius:10px;padding:12px;font-size:12px;color:var(--dim)">Aucune production enregistrée. Saisissez via la page Production → + Log Production.</div>'
     } else {
-      const total=entries.reduce((s,e)=>s+(e.aligners_done||0),0)
+      const total=entries.filter(e=>e.order_type==='TreatmentPlan').reduce((s,e)=>s+(e.number_of_aligners||0),0)
       const upper=entries.reduce((s,e)=>s+(e.upper_count||0),0)
       const lower=entries.reduce((s,e)=>s+(e.lower_count||0),0)
       alnEl.innerHTML=`
@@ -512,7 +512,7 @@ function renderMaterials(o){
         </div>
         ${entries.map(e=>`<div style="background:#f8fafc;border:1px solid var(--bdr);border-radius:9px;padding:10px 12px;font-size:12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
           <span style="font-weight:700">${e.case_type||'—'}</span>
-          <span style="font-family:var(--mono);color:var(--blue);font-weight:700">${e.aligners_done} aligneurs</span>
+          <span style="font-family:var(--mono);color:var(--blue);font-weight:700">${(e.number_of_aligners||0)} aligneurs (${e.aligner_upper||0}U / ${e.aligner_lower||0}L)</span>
           <span style="color:var(--dim)">${e.entered_by||''} · ${new Date(e.entered_at).toLocaleDateString('fr-FR')}</span>
         </div>`).join('')}`
     }

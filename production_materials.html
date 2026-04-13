@@ -334,7 +334,7 @@ async function load(){
     sb.from('inventory_items').select('id,name,unit_of_measure,current_stock').order('name'),
     sb.from('material_yield_rules').select('*').order('step'),
     sb.from('machine_lot_assignments').select('*').eq('is_active',true).order('loaded_at',{ascending:false}),
-    sb.from('production_entries').select('*').order('entered_at',{ascending:false}).limit(100),
+    sb.from('bloom_aligner_details').select('case_number,aligner_upper,aligner_lower,number_of_aligners,order_type,imported_at').order('imported_at',{ascending:false}).limit(1000),
     sb.from('material_consumption_log').select('*').order('recorded_at',{ascending:false}).limit(200)
   ])
   machines=mRes.data||[]
@@ -364,10 +364,10 @@ function renderAll(){
 
 function renderKPIs(){
   const todayStr=new Date().toISOString().slice(0,10)
-  const todayEntries=entries.filter(e=>e.session_date===todayStr)
-  const todayTotal=todayEntries.reduce((s,e)=>s+(e.aligners_done||0),0)
+  const todayEntries=entries.filter(e=>(e.imported_at||'').slice(0,10)===todayStr)
+  const todayTotal=todayEntries.filter(e=>e.order_type==='TreatmentPlan').reduce((s,e)=>s+(e.number_of_aligners||0),0)
   const mon=new Date();mon.setDate(mon.getDate()-mon.getDay()+1);mon.setHours(0,0,0,0)
-  const weekTotal=entries.filter(e=>new Date(e.entered_at)>=mon).reduce((s,e)=>s+(e.aligners_done||0),0)
+  const weekTotal=entries.filter(e=>e.order_type==='TreatmentPlan'&&new Date(e.imported_at||0)>=mon).reduce((s,e)=>s+(e.number_of_aligners||0),0)
   const lowLots=activeLots.filter(l=>(l.remaining_qty/l.initial_qty)<0.2).length
   document.getElementById('kpiToday').textContent=todayTotal
   document.getElementById('kpiWeek').textContent=weekTotal
@@ -425,7 +425,7 @@ function renderCounterGrid(){
   }
   document.getElementById('counterGrid').innerHTML=todayEntries.map(e=>`
     <div class="counter-card">
-      <div class="cc-num" style="color:var(--blue)">${e.aligners_done}</div>
+      <div class="cc-num" style="color:var(--blue)">${e.number_of_aligners||0}</div>
       <div class="cc-lbl">Aligners — Order ${e.order_no}</div>
       <div style="font-size:11px;color:var(--mu);margin-top:6px">${e.case_type||'—'} · ${e.upper_count||0} upper + ${e.lower_count||0} lower</div>
       ${e.notes?`<div style="font-size:11px;color:var(--dim);margin-top:4px">${e.notes}</div>`:''}
@@ -438,7 +438,7 @@ function renderEntriesTable(){
       <td>${fd(e.entered_at)}</td>
       <td style="font-weight:700;font-family:var(--mono)">${e.order_no}</td>
       <td>${e.case_type||'—'}</td>
-      <td style="font-weight:700;color:var(--blue)">${e.aligners_done}</td>
+      <td style="font-weight:700;color:var(--blue)">${e.number_of_aligners||0}</td>
       <td>${e.upper_count||0}</td>
       <td>${e.lower_count||0}</td>
       <td>${e.entered_by||'—'}</td>
