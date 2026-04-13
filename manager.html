@@ -501,7 +501,6 @@ async function load(){
   const completedStepsInPeriod=cSR.data||[]
 
   // Cases that completed PACKAGING (final step) in this period = produced this period
-  // uniqueProducedOrders computed below with Cases Completed section
   const uniqueProducedOrders=completedStepsInPeriod.filter(r=>r.step==='Packaging').map(r=>r.order_no)
 
   // For each produced order, get aligner count from bloom_aligner_details
@@ -541,8 +540,7 @@ async function load(){
   // totAl set after bloom block below
   let totAl = 0
   // Cases completed in period = orders where Packaging step completed in period
-  const packagingDoneInPeriod = completedStepsInPeriod.filter(r=>r.step==='Packaging').map(r=>r.order_no)
-  const uniqueCompletedInPeriod = [...new Set(packagingDoneInPeriod)]
+  const uniqueCompletedInPeriod = [...new Set(uniqueProducedOrders)]
   const totCs = uniqueCompletedInPeriod.length
   const tot=pMin+wMin,eff=tot>0?Math.round(pMin/tot*100):0
   const lowItems=lots.filter(r=>{const q=Number(r.available_qty||0),m=Number(r.min_qty||r.min_stock||0);return q<=0||(m>0&&q<=m)})
