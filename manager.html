@@ -528,7 +528,8 @@ async function load(){
   })
 
   // Aligner totals: aligners PRODUCED in selected period (cases that completed Packaging)
-  const totAl=producedAligners
+  // Aligners Produced = Bloom aligners for cases created in selected period
+  const totAl = periodTotalAl
   // Cases produced in period
   const totCs=allProd.reduce((a,r)=>a+(r.cases_count||0),0)
   const tot=pMin+wMin,eff=tot>0?Math.round(pMin/tot*100):0
@@ -543,7 +544,7 @@ async function load(){
   document.getElementById('kEffSub').textContent=`${hm(pMin)} productive`
   document.getElementById('kEffSub').style.color=eff>=70?'var(--green)':eff>=40?'var(--amber)':'var(--red)'
   document.getElementById('kAl').textContent=totAl.toLocaleString()
-  document.getElementById('kAlSub').textContent=`${uniqueProducedOrders.length} cases produced this period`
+  document.getElementById('kAlSub').textContent=`↑${periodUpperAl} upper · ↓${periodLowerAl} lower · ${periodCaseIds.size} cases`
   document.getElementById('kCs').textContent=totCs.toLocaleString()
   document.getElementById('kCsSub').textContent=`${fullyCompletedOrders.length} fully produced all-time · ${bloomCases.filter(r=>r.current_status&&!["DELIVERED","ARCHIVE"].includes(r.current_status)).length} active in Bloom`
   document.getElementById('kLow').textContent=lowItems.length
@@ -551,22 +552,49 @@ async function load(){
   document.getElementById('kLowSub').style.color=lowItems.length>0?'var(--red)':'var(--green)'
   document.getElementById('kReq').textContent=reqs.length
 
-  // Bloom KPIs
-  const todayStr=new Date().toISOString().slice(0,10)
-  const totalBloomCases=bloomCases.length
-  const activeBloom=bloomCases.filter(r=>r.current_status&&!['DELIVERED','ARCHIVE','delivered','archive'].includes((r.current_status||'').toLowerCase())).length
-  // TODAY's cases = cases imported or updated today
-  const todayCaseIds=new Set(bloomCases.filter(r=>(r.last_updated_at||r.creation_date||'').slice(0,10)===todayStr).map(r=>r.case_id||r.case_number||r.id))
-  // Today's aligners = aligners belonging to today's cases
-  const todayAl=bloomAligners.filter(r=>todayCaseIds.has(r.case_number)).reduce((a,r)=>a+(r.number_of_aligners||0),0)
-  const totalBloomAl=bloomAligners.reduce((a,r)=>a+(r.number_of_aligners||0),0)
-  const upperAl=bloomAligners.filter(r=>r.order_type==='TreatmentPlan'&&todayCaseIds.has(r.case_number)).reduce((a,r)=>a+(r.aligner_upper||0),0)
-  const lowerAl=bloomAligners.filter(r=>r.order_type==='TreatmentPlan'&&todayCaseIds.has(r.case_number)).reduce((a,r)=>a+(r.aligner_lower||0),0)
+  // ── BLOOM KPIs (rule: match case creation_date to selected range) ──────────
+  const {s:rS, e:rE} = getRange()  // use existing date range filter
+  const totalBloomCases = bloomCases.length
+  const activeBloom = bloomCases.filter(r=>r.current_status&&!['DELIVERED','ARCHIVE','delivered','archive'].includes((r.current_status||'').toLowerCase())).length
+
+  // Cases created within the selected period (Day / Week / Month)
+  const periodCaseIds = new Set(
+    bloomCases
+      .filter(r => {
+        if (!r.creation_date) return false
+        const d = new Date(r.creation_date)
+        return d >= rS && d <= rE
+      })
+      .map(r => String(r.case_id || r.case_number || r.id))
+  )
+
+  // Build aligner lookup: case_number → { upper, lower, total }
+  const alignerMap = {}
+  bloomAligners.forEach(r => {
+    const k = String(r.case_number)
+    if (!alignerMap[k]) alignerMap[k] = { upper: 0, lower: 0, total: 0 }
+    alignerMap[k].upper += Number(r.aligner_upper) || 0
+    alignerMap[k].lower += Number(r.aligner_lower) || 0
+    alignerMap[k].total += Number(r.number_of_aligners) || (Number(r.aligner_upper)||0) + (Number(r.aligner_lower)||0)
+  })
+
+  // Aligners produced in period = sum of (upper + lower) for cases created in period
+  let periodUpperAl = 0, periodLowerAl = 0, periodTotalAl = 0
+  periodCaseIds.forEach(id => {
+    const a = alignerMap[id]
+    if (a) { periodUpperAl += a.upper; periodLowerAl += a.lower; periodTotalAl += a.total || (a.upper + a.lower) }
+  })
+
+  // All-time totals
+  const totalBloomAl = bloomAligners.reduce((a,r)=>a+(Number(r.number_of_aligners)||((Number(r.aligner_upper)||0)+(Number(r.aligner_lower)||0))),0)
+  const upperAl = periodUpperAl
+  const lowerAl = periodLowerAl
+  const todayAl = periodTotalAl  // used by kBloomA KPI below
   document.getElementById('kBloomC').textContent=totalBloomCases.toLocaleString()
   document.getElementById('kBloomCSub').textContent=`${activeBloom} active · ${totalBloomCases-activeBloom} delivered`
   // Show TODAY's aligners prominently, total as sub
-  document.getElementById('kBloomA').textContent=todayAl>0?todayAl.toLocaleString():totalBloomAl.toLocaleString()
-  document.getElementById('kBloomASub').textContent=todayAl>0?`Today: ↑${upperAl} upper · ↓${lowerAl} lower · Total: ${totalBloomAl.toLocaleString()}`:`All time total · ↑${bloomAligners.filter(r=>r.order_type==='TreatmentPlan').reduce((a,r)=>a+(r.aligner_upper||0),0)} upper`
+  document.getElementById('kBloomA').textContent=periodTotalAl>0?periodTotalAl.toLocaleString():totalBloomAl.toLocaleString()
+  document.getElementById('kBloomASub').textContent=`↑${periodUpperAl} upper · ↓${periodLowerAl} lower`
   document.getElementById('kReqSub').textContent=`${reqs.filter(r=>r.status==='approved').length} approved`
   document.getElementById('kReqSub').style.color=reqs.length>0?'var(--amber)':'var(--dim)'
 
