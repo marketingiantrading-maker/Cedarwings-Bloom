@@ -626,13 +626,28 @@ window._pickMachine=async(step,ord,machName,machId)=>{
 async function doClockIn(step,ord,machName,machId){
   const now=new Date()
 
-  // RULE: Kill ALL open sessions for this employee in the DB (prevent duplicate open sessions)
+  // RULE 1: If switching to a DIFFERENT order — mark the current active step as COMPLETE
+  if(activeSession && activeSession.order && String(activeSession.order)!==String(ord)){
+    const prevOrd=activeSession.order
+    const prevStep=activeSession.step
+    try{
+      const{data:tr}=await sb.from("order_step_tracking")
+        .select("id,status").eq("order_no",prevOrd).eq("step",prevStep).limit(1)
+      if(tr&&tr.length&&tr[0].status==="in_progress"){
+        await sb.from("order_step_tracking").update({
+          status:"complete",completed_at:now.toISOString(),completed_by:emp
+        }).eq("id",tr[0].id)
+      }
+    }catch(e){}
+  }
+
+  // RULE 2: Kill ALL open sessions for this employee (prevent duplicates)
   await sb.from("time_sessions")
     .update({ended_at:now.toISOString()})
     .eq("employee_name",emp)
     .is("ended_at",null)
 
-  // AUTO-COMPLETE previous step on same order if it was in_progress (not paused)
+  // RULE 3: Auto-complete previous step on SAME order if in_progress
   const prevStepIdx=STEPS.indexOf(step)-1
   if(prevStepIdx>=0){
     const prevStep=STEPS[prevStepIdx]
