@@ -224,84 +224,30 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc;cursor:poin
 
 <div class="notif" id="notif"></div>
 
-<script>
+<script type="module">
 // bloom_import_app.js - Cedarwings Bloom Cases
 // Native REST client - no CDN needed
-var SUPA_URL = 'https://oaauobugpbcixnbmlakc.supabase.co';
-var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hYXVvYnVncGJjaXhuYm1sYWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzYyNTksImV4cCI6MjA5MTQxMjI1OX0.EpOUpmwRx_LAUqpGQcVMyJFB5NqX_HM7aMZ2gWW9oAA';
+// Supabase SDK (same as all other pages)
+var sb = null;
+var sbReady = false;
 
-function dbg(m) {
-  var el = document.getElementById('debugBar');
-  if (el) el.textContent = '&#128309; ' + m;
-  console.log('[Bloom]', m);
+async function initSB() {
+  const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+  sb = createClient(
+    'https://oaauobugpbcixnbmlakc.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hYXVvYnVncGJjaXhuYm1sYWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzYyNTksImV4cCI6MjA5MTQxMjI1OX0.EpOUpmwRx_LAUqpGQcVMyJFB5NqX_HM7aMZ2gWW9oAA'
+  );
+  sbReady = true;
+  console.log('[Bloom] Supabase SDK ready');
 }
 
-dbg('JS file loaded OK! Connecting to Supabase...');
-
-// ---- SUPABASE REST CLIENT ----
+// Compatibility wrapper so all existing SB.from() calls keep working
 var SB = {
-  _req: function(method, url, body, headers) {
-    return new Promise(function(resolve) {
-      var xhr = new XMLHttpRequest();
-      xhr.open(method, url, true);
-      var h = {
-        'apikey': SUPA_KEY,
-        'Authorization': 'Bearer ' + SUPA_KEY,
-        'Content-Type': 'application/json'
-      };
-      if (headers) Object.keys(headers).forEach(function(k){ h[k]=headers[k]; });
-      Object.keys(h).forEach(function(k){ xhr.setRequestHeader(k, h[k]); });
-      xhr.onload = function() {
-        var d;
-        try { d = JSON.parse(xhr.responseText); } catch(e) { d = []; }
-        if (xhr.status >= 200 && xhr.status < 300) {
-          resolve({ data: Array.isArray(d) ? d : (d && d.length !== undefined ? d : []), error: null });
-        } else {
-          resolve({ data: [], error: d });
-        }
-      };
-      xhr.onerror = function() { resolve({ data: [], error: { message: 'Network error' } }); };
-      xhr.send(body ? JSON.stringify(body) : null);
-    });
-  },
   from: function(table) {
-    var BASE = SUPA_URL + '/rest/v1/' + table;
-    var _sel='*', _filters=[], _order=null;
-    var q = {
-      select: function(s){ _sel=s; return q; },
-      order: function(col,opts){ _order=col+'.'+(opts&&opts.ascending===false?'desc':'asc'); return q; },
-      eq: function(col,val){ _filters.push(col+'=eq.'+encodeURIComponent(val)); return q; },
-      ilike: function(col,val){ _filters.push(col+'=ilike.'+encodeURIComponent(val)); return q; },
-      in: function(col,vals){ _filters.push(col+'=in.('+vals.map(function(v){return encodeURIComponent(v);}).join(',')+')'); return q; },
-      then: function(cb){ return q._run().then(cb); },
-      _run: function(){
-        var p = 'select='+encodeURIComponent(_sel);
-        _filters.forEach(function(f){ p+='&'+f; });
-        if(_order) p+='&order='+_order;
-        var url = BASE + '?' + p;
-        return SB._req('GET', url, null, {'Range':'0-9999','Range-Unit':'items'});
-      },
-      insert: function(rows){
-        var arr = Array.isArray(rows)?rows:[rows];
-        return SB._req('POST', BASE, arr, {'Prefer':'return=minimal'});
-      },
-      upsert: function(rows,opts){
-        var arr = Array.isArray(rows)?rows:[rows];
-        var conflict = (opts&&opts.onConflict) ? '?on_conflict='+opts.onConflict : '';
-        return SB._req('POST', BASE+conflict, arr, {'Prefer':'resolution=merge-duplicates,return=minimal'});
-      },
-      delete: function(){
-        return {
-          eq: function(col,val){
-            var url = BASE+'?'+col+'=eq.'+encodeURIComponent(val);
-            return SB._req('DELETE', url, null, {});
-          }
-        };
-      }
-    };
-    return q;
+    return sb.from(table);
   }
 };
+
 
 console.log('[Bloom] Native REST client ready');
 
@@ -824,8 +770,14 @@ async function saveExcelData(shipRows, alRows, filename) {
 document.getElementById('btnRefresh').addEventListener('click', loadAll);
 
 // ---- INIT ----
-dbg('Calling loadAll()...');
-loadAll();
+dbg('Connecting to Supabase...');
+initSB().then(function() {
+  dbg('Calling loadAll()...');
+  loadAll();
+}).catch(function(e) {
+  dbg('SDK load failed: ' + e.message);
+  console.error('[Bloom] SDK error:', e);
+});
 
 </script>
 </body>
