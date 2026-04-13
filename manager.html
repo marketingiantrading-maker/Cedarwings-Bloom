@@ -462,17 +462,27 @@ function dnutOpts(){return{responsive:true,maintainAspectRatio:false,cutout:'65%
 
 async function load(){
   const{s,e}=getRange()
-  const[sR,pR,lR,rR,bCR,bAR]=await Promise.all([
+  const[sR,pR,lR,rR,bCR,bAR,cSR]=await Promise.all([
     sb.from('time_sessions').select('*').gte('started_at',s.toISOString()).lte('started_at',e.toISOString()).order('started_at',{ascending:false}).limit(500),
     sb.from('production_entries').select('*').gte('created_at',s.toISOString()).lte('created_at',e.toISOString()).order('created_at',{ascending:false}).limit(50),
     sb.from('inventory_lots_enriched_view').select('item_name,available_qty,min_qty,min_stock,expiry_date,lot_no').limit(200),
     sb.from('inventory_requisitions').select('*').in('status',['pending','approved']).order('created_at',{ascending:false}).limit(10),
     sb.from('bloom_cases').select('case_id,current_status,creation_date,last_updated_at').order('last_updated_at',{ascending:false}).limit(5000),
-    sb.from('bloom_aligner_details').select('case_number,aligner_upper,aligner_lower,number_of_aligners,order_type').limit(20000)
+    sb.from('bloom_aligner_details').select('case_number,aligner_upper,aligner_lower,number_of_aligners,order_type').limit(20000),
+    sb.from('order_step_tracking').select('order_no,step,status').eq('status','complete')
   ])
   allSess=sR.data||[];allProd=pR.data||[]
   const bloomCases=bCR.data||[]
   const bloomAligners=bAR.data||[]
+  const completedSteps=cSR.data||[]
+  // Cases fully completed = orders where ALL 6 steps are complete
+  const PRODUCTION_STEPS=['Printing','Cleaning','Thermoforming','Line Cut','Laser Marking','Packaging']
+  const stepsByOrder={}
+  completedSteps.forEach(r=>{
+    if(!stepsByOrder[r.order_no])stepsByOrder[r.order_no]=new Set()
+    stepsByOrder[r.order_no].add(r.step)
+  })
+  const fullyCompletedOrders=Object.keys(stepsByOrder).filter(ord=>PRODUCTION_STEPS.every(s=>stepsByOrder[ord].has(s)))
   const lots=lR.data||[],reqs=rR.data||[]
   const active=allSess.filter(r=>!r.ended_at)
 
@@ -508,7 +518,7 @@ async function load(){
   document.getElementById('kAl').textContent=totAl.toLocaleString()
   document.getElementById('kAlSub').textContent=`From Bloom Import · ${bloomAligners.filter(r=>r.order_type==="TreatmentPlan").length} cases with aligners`
   document.getElementById('kCs').textContent=totCs.toLocaleString()
-  document.getElementById('kCsSub').textContent=`${bloomCases.filter(r=>r.current_status&&!["DELIVERED","ARCHIVE"].includes(r.current_status)).length} active cases`
+  document.getElementById('kCsSub').textContent=`${bloomCases.filter(r=>r.current_status&&!["DELIVERED","ARCHIVE"].includes(r.current_status)).length} active · ${fullyCompletedOrders.length} fully produced`
   document.getElementById('kLow').textContent=lowItems.length
   document.getElementById('kLowSub').textContent=lowItems.length>0?`⏰ ${nearExp.length} near expiry`:'All stock OK'
   document.getElementById('kLowSub').style.color=lowItems.length>0?'var(--red)':'var(--green)'
