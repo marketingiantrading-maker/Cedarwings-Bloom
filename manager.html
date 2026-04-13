@@ -501,8 +501,8 @@ async function load(){
   const completedStepsInPeriod=cSR.data||[]
 
   // Cases that completed PACKAGING (final step) in this period = produced this period
-  const packagingDoneInPeriod=completedStepsInPeriod.filter(r=>r.step==='Packaging').map(r=>r.order_no)
-  const uniqueProducedOrders=[...new Set(packagingDoneInPeriod)]
+  // uniqueProducedOrders computed below with Cases Completed section
+  const uniqueProducedOrders=completedStepsInPeriod.filter(r=>r.step==='Packaging').map(r=>r.order_no)
 
   // For each produced order, get aligner count from bloom_aligner_details
   const alignersByCase={}
@@ -540,8 +540,10 @@ async function load(){
   // Aligner totals: aligners PRODUCED in selected period (cases that completed Packaging)
   // totAl set after bloom block below
   let totAl = 0
-  // Cases produced in period
-  const totCs=allProd.reduce((a,r)=>a+(r.cases_count||0),0)
+  // Cases completed in period = orders where Packaging step completed in period
+  const packagingDoneInPeriod = completedStepsInPeriod.filter(r=>r.step==='Packaging').map(r=>r.order_no)
+  const uniqueCompletedInPeriod = [...new Set(packagingDoneInPeriod)]
+  const totCs = uniqueCompletedInPeriod.length
   const tot=pMin+wMin,eff=tot>0?Math.round(pMin/tot*100):0
   const lowItems=lots.filter(r=>{const q=Number(r.available_qty||0),m=Number(r.min_qty||r.min_stock||0);return q<=0||(m>0&&q<=m)})
   const nearExp=lots.filter(r=>{const d=dUntil(r.expiry_date);return d!==null&&d>=0&&d<=30})
@@ -591,7 +593,7 @@ async function load(){
   document.getElementById('kAl').textContent=totAl.toLocaleString()
   document.getElementById('kAlSub').textContent=`↑${periodUpperAl} upper · ↓${periodLowerAl} lower · ${periodCaseIds.size} cases`
   document.getElementById('kCs').textContent=totCs.toLocaleString()
-  document.getElementById('kCsSub').textContent=`${fullyCompletedOrders.length} fully produced all-time · ${bloomCases.filter(r=>r.current_status&&!["DELIVERED","ARCHIVE"].includes(r.current_status)).length} active in Bloom`
+  document.getElementById('kCsSub').textContent=`${uniqueCompletedInPeriod.length} cases · ${fullyCompletedOrders.length} all-time completed`
   document.getElementById('kLow').textContent=lowItems.length
   document.getElementById('kLowSub').textContent=lowItems.length>0?`⏰ ${nearExp.length} near expiry`:'All stock OK'
   document.getElementById('kLowSub').style.color=lowItems.length>0?'var(--red)':'var(--green)'
