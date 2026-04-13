@@ -119,6 +119,16 @@ tbody tr:hover{background:#f8fafc;cursor:pointer}
     <button class="btn bgh" onclick="loadAll()">↻ Refresh</button>
   </div>
 
+
+  <!-- DIAGNOSTIC CARD - shows on load, can be dismissed -->
+  <div id="diagCard" style="background:#1e293b;color:#fff;padding:16px 28px;font-size:12px;font-family:monospace;border-bottom:2px solid #3b5fe2">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-weight:700;font-size:13px">🔍 System Check</div>
+      <button onclick="document.getElementById('diagCard').style.display='none'" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px">✕ Dismiss</button>
+    </div>
+    <div id="diagResults" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px"></div>
+  </div>
+
   <div class="body">
     <!-- KPIs -->
     <div class="kpi-grid">
@@ -245,6 +255,79 @@ tbody tr:hover{background:#f8fafc;cursor:pointer}
 <div class="notif" id="notif"></div>
 
 <script>
+
+// ── DIAGNOSTICS ───────────────────────────────────────────────────────
+async function runDiagnostics() {
+  var results = [];
+  
+  // 1. Supabase loaded?
+  if (typeof supabase !== 'undefined') {
+    results.push({ok:true, label:'Supabase SDK', detail:'Loaded ✓'});
+  } else {
+    results.push({ok:false, label:'Supabase SDK', detail:'NOT LOADED - CDN failed'});
+  }
+  
+  // 2. XLSX loaded?
+  if (typeof XLSX !== 'undefined') {
+    results.push({ok:true, label:'Excel (XLSX)', detail:'Loaded ✓'});
+  } else {
+    results.push({ok:false, label:'Excel (XLSX)', detail:'NOT LOADED - CDN failed'});
+  }
+  
+  // 3. Database connection?
+  try {
+    var res = await SB.from('bloom_cases').select('count').limit(1);
+    if (res.error) {
+      results.push({ok:false, label:'Database', detail:'Error: '+res.error.message});
+    } else {
+      results.push({ok:true, label:'Database', detail:'Connected ✓'});
+    }
+  } catch(e) {
+    results.push({ok:false, label:'Database', detail:'Failed: '+e.message});
+  }
+  
+  // 4. Tables exist?
+  try {
+    var t1 = await SB.from('bloom_cases').select('count').limit(1);
+    var t2 = await SB.from('bloom_aligner_details').select('count').limit(1);
+    var t3 = await SB.from('bloom_aligners').select('count').limit(1);
+    var missing = [];
+    if (t1.error && t1.error.message.includes('exist')) missing.push('bloom_cases');
+    if (t2.error && t2.error.message.includes('exist')) missing.push('bloom_aligner_details');
+    if (t3.error && t3.error.message.includes('exist')) missing.push('bloom_aligners');
+    if (missing.length) {
+      results.push({ok:false, label:'Tables', detail:'MISSING: '+missing.join(', ')+'<br>→ Run SETUP_ONE_TIME_ONLY.sql!'});
+    } else {
+      results.push({ok:true, label:'Tables', detail:'All tables exist ✓'});
+    }
+  } catch(e) {
+    results.push({ok:false, label:'Tables', detail:'Check failed'});
+  }
+  
+  // 5. File inputs?
+  var csv = document.getElementById('csvInput');
+  var xlsx = document.getElementById('xlsxInput');
+  if (csv && xlsx) {
+    results.push({ok:true, label:'File Inputs', detail:'CSV + Excel ready ✓'});
+  } else {
+    results.push({ok:false, label:'File Inputs', detail:'MISSING inputs: '+(csv?'':'csvInput ')+(xlsx?'':'xlsxInput')});
+  }
+  
+  // Render
+  var el = document.getElementById('diagResults');
+  if (!el) return;
+  el.innerHTML = results.map(function(r) {
+    return '<div style="background:'+(r.ok?'rgba(22,163,74,.3)':'rgba(220,38,38,.3)')+';border:1px solid '+(r.ok?'#16a34a':'#dc2626')+';border-radius:6px;padding:8px 10px">' +
+      '<div style="font-weight:700;font-size:11px;margin-bottom:2px">'+(r.ok?'✅':'❌')+' '+r.label+'</div>' +
+      '<div style="font-size:10px;opacity:.8">'+r.detail+'</div>' +
+      '</div>';
+  }).join('');
+  
+  // Auto-dismiss if all OK
+  var allOk = results.every(function(r){ return r.ok; });
+  if (allOk) setTimeout(function(){ document.getElementById('diagCard').style.display='none'; }, 3000);
+}
+
 // ── SETUP ─────────────────────────────────────────────────────────────
 var SB = supabase.createClient('https://oaauobugpbcixnbmlakc.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hYXVvYnVncGJjaXhuYm1sYWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzYyNTksImV4cCI6MjA5MTQxMjI1OX0.EpOUpmwRx_LAUqpGQcVMyJFB5NqX_HM7aMZ2gWW9oAA');
 var PAGE = 100;
@@ -704,6 +787,7 @@ function showCase(caseId) {
 function closeModal() { document.getElementById('modal').classList.remove('on'); }
 
 // ── START ─────────────────────────────────────────────────────────────
+runDiagnostics();
 loadAll();
 </script>
 </body>
