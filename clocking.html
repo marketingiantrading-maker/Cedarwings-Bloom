@@ -545,18 +545,29 @@ function updateStepButtons(next,done,machineRunning,inProgress,actStep,allDone){
   document.querySelectorAll(".sb").forEach(b=>{
     const s=b.dataset.step
     b.className="sb";b.onclick=null;b.style.pointerEvents="none"
-    // If order is fully complete — all buttons locked as done, nothing clickable
+
     if(allDone){b.classList.add("done");return}
-    if(s===actStep){b.classList.add("active")}
-    else if(done?.has(s)){b.classList.add("done")}
+
+    if(s===actStep){
+      // Currently active — just show as active, not clickable
+      // Technician taps NEXT step to move forward (doClockIn auto-completes this one)
+      b.classList.add("active")
+    }
+    else if(done?.has(s)){
+      b.classList.add("done")
+    }
     else if(machineRunning?.has(s)){
       b.classList.add("paused");b.style.pointerEvents="auto"
       b.onclick=()=>window._clockStep(s)
     }
-    else if(next&&s===next&&!actStep){b.classList.add("can");b.style.pointerEvents="auto";b.onclick=()=>window._clockStep(s)}
+    else if(next&&s===next){
+      // NEXT step is ALWAYS clickable — even if something is currently active
+      // doClockIn will auto-complete the current step when clocking into the next one
+      b.classList.add("can");b.style.pointerEvents="auto"
+      b.onclick=()=>window._clockStep(s)
+    }
   })
 }
-
 /* ===================== CLOCK IN ===================== */
 window._clockStep=async(step)=>{
   const ord=document.getElementById("ord").value.trim()
@@ -635,7 +646,10 @@ async function doClockIn(step,ord,machName,machId){
         .select("id,status").eq("order_no",prevOrd).eq("step",prevStep).limit(1)
       if(tr&&tr.length&&tr[0].status==="in_progress"){
         await sb.from("order_step_tracking").update({
-          status:"complete",completed_at:now.toISOString(),completed_by:emp
+          status:"complete",
+          completed_at:now.toISOString(),
+          completed_by:emp,
+          machine_ended_at:now.toISOString()  // Machine stops when step is completed
         }).eq("id",tr[0].id)
       }
     }catch(e){}
@@ -647,23 +661,23 @@ async function doClockIn(step,ord,machName,machId){
     .eq("employee_name",emp)
     .is("ended_at",null)
 
-  // RULE 3: Auto-complete previous step on SAME order if in_progress
-  const prevStepIdx=STEPS.indexOf(step)-1
-  if(prevStepIdx>=0){
-    const prevStep=STEPS[prevStepIdx]
-    try{
-      const{data:prevTrack}=await sb.from("order_step_tracking")
-        .select("id,status").eq("order_no",ord).eq("step",prevStep).limit(1)
-      if(prevTrack&&prevTrack.length){
-        const ps=prevTrack[0]
-        if(ps.status==="in_progress"){
+  // RULE 3: Auto-complete ANY in_progress step on the SAME order
+  // This covers all steps — not just the immediately previous one
+  try{
+    const{data:allInProgress}=await sb.from("order_step_tracking")
+      .select("id,step,status")
+      .eq("order_no",ord)
+      .eq("status","in_progress")
+    if(allInProgress&&allInProgress.length){
+      for(const ps of allInProgress){
+        if(ps.step!==step){ // don't complete the step we are about to start
           await sb.from("order_step_tracking").update({
-            status:"complete",completed_at:now.toISOString(),completed_by:emp
+            status:"complete",completed_at:now.toISOString(),completed_by:emp,machine_ended_at:now.toISOString()
           }).eq("id",ps.id)
         }
       }
-    }catch(e){}
-  }
+    }
+  }catch(e){}
 
   clearInterval(timerInt)
 
@@ -696,7 +710,8 @@ async function doClockIn(step,ord,machName,machId){
   }else{
     await sb.from("order_step_tracking").insert([{
       order_no:ord,step,status:"in_progress",
-      first_started_at:now.toISOString()
+      first_started_at:now.toISOString(),
+      machine_started_at:now.toISOString()  // Machine starts when first technician clocks in
     }])
   }
 
@@ -833,7 +848,7 @@ window.markStepComplete=async(step,ord)=>{
     document.getElementById("jobBox").style.display="none"
   }
   // Update step tracking to complete
-  await sb.from("order_step_tracking").update({status:"complete",completed_at:now.toISOString(),completed_by:emp}).eq("order_no",ord).eq("step",step)
+  await sb.from("order_step_tracking").update({status:"complete",completed_at:now.toISOString(),completed_by:emp,machine_ended_at:now.toISOString()}).eq("order_no",ord).eq("step",step)
   setSt(`${step} marked complete!`,`Order ${ord} — pipeline advanced.`,"ok")
   clearInterval(window.mrTimerInt)
   document.getElementById("mrBox").style.display="none"
