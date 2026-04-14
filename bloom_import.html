@@ -132,6 +132,8 @@ tbody tr:hover{background:#f8fafc}
 .sarr{font-size:10px;margin-left:2px;color:var(--blue)}
 .sortable{cursor:pointer;user-select:none}
 .sortable:hover{background:rgba(99,102,241,.07)}
+.main{margin-left:240px;min-height:100vh}
+@media(max-width:768px){.main{margin-left:0}.sidebar{display:none}}
 </style>
 </head>
 <body>
@@ -507,8 +509,13 @@ async function loadAll() {
   populateFilters();
 
   // Imports count
-  var ri = await sb.from('bloom_imports').select('id', { count: 'exact', head: true });
-  document.getElementById('kImports').textContent = ri.count || 0;
+  var riAll = await sb.from('bloom_imports').select('id');
+  document.getElementById('kImports').textContent = (riAll.data || []).length;
+  var riLast = await sb.from('bloom_imports').select('*').order('imported_at',{ascending:false}).limit(1);
+  if (riLast.data && riLast.data.length > 0) {
+    document.getElementById('kNew').textContent = riLast.data[0].new_cases || 0;
+    document.getElementById('kChanged').textContent = riLast.data[0].updated_cases || 0;
+  }
 
   dbg('All data loaded! ' + allCases.length + ' cases, ' + allAligners.length + ' aligner records.');
   
@@ -618,8 +625,8 @@ function renderCases() {
 
   document.getElementById('tCases').innerHTML = page.length
     ? page.map(function(c) {
-        var ovd = c.overdue_for && c.overdue_for !== '0' ? c.overdue_for + 'd' : '';
-        var act = c.action_required_for && c.action_required_for !== '0' ? c.action_required_for + 'd' : '';
+        var ovd = c.overdue_for && c.overdue_for !== '0' && c.overdue_for !== 'null' ? c.overdue_for + 'd' : null;
+        var act = c.action_required_for && c.action_required_for !== '0' && c.action_required_for !== 'null' ? c.action_required_for + 'd' : null;
         return '<tr onclick="openCase(\''+c.case_id+'\')">' +
           '<td class="mono" style="font-weight:700">' + (c.case_id||'-') + '</td>' +
           '<td>' + (c.patient_name||'-') + '</td>' +
@@ -628,8 +635,8 @@ function renderCases() {
           '<td style="font-size:11px;color:var(--mu)">' + (c.clinic||'-') + '</td>' +
           '<td>' + statusBadge(c.current_status) + '</td>' +
           '<td class="mono">' + fdt(c.creation_date) + '</td>' +
-          '<td style="font-size:11px;color:var(--red);font-weight:600">' + (act||'-') + '</td>' +
-          '<td style="font-size:11px;font-weight:700;color:#f59e0b">' + (ovd||'-') + '</td>' +
+          '<td style="font-size:11px;color:var(--red);font-weight:600">' + (act ? '<span style="background:#fef2f2;padding:2px 6px;border-radius:4px">⚠️ '+act+'</span>' : '<span style="color:var(--dim)">—</span>') + '</td>' +
+          '<td style="font-size:11px;font-weight:700;color:#f59e0b">' + (ovd ? '<span style="background:#fffbeb;padding:2px 6px;border-radius:4px">🕐 '+ovd+'</span>' : '<span style="color:var(--dim)">—</span>') + '</td>' +
           '</tr>';
       }).join('')
     : '<tr><td colspan="9" class="ec">No cases found.</td></tr>';
@@ -722,8 +729,8 @@ function renderAnalytics() {
     var t = a.order_type || 'Unknown';
     if (!typeCount[t]) typeCount[t] = { count:0, upper:0, lower:0 };
     typeCount[t].count++;
-    typeCount[t].upper += Number(a.aligner_upper)||0;
-    typeCount[t].lower += Number(a.aligner_lower)||0;
+    typeCount[t].upper += (a.aligner_upper !== null && a.aligner_upper !== undefined) ? Number(a.aligner_upper) : 0;
+    typeCount[t].lower += (a.aligner_lower !== null && a.aligner_lower !== undefined) ? Number(a.aligner_lower) : 0;
   });
   var typeHtml = Object.entries(typeCount).sort(function(a,b){ return b[1].count-a[1].count; }).map(function(e) {
     return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bdr)">' +
