@@ -677,34 +677,39 @@ async function saveCasesData(cases, filename) {
   var newCount = 0, updCount = 0;
   var batchSize = 100;
   for (var i = 0; i < cases.length; i += batchSize) {
-    var batch = cases.slice(i, i + batchSize);
+    // Normalise every row — cast case_id to INT, drop rows with invalid ID
+    var batch = cases.slice(i, i + batchSize).map(function(c) {
+      return Object.assign({}, c, { case_id: parseInt(c.case_id, 10) });
+    }).filter(function(c){ return !isNaN(c.case_id) && c.case_id > 0; });
+    if (!batch.length) continue;
+
     document.getElementById('progFill').style.width = Math.round(i/cases.length*100) + '%';
     document.getElementById('progSub').textContent = (i+batch.length) + ' / ' + cases.length;
-    // Check existing for history
-    var ids = batch.map(function(c){ return parseInt(c.case_id,10); }).filter(function(n){ return !isNaN(n); });
+
+    // Check existing for history tracking
+    var ids = batch.map(function(c){ return c.case_id; });
     var ex = await sb.from('bloom_cases').select('case_id,current_status').in('case_id', ids);
     var existMap = {};
-    (ex.data||[]).forEach(function(e){ existMap[e.case_id]=e.current_status; });
+    (ex.data||[]).forEach(function(e){ existMap[parseInt(e.case_id,10)] = e.current_status; });
+
     // Upsert
-    // Ensure case_id is integer for all rows
-    var cleanBatch = batch.map(function(c) {
-      return Object.assign({}, c, { case_id: parseInt(c.case_id, 10) });
-    }).filter(function(c){ return !isNaN(c.case_id); });
-    var ur = await sb.from('bloom_cases').upsert(cleanBatch, { onConflict:'case_id' });
+    var ur = await sb.from('bloom_cases').upsert(batch, { onConflict:'case_id' });
     if (ur.error) {
-      var e = ur.error;
-      var em = e.message||e.hint||e.details||JSON.stringify(e);
+      var em = ur.error.message||ur.error.hint||ur.error.details||JSON.stringify(ur.error);
       dbg('ERROR: '+em); msg('❌ '+em,'var(--red)');
       document.getElementById('progTitle').textContent = '❌ '+em;
       return;
     }
+
     // History
     var hist = [];
     batch.forEach(function(c){
-      if (existMap[c.case_id]===undefined) newCount++;
-      else if (existMap[c.case_id]!==c.current_status) {
+      if (existMap[c.case_id] === undefined) newCount++;
+      else if (existMap[c.case_id] !== c.current_status) {
         updCount++;
-        hist.push({case_id:c.case_id,patient_name:c.patient_name,old_status:existMap[c.case_id],new_status:c.current_status,changed_at:new Date().toISOString()});
+        hist.push({case_id:c.case_id, patient_name:c.patient_name,
+                   old_status:existMap[c.case_id], new_status:c.current_status,
+                   changed_at:new Date().toISOString()});
       }
     });
     if (hist.length) await sb.from('bloom_case_history').insert(hist);
