@@ -119,6 +119,7 @@ lbl{display:block;font-size:11px;font-weight:700;color:var(--mu);text-transform:
     <a href="production.html" class="nl on"><span class="ic">🏭</span>Production</a>
     <a href="production_materials.html" class="nl"><span class="ic">🧪</span>Matériaux & Lots</a>
     <a href="machines.html" class="nl"><span class="ic">⚙</span>Machines</a>
+    <a href="maintenance_history.html" class="nl"><span class="ic">🔧</span>Maintenance History</a>
     <div class="sb-s">Team</div>
     <a href="employees.html" class="nl"><span class="ic">👥</span>Employés</a>
     <a href="employee_profile.html" class="nl"><span class="ic">👤</span>Profil employé</a>
@@ -629,5 +630,31 @@ document.getElementById("mNewLot").addEventListener("click",e=>{if(e.target===do
 
 load()
 </script>
+
+<!-- COPYRIGHT FOOTER -->
+<div style="position:fixed;bottom:0;left:0;right:0;background:var(--card,#fff);border-top:1px solid var(--bdr,#e2e8f0);padding:6px 20px;display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--dim,#94a3b8);z-index:999;font-family:'DM Sans',sans-serif">
+  <span>© 2026 <strong style="color:var(--mu,#64748b)">Cedarwings SAS</strong> — Dental Aligner Manufacturing Platform</span>
+  <span>v2.0 · ISO 13485 Compliant · All rights reserved</span>
+</div>
+
+
+<!-- HELP MODAL for production.html -->
+<style>
+.modal-bg-help{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:700;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg-help.on{display:flex}
+.help-modal{background:var(--card);border-radius:18px;padding:28px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+</style>
+<div class="modal-bg-help" id="helpModal">
+  <div class="help-modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:16px;font-weight:800">🏭 Production — Help</div>
+      <button onclick="document.getElementById('helpModal').classList.remove('on')" style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:var(--f);font-size:12px;color:var(--txt)">✕ Close</button>
+    </div>
+    <div style="background:var(--b50);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--blue);font-weight:500">Log and track aligner production lots. Each lot records: order number, machine used, materials consumed, employee, aligner counts, and quality status.</div>
+    <div style="font-size:13px;line-height:1.8"><div style="margin-bottom:10px"><strong style="color:var(--txt)">+ New Production Lot</strong><br><span style="color:var(--mu);font-size:12px">Create a new production batch. Select order, machine, material lot (FEFO order), enter aligner counts. System deducts materials from inventory automatically.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Lot Status</strong><br><span style="color:var(--mu);font-size:12px">pending → in_progress → completed. Update status as production progresses.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Material Yield Rules</strong><br><span style="color:var(--mu);font-size:12px">Define how many aligners per material unit for each machine. Used to calculate expected vs actual yield.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Today's Bloom Cases</strong><br><span style="color:var(--mu);font-size:12px">Shows cases from bloomaligner.fr created today — helps team know what to produce.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Quality Status</strong><br><span style="color:var(--mu);font-size:12px">Each lot can be marked: pending_qc, passed, failed, rework. Failed lots trigger non-conformity report.</span></div></div>
+  </div>
+</div>
+<button onclick="document.getElementById('helpModal').classList.add('on')" style="position:fixed;bottom:50px;right:20px;width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(59,95,226,.4);z-index:800;font-family:var(--f)">?</button>
+
 </body>
 </html>

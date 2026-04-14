@@ -2,9 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Cedarwings SAS — Time Management Report</title>
+<title>Cedarwings SAS — ISO 13485 Compliance</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 
 :root{
@@ -126,17 +125,23 @@ tbody tr:hover{background:#f8fafc}
 @media(max-width:768px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.g2,.g3{grid-template-columns:1fr}.sidebar{display:none}.content{margin-left:0}}
 @media(max-width:640px){.kpi-grid{grid-template-columns:1fr 1fr}.g2e{grid-template-columns:1fr}}
 
+
 .main{margin-left:240px;min-height:100vh}
 .body{padding:20px 28px 80px}
 .badge{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:700;white-space:nowrap}
 .b-g{background:var(--g100);color:#15803d}.b-a{background:var(--a100);color:#92400e}
 .b-b{background:var(--b100);color:#1e40af}.b-gray{background:#f1f5f9;color:#475569}
 .b-r{background:var(--r100);color:#991b1b}.b-p{background:var(--p100);color:#5b21b6}
-.card{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:20px;margin-bottom:16px}
-.kpi-grid{display:grid;gap:12px;margin-bottom:20px}
-.kpi{background:var(--card);border-radius:12px;box-shadow:var(--sh);padding:16px;border-top:3px solid var(--bdr);text-decoration:none;display:block}
-.kpi-val{font-size:24px;font-weight:800;font-family:var(--mono)}
-.kpi-lbl{font-size:11px;color:var(--mu);font-weight:600;margin-top:2px}
+.b-t{background:var(--t100);color:#0f766e}
+.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:600;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.on{display:flex}
+.modal{background:var(--card);border-radius:18px;padding:28px;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;box-shadow:var(--sh2)}
+.fi{padding:8px 11px;border:1.5px solid var(--bdr);border-radius:8px;font-family:var(--f);font-size:12px;background:var(--card);outline:none;color:var(--txt);width:100%;transition:border .15s}
+.fi:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,95,226,.1)}
+textarea.fi{resize:vertical}
+.form-label{font-size:11px;font-weight:700;color:var(--mu);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+.notif{position:fixed;bottom:24px;right:24px;padding:13px 18px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;display:none;box-shadow:0 6px 24px rgba(0,0,0,.15)}
+.notif.on{display:block}.notif.ok{background:#15803d;color:#fff}.notif.err{background:var(--red);color:#fff}
 .tw{overflow-x:auto;border-radius:11px;border:1px solid var(--bdr)}
 table{width:100%;border-collapse:collapse;font-size:12px}
 thead th{padding:9px 14px;font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;background:#f8fafc;border-bottom:1px solid var(--bdr);text-align:left;white-space:nowrap}
@@ -145,13 +150,15 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc}
 .ec{color:var(--dim)!important;text-align:center!important;padding:32px!important}
 .mono{font-family:var(--mono);font-size:11px}
 .pager{display:flex;align-items:center;justify-content:space-between;margin-top:12px;font-size:12px;color:var(--mu)}
-.eff-bar{background:var(--bdr);border-radius:999px;height:6px;width:80px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:6px}
-.eff-fill{height:100%;border-radius:999px}
-@media print{.sidebar,.topbar,.help-btn,div[style*="position:fixed;bottom"]{display:none!important}.main{margin-left:0!important}}
+.card{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:20px;margin-bottom:16px}
+.kpi-grid{display:grid;gap:12px;margin-bottom:20px}
+.kpi{background:var(--card);border-radius:12px;box-shadow:var(--sh);padding:16px;border-top:3px solid var(--bdr)}
+.kpi-val{font-size:24px;font-weight:800;font-family:var(--mono)}
+.kpi-lbl{font-size:11px;color:var(--mu);font-weight:600;margin-top:2px}
+
 </style>
 </head>
-<body>
-<aside class="sidebar">
+<body><aside class="sidebar">
   <div class="sb-top" style="flex-direction:column;align-items:flex-start">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
       <div class="sb-logo">⚙</div>
@@ -172,7 +179,7 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc}
     <div class="sb-s">Team</div>
     <a href="employees.html" class="nl"><span class="ic">👥</span>Employees</a>
     <a href="employee_profile.html" class="nl"><span class="ic">👤</span>Employee Profile</a>
-    <a href="time_report.html" class="nl on"><span class="ic">📈</span>Time Report</a>
+    <a href="time_report.html" class="nl"><span class="ic">📈</span>Time Report</a>
     <div class="sb-s">Quality</div>
     <a href="tracabilite.html" class="nl"><span class="ic">🔖</span>Traceability</a>
     <a href="qualite.html" class="nl"><span class="ic">✅</span>Quality Control</a>
@@ -195,274 +202,313 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc}
 <div class="main">
   <div class="topbar">
     <div>
-      <div style="font-size:16px;font-weight:800">⏱ Time Management Report</div>
-      <div style="font-size:11px;color:var(--mu)" id="pageDate">Loading…</div>
+      <div style="font-size:16px;font-weight:800">✅ ISO 13485 Compliance Dashboard</div>
+      <div style="font-size:11px;color:var(--mu)">Full audit of all clauses — Cedarwings SAS QMS status</div>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-      <div class="range-tabs">
-        <button class="rt active" data-r="today">Today</button>
-        <button class="rt" data-r="week">This Week</button>
-        <button class="rt" data-r="month">This Month</button>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="background:var(--g50);border:1px solid var(--g100);padding:5px 14px;border-radius:999px;font-size:12px;font-weight:700;color:var(--green)" id="overallBadge">
+        Loading...
       </div>
-      <button class="btn bgh" id="exportBtn">⬇ Export CSV</button>
-      <button class="btn bgh" onclick="window.print()">🖨️ Print</button>
-      <button class="btn btn-blue" id="refreshBtn">↻ Refresh</button>
+      <button class="btn bgh" onclick="window.print()">🖨️ Print Report</button>
     </div>
   </div>
 
   <div class="body">
-    <!-- KPIs -->
-    <div class="kpi-grid" style="grid-template-columns:repeat(5,1fr)">
-      <div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-val" id="kpiSess">—</div><div class="kpi-lbl">Total Sessions</div></div>
-      <div class="kpi" style="border-top-color:var(--green)"><div class="kpi-val" id="kpiProd" style="color:var(--green)">—</div><div class="kpi-lbl">Productive Time</div></div>
-      <div class="kpi" style="border-top-color:var(--amber)"><div class="kpi-val" id="kpiWaste" style="color:var(--amber)">—</div><div class="kpi-lbl">Non-Productive Time</div></div>
-      <div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-val" id="kpiEff" style="color:var(--blue)">—</div><div class="kpi-lbl">Efficiency</div></div>
-      <div class="kpi" style="border-top-color:var(--mu)"><div class="kpi-val" id="kpiEmps">—</div><div class="kpi-lbl">Active Employees</div></div>
-    </div>
 
-    <!-- CHARTS -->
-    <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px">
-      <div class="card">
-        <div style="font-size:13px;font-weight:800;margin-bottom:12px">📊 Productivity by Employee</div>
-        <div style="height:200px"><canvas id="empChart"></canvas></div>
-      </div>
-      <div class="card">
-        <div style="font-size:13px;font-weight:800;margin-bottom:12px">🍩 Session Type Split</div>
-        <div style="height:200px"><canvas id="typeChart"></canvas></div>
+    <!-- OVERALL SCORE -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+      <div class="kpi" style="border-top-color:var(--green)"><div class="kpi-val" id="scoreOk" style="color:var(--green)">—</div><div class="kpi-lbl">✅ Compliant</div></div>
+      <div class="kpi" style="border-top-color:var(--amber)"><div class="kpi-val" id="scorePartial" style="color:var(--amber)">—</div><div class="kpi-lbl">⚠️ Partial</div></div>
+      <div class="kpi" style="border-top-color:var(--red)"><div class="kpi-val" id="scoreMiss" style="color:var(--red)">—</div><div class="kpi-lbl">❌ Missing</div></div>
+      <div class="kpi" style="border-top-color:var(--blue)">
+        <div class="kpi-val" id="scorePct" style="color:var(--blue)">—</div>
+        <div class="kpi-lbl">Overall Score</div>
       </div>
     </div>
 
-    <!-- EMPLOYEE SUMMARY TABLE -->
-    <div class="card">
-      <div style="font-size:14px;font-weight:800;margin-bottom:14px">👥 Employee Summary</div>
-      <div class="tw"><table>
-        <thead><tr><th>Employee</th><th>Sessions</th><th>Productive</th><th>Non-Productive</th><th>Overtime</th><th>Efficiency</th><th>Status</th></tr></thead>
-        <tbody id="empSummary"><tr><td colspan="7" class="ec">Loading…</td></tr></tbody>
-      </table></div>
+    <!-- PROGRESS BAR -->
+    <div class="card" style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:14px;font-weight:800">ISO 13485 Compliance Progress</div>
+        <div style="font-size:12px;color:var(--mu)" id="progressLabel">—</div>
+      </div>
+      <div style="background:var(--bdr);border-radius:999px;height:12px;overflow:hidden">
+        <div id="progressBar" style="height:100%;border-radius:999px;background:linear-gradient(90deg,var(--blue),var(--green));transition:width .5s;width:0%"></div>
+      </div>
     </div>
 
-    <!-- SESSION LOG -->
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-        <div style="font-size:14px;font-weight:800">📋 Session Log <span id="sessCount" style="font-size:11px;color:var(--mu);font-weight:500"></span></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <input class="fi" id="searchInput" placeholder="🔍 Search employee, order…" style="width:220px;padding:7px 11px;border:1.5px solid var(--bdr);border-radius:8px;font-family:var(--f);font-size:12px;outline:none"/>
-          <select id="typeFilter" style="padding:7px 11px;border:1.5px solid var(--bdr);border-radius:8px;font-family:var(--f);font-size:12px;background:var(--card);outline:none">
-            <option value="all">All Types</option>
-            <option value="productive">Productive</option>
-            <option value="waste">Non-Productive</option>
-            <option value="overtime">Overtime</option>
-          </select>
-        </div>
-      </div>
-      <div class="tw"><table>
-        <thead><tr><th>Employee</th><th>Type</th><th>Step / Category</th><th>Machine</th><th>Order</th><th>Start</th><th>End</th><th>Duration</th></tr></thead>
-        <tbody id="sessionsBody"><tr><td colspan="8" class="ec">Loading…</td></tr></tbody>
-      </table></div>
-      <div class="pager">
-        <span id="pInfo"></span>
-        <div style="display:flex;gap:6px">
-          <button class="btn bgh" id="btnPrev" style="padding:5px 12px">‹</button>
-          <button class="btn bgh" id="btnNext" style="padding:5px 12px">›</button>
-        </div>
-      </div>
-    </div>
+    <!-- CLAUSES GRID -->
+    <div id="clausesContainer"></div>
+
   </div>
 </div>
 
-<!-- HELP MODAL placeholder — filled by shared helper -->
-<div class="modal-bg" id="helpModal" style="position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:700;display:none;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--card);border-radius:18px;padding:28px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-      <div style="font-size:16px;font-weight:800">⏱ Time Report — Help</div>
-      <button onclick="document.getElementById('helpModal').style.display='none'" style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:var(--f);font-size:12px">✕ Close</button>
-    </div>
-    <div style="font-size:13px;line-height:1.7;color:var(--txt)">
-      <div style="background:var(--b50);border-radius:10px;padding:12px 14px;margin-bottom:14px">
-        <strong>🎯 Purpose</strong><br>This page shows all employee time sessions for the selected period. Use it to analyse productivity, identify inefficiencies, and export reports.
-      </div>
-      <strong>📅 Period Filter</strong><br>Use <em>Today / This Week / This Month</em> tabs to change the time range. Data updates immediately.<br><br>
-      <strong>📊 KPI Cards</strong><br>
-      • <em>Total Sessions</em> — count of all clocked sessions<br>
-      • <em>Productive Time</em> — total hours in productive steps<br>
-      • <em>Non-Productive Time</em> — breaks, waiting, waste<br>
-      • <em>Efficiency</em> — Productive ÷ Total × 100<br>
-      • <em>Active Employees</em> — employees with sessions in period<br><br>
-      <strong>👥 Employee Summary</strong><br>Per-employee breakdown with efficiency bar. Green = ≥70%, Amber = ≥40%, Red = &lt;40%.<br><br>
-      <strong>📋 Session Log</strong><br>Full list of every clocked session. Filter by type or search by employee/order. Paginated 25 per page.<br><br>
-      <strong>⬇ Export CSV</strong><br>Downloads all sessions for the selected period as a CSV file for Excel analysis.<br><br>
-      <strong>🖨️ Print</strong><br>Opens browser print dialog — sidebar and buttons are hidden automatically.
-    </div>
-  </div>
-</div>
-
-<!-- HELP BUTTON -->
-<button onclick="document.getElementById('helpModal').style.display='flex'" class="help-btn" style="position:fixed;bottom:50px;right:20px;width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(59,95,226,.4);z-index:800;display:flex;align-items:center;justify-content:center">?</button>
-
+<div class="notif" id="notif"></div>
 <div style="position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--bdr);padding:6px 20px;display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--dim);z-index:999;font-family:var(--f)">
   <span>© 2026 <strong style="color:var(--mu)">Cedarwings SAS</strong> — Dental Aligner Manufacturing Platform</span>
   <span>v2.0 · ISO 13485 Compliant · All rights reserved</span>
 </div>
-
-<script type="module">
-import{createClient}from'https://esm.sh/@supabase/supabase-js@2';
-import{SUPABASE_CONFIG}from'./config.js';
-const sb=createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey);
-let range='today',allSess=[],filtered=[],pg=0;
-const PAGE=25;
-const mins=(a,b)=>Math.max(0,Math.round((b-a)/60000));
-const dur=r=>(!r.started_at||!r.ended_at)?0:mins(new Date(r.started_at),new Date(r.ended_at));
-const hm=m=>`${String(Math.floor(m/60)).padStart(2,'0')}h ${String(m%60).padStart(2,'0')}m`;
-const fdt=v=>v?new Date(v).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'—';
-let charts={};
-
-document.getElementById('pageDate').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-
-function getRange(){
-  const n=new Date();let s,e;
-  if(range==='today'){s=new Date(n);s.setHours(0,0,0,0);e=new Date(n);e.setHours(23,59,59,999);}
-  else if(range==='week'){const d=n.getDay(),diff=d===0?-6:1-d;s=new Date(n);s.setDate(n.getDate()+diff);s.setHours(0,0,0,0);e=new Date(n);e.setHours(23,59,59,999);}
-  else{s=new Date(n.getFullYear(),n.getMonth(),1);e=new Date(n);e.setHours(23,59,59,999);}
-  return{s,e};
-}
-
-function mkChart(key,el,type,data,opts){
-  if(charts[key])charts[key].destroy();
-  charts[key]=new Chart(document.getElementById(el),{type,data,options:opts});
-}
-
-const chartOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#64748b',font:{family:"'DM Sans'",size:11}}}}};
-const dOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#64748b',font:{family:"'DM Sans'",size:11},boxWidth:12}}}};
-
-async function load(){
-  const{s,e}=getRange();
-  // Fetch all pages to overcome 1000 row limit
-  let all=[],from=0,batchSize=1000,done=false;
-  while(!done){
-    const{data,error}=await sb.from('time_sessions')
-      .select('id,employee_name,session_type,work_type,waste_category,machine,order_no,started_at,ended_at,step_name')
-      .gte('started_at',s.toISOString())
-      .lte('started_at',e.toISOString())
-      .order('started_at',{ascending:false})
-      .range(from,from+batchSize-1);
-    if(error){console.error('time_sessions error:',error);break;}
-    const rows=data||[];
-    all=[...all,...rows];
-    if(rows.length<batchSize)done=true;
-    else from+=batchSize;
-  }
-  allSess=all;
-  applyFilter();
-}
-
-function applyFilter(){
-  const term=(document.getElementById('searchInput').value||'').toLowerCase();
-  const tf=document.getElementById('typeFilter').value;
-  filtered=allSess.filter(r=>{
-    if(tf!=='all'&&r.session_type!==tf)return false;
-    if(term&&!((r.employee_name||'').toLowerCase().includes(term)||(r.order_no||'').toLowerCase().includes(term)))return false;
-    return true;
-  });
-  pg=0;
-  render();
-}
-
-function render(){
-  // --- KPIs ---
-  let pMin=0,wMin=0,oMin=0;
-  const byEmp=new Map();
-  allSess.forEach(r=>{
-    const m=dur(r),t=r.session_type||'';
-    if(t==='productive')pMin+=m;
-    if(t==='waste')wMin+=m;
-    if(t==='overtime')oMin+=m;
-    const k=r.employee_name||'Unknown';
-    if(!byEmp.has(k))byEmp.set(k,{name:k,n:0,p:0,w:0,o:0,active:false});
-    const it=byEmp.get(k);it.n++;
-    if(t==='productive')it.p+=m;
-    if(t==='waste')it.w+=m;
-    if(t==='overtime')it.o+=m;
-    if(!r.ended_at)it.active=true;
-  });
-  const tot=pMin+wMin+oMin,eff=tot>0?Math.round(pMin/tot*100):0;
-  document.getElementById('kpiSess').textContent=allSess.length;
-  document.getElementById('kpiProd').textContent=hm(pMin);
-  document.getElementById('kpiWaste').textContent=hm(wMin);
-  document.getElementById('kpiEff').textContent=eff+'%';
-  document.getElementById('kpiEmps').textContent=byEmp.size;
-  document.getElementById('sessCount').textContent=`(${filtered.length} shown of ${allSess.length})`;
-
-  // --- Charts ---
-  const empArr=[...byEmp.values()].sort((a,b)=>b.p-a.p).slice(0,10);
-  mkChart('emp','empChart','bar',{
-    labels:empArr.map(e=>e.name),
-    datasets:[
-      {label:'Productive (min)',data:empArr.map(e=>e.p),backgroundColor:'rgba(22,163,74,.75)',borderColor:'#16a34a',borderWidth:1.5,borderRadius:4},
-      {label:'Non-Productive (min)',data:empArr.map(e=>e.w),backgroundColor:'rgba(217,119,6,.65)',borderColor:'#d97706',borderWidth:1.5,borderRadius:4}
+<style>
+@media print{.sidebar,.topbar,.notif,div[style*="position:fixed;bottom"]{display:none!important}.main{margin-left:0!important}}
+.clause-card{background:var(--card);border-radius:14px;box-shadow:var(--sh);margin-bottom:14px;overflow:hidden}
+.clause-header{padding:14px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none;border-bottom:1px solid var(--bdr)}
+.clause-header:hover{background:#f8fafc}
+.clause-body{padding:0}
+.req-row{display:flex;align-items:flex-start;gap:12px;padding:11px 18px;border-bottom:1px solid var(--bdr);transition:background .1s}
+.req-row:last-child{border:none}
+.req-row:hover{background:#f8fafc}
+.req-check{width:20px;height:20px;border-radius:5px;border:2px solid var(--bdr);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;cursor:pointer;transition:all .15s}
+.req-check.ok{background:var(--green);border-color:var(--green);color:#fff}
+.req-check.partial{background:var(--amber);border-color:var(--amber);color:#fff}
+.req-check.missing{background:var(--red);border-color:var(--red);color:#fff}
+.req-check.na{background:var(--mu);border-color:var(--mu);color:#fff}
+.req-text{flex:1;font-size:13px}
+.req-title{font-weight:600;color:var(--txt)}
+.req-detail{font-size:11px;color:var(--mu);margin-top:2px}
+.req-page{font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--b50);color:var(--blue);margin-top:4px;display:inline-flex;text-decoration:none}
+.section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:8px 18px 4px;color:var(--mu);background:#f8fafc;border-bottom:1px solid var(--bdr)}
+</style>
+<script>
+// ISO 13485 + ANNEX requirements definition
+const CLAUSES = [
+  {
+    id:'4', num:'4', title:'Quality Management System', icon:'📋',
+    reqs:[
+      {id:'4.1',title:'General QMS Requirements',detail:'Establish, document, implement & maintain QMS',page:'manager.html',status:'ok'},
+      {id:'4.2.1',title:'General Documentation Requirements',detail:'Quality manual, procedures, forms and records',page:'tracabilite.html',status:'ok'},
+      {id:'4.2.2',title:'Quality Manual',detail:'Document scope, exclusions, QMS processes',page:'iso_compliance.html',status:'partial'},
+      {id:'4.2.3',title:'Medical Device File',detail:'Technical file for each device type',page:'tracabilite.html',status:'partial'},
+      {id:'4.2.4',title:'Control of Documents',detail:'Document approval, review, identification, revision control',page:'settings.html',status:'partial'},
+      {id:'4.2.5',title:'Control of Records',detail:'Records legible, identifiable, retrievable and protected',page:'tracabilite.html',status:'ok'},
     ]
-  },chartOpts);
-  mkChart('type','typeChart','doughnut',{
-    labels:['Productive','Non-Productive','Overtime'],
-    datasets:[{data:[pMin,wMin,oMin],backgroundColor:['rgba(22,163,74,.8)','rgba(217,119,6,.8)','rgba(124,58,237,.8)'],borderColor:['#16a34a','#d97706','#7c3aed'],borderWidth:2}]
-  },dOpts);
+  },
+  {
+    id:'5', num:'5', title:'Management Responsibility', icon:'👔',
+    reqs:[
+      {id:'5.1',title:'Management Commitment',detail:'Evidence of top management commitment to QMS',page:null,status:'partial'},
+      {id:'5.2',title:'Customer Focus',detail:'Customer requirements determined and met',page:'customer_feedback.html',status:'ok'},
+      {id:'5.3',title:'Quality Policy',detail:'Appropriate quality policy communicated and understood',page:'iso_compliance.html',status:'partial'},
+      {id:'5.4',title:'Planning — Quality Objectives',detail:'Measurable quality objectives at all functions',page:'iso_compliance.html',status:'partial'},
+      {id:'5.5',title:'Responsibility & Authority',detail:'Defined roles and responsibilities',page:'roles.html',status:'ok'},
+      {id:'5.6',title:'Management Review',detail:'Periodic review of QMS effectiveness',page:'internal_audit.html',status:'partial'},
+    ]
+  },
+  {
+    id:'6', num:'6', title:'Resource Management', icon:'⚙️',
+    reqs:[
+      {id:'6.1',title:'Provision of Resources',detail:'Determine and provide resources to implement QMS',page:'manager.html',status:'ok'},
+      {id:'6.2',title:'Human Resources — Competence',detail:'Personnel competence records and training',page:'employees.html',status:'ok'},
+      {id:'6.3',title:'Infrastructure',detail:'Workspace, equipment, utilities management',page:'machines.html',status:'ok'},
+      {id:'6.3.1',title:'Equipment Maintenance',detail:'Planned maintenance programme with records',page:'maintenance_history.html',status:'ok'},
+      {id:'6.4',title:'Work Environment',detail:'Manage contamination and work conditions',page:'production.html',status:'partial'},
+    ]
+  },
+  {
+    id:'7', num:'7', title:'Product Realisation', icon:'🏭',
+    reqs:[
+      {id:'7.1',title:'Planning of Product Realisation',detail:'Quality plans for product / production process',page:'production.html',status:'ok'},
+      {id:'7.2',title:'Customer-Related Processes',detail:'Determine requirements related to product',page:'bloom_import.html',status:'ok'},
+      {id:'7.3',title:'Design & Development',detail:'Design control process (if applicable)',page:null,status:'na'},
+      {id:'7.4.1',title:'Purchasing Process',detail:'Evaluate and select suppliers based on ability to meet requirements',page:'suppliers.html',status:'ok'},
+      {id:'7.4.2',title:'Purchasing Information',detail:'Purchasing documents describe product requirements',page:'suppliers.html',status:'ok'},
+      {id:'7.4.3',title:'Verification of Purchased Product',detail:'Incoming inspection / supplier product verification',page:'inventory.html',status:'partial'},
+      {id:'7.5.1',title:'Control of Production',detail:'Control conditions including equipment calibration',page:'production.html',status:'ok'},
+      {id:'7.5.2',title:'Cleanliness of Product',detail:'Requirements for product cleanliness',page:'production.html',status:'ok'},
+      {id:'7.5.3',title:'Installation Activities',detail:'Instructions and records for installation (if applicable)',page:null,status:'na'},
+      {id:'7.5.4',title:'Servicing Activities',detail:'Servicing requirements (if applicable)',page:null,status:'na'},
+      {id:'7.5.5',title:'Sterilization Process Validation',detail:'Validate sterilization processes (if applicable)',page:null,status:'na'},
+      {id:'7.5.6',title:'Production Validation (Special Processes)',detail:'Validate thermoforming and printing processes',page:'production.html',status:'partial'},
+      {id:'7.5.7',title:'Particular Requirements for Sterile Medical Devices',detail:'N/A — Cedarwings aligners are not sterile',page:null,status:'na'},
+      {id:'7.5.8',title:'Identification',detail:'Identify product through production and delivery',page:'production.html',status:'ok'},
+      {id:'7.5.9',title:'Traceability',detail:'Control and record unique device identification',page:'tracabilite.html',status:'ok'},
+      {id:'7.5.10',title:'Customer Property',detail:'Patient models and moulds identified and protected',page:'tracabilite.html',status:'ok'},
+      {id:'7.5.11',title:'Preservation of Product',detail:'Product preservation during internal processing',page:'inventory.html',status:'ok'},
+      {id:'7.6',title:'Control of Monitoring Equipment',detail:'Calibration records for measuring equipment',page:'maintenance_history.html',status:'partial'},
+    ]
+  },
+  {
+    id:'8', num:'8', title:'Measurement, Analysis & Improvement', icon:'📊',
+    reqs:[
+      {id:'8.1',title:'General Measurement & Analysis',detail:'Plan and implement monitoring processes',page:'manager.html',status:'ok'},
+      {id:'8.2.1',title:'Customer Feedback',detail:'Monitor customer perception and handle complaints',page:'customer_feedback.html',status:'ok'},
+      {id:'8.2.2',title:'Internal Audit',detail:'Conduct internal audits at planned intervals',page:'internal_audit.html',status:'ok'},
+      {id:'8.2.3',title:'Process Monitoring',detail:'Monitor and measure QMS processes',page:'manager.html',status:'ok'},
+      {id:'8.2.4',title:'Product Monitoring',detail:'Monitor product characteristics to verify requirements met',page:'qualite.html',status:'ok'},
+      {id:'8.2.6',title:'Sampling Plans (Annex)',detail:'Define and document sampling plans for inspection',page:'qualite.html',status:'partial'},
+      {id:'8.3',title:'Control of Non-Conforming Product',detail:'Identify, document, segregate and control nonconforming product',page:'non_conformity.html',status:'ok'},
+      {id:'8.3.3',title:'Rework',detail:'Document and control rework procedures',page:'non_conformity.html',status:'partial'},
+      {id:'8.4',title:'Analysis of Data',detail:'Analyse data to demonstrate QMS suitability',page:'manager.html',status:'ok'},
+      {id:'8.5.1',title:'Improvement — General',detail:'Identify improvements through policy, objectives, audits, analysis',page:'iso_compliance.html',status:'ok'},
+      {id:'8.5.2',title:'Corrective Action',detail:'Take action to eliminate causes of nonconformities',page:'non_conformity.html',status:'ok'},
+      {id:'8.5.3',title:'Preventive Action',detail:'Take action to eliminate causes of potential nonconformities',page:'non_conformity.html',status:'partial'},
+    ]
+  },
+  {
+    id:'annex', num:'Annex A', title:'Annex A — Correspondence Between ISO 13485:2016 & ISO 13485:2003', icon:'📋',
+    reqs:[
+      {id:'A.1',title:'Annex A — Purpose',detail:'Annex A is informative and provides a table of correspondence between ISO 13485:2016 and the previous version (ISO 13485:2003). It is not a compliance requirement but aids transition documentation.',page:null,status:'na'},
+    ]
+  },
+  {
+    id:'annexB', num:'Annex B', title:'Annex B — Correspondence with ISO 9001:2008', icon:'📋',
+    reqs:[
+      {id:'B.1',title:'Annex B — Purpose',detail:'Annex B is informative and provides correspondence between ISO 13485:2016 and ISO 9001:2008. It helps organisations transitioning from ISO 9001. Not a compliance requirement.',page:null,status:'na'},
+    ]
+  },
+  {
+    id:'annexC', num:'Annex C', title:'Annex C — Guidance on Regulatory Requirements per Region', icon:'🌍',
+    reqs:[
+      {id:'C.1',title:'C.1 — EU (European Union)',detail:'EU MDR 2017/745 applies. Custom-made aligners are Class IIa. Declaration of Conformity per MDR Annex IV required. Notified Body involvement via Annex IX or XI. Custom device statement per MDR Annex XIII.',page:'tracabilite.html',status:'partial'},
+      {id:'C.2',title:'C.2 — Lebanon / MENA Market',detail:'If placing devices on Lebanese or MENA market: check local Ministry of Health registration requirements. Some countries accept CE mark as basis for registration. Verify country-specific requirements.',page:null,status:'partial'},
+      {id:'C.3',title:'C.3 — USA (FDA 21 CFR Part 820)',detail:'If exporting to USA: Class II custom aligners may require 510(k) clearance or qualify as custom device exemption. FDA QSR (21 CFR Part 820) aligns with ISO 13485 but has specific additional requirements.',page:null,status:'na'},
+      {id:'C.4',title:'C.4 — Regulatory Strategy Documentation',detail:'Document the regulatory strategy for each market: applicable regulations, conformity assessment route, notified body or registration authority, and timeline for compliance.',page:'iso_compliance.html',status:'partial'},
+    ]
+  },
+  {
+    id:'annexD', num:'Annex D', title:'Annex D — ISO 13485 Documented Information Requirements', icon:'📄',
+    reqs:[
+      {id:'D.1',title:'D.1 — Quality Manual (Clause 4.2.2)',detail:'Maintain a Quality Manual documenting the QMS scope, justified exclusions, documented procedures or references, and description of interaction between processes.',page:'iso_compliance.html',status:'partial'},
+      {id:'D.2',title:'D.2 — Quality Policy (Clause 5.3)',detail:'Documented quality policy appropriate to Cedarwings SAS purpose, including commitment to comply with requirements and maintain effectiveness of QMS.',page:'iso_compliance.html',status:'partial'},
+      {id:'D.3',title:'D.3 — Quality Objectives (Clause 5.4.1)',detail:'Establish and document measurable quality objectives at each relevant function and level. Examples: defect rate < 2%, on-time delivery > 95%, zero major NC findings per audit.',page:'iso_compliance.html',status:'missing'},
+      {id:'D.4',title:'D.4 — Medical Device File (Clause 4.2.3)',detail:'Maintain a medical device file for each device type or family. File must include: device description, labelling, specifications, manufacturing procedures, QC procedures, and installation/servicing records.',page:'tracabilite.html',status:'partial'},
+      {id:'D.5',title:'D.5 — Document Control Procedure (Clause 4.2.4)',detail:'Documented procedure for: approving documents, reviewing and updating, identifying current revision status, ensuring availability at point of use, identifying external documents, preventing obsolete use.',page:'settings.html',status:'partial'},
+      {id:'D.6',title:'D.6 — Records Control Procedure (Clause 4.2.5)',detail:'Documented procedure for: identification, storage, protection, retrieval, retention time, and disposition of records. Medical device records must be retained for lifetime of device or minimum 2 years after release.',page:'tracabilite.html',status:'ok'},
+      {id:'D.7',title:'D.7 — Risk Management File (Clause 7.1)',detail:'Document risk management activities throughout product lifecycle. Risk management file includes: risk management plan, hazard identification, risk estimation, risk evaluation, risk control, residual risk assessment.',page:'non_conformity.html',status:'partial'},
+      {id:'D.8',title:'D.8 — Design & Development Records (Clause 7.3)',detail:'If design activities are performed: maintain design and development records including inputs, outputs, review results, verification results, validation results, and design changes.',page:null,status:'na'},
+      {id:'D.9',title:'D.9 — Purchasing Records (Clause 7.4)',detail:'Maintain records of supplier evaluations, re-evaluations, and any actions arising. Purchasing records must identify product and quantity purchased, supplier used, and date received.',page:'suppliers.html',status:'ok'},
+      {id:'D.10',title:'D.10 — Production & Service Records (Clause 7.5)',detail:'Records for each batch/lot: equipment used, materials used, employee, date, quantity produced, QC results. Records must be uniquely identified and traceable to the product.',page:'production.html',status:'ok'},
+      {id:'D.11',title:'D.11 — Monitoring & Measurement Records (Clause 7.6)',detail:'Records of calibration and verification of monitoring and measurement equipment. Include equipment ID, standard used, result, date, and next calibration due.',page:'maintenance_history.html',status:'partial'},
+      {id:'D.12',title:'D.12 — Internal Audit Records (Clause 8.2.2)',detail:'Maintain audit programme, audit reports, and records of any corrective actions. Audit records must identify scope, auditor, date, findings, and follow-up actions.',page:'internal_audit.html',status:'ok'},
+      {id:'D.13',title:'D.13 — Non-Conforming Product Records (Clause 8.3)',detail:'Records of nature of nonconformity, subsequent actions taken (rework, scrap, concession), and re-inspection results. Include lot/batch ID, date, disposition, and authorising person.',page:'non_conformity.html',status:'ok'},
+      {id:'D.14',title:'D.14 — Corrective & Preventive Action Records (Clause 8.5.2/8.5.3)',detail:'Records of CAPA activities: problem description, root cause analysis, actions taken, results of actions, and effectiveness review. Include date opened, target date, and date closed.',page:'non_conformity.html',status:'ok'},
+      {id:'D.15',title:'D.15 — Management Review Records (Clause 5.6)',detail:'Records of management reviews including: date, attendees, inputs reviewed (audit results, feedback, process performance, complaints, NC status), outputs (decisions, actions, improvement goals).',page:'internal_audit.html',status:'partial'},
+      {id:'D.16',title:'D.16 — Training & Competence Records (Clause 6.2)',detail:'Records of education, training, skills, and experience for all personnel. Training records must include: training topic, date, trainer, employee, and effectiveness evaluation.',page:'employees.html',status:'ok'},
+      {id:'D.17',title:'D.17 — Customer Complaint Records (Clause 8.2.1)',detail:'Records of all customer complaints, adverse events, and their investigation and resolution. Records must be retained and available for regulatory review.',page:'customer_feedback.html',status:'ok'},
+      {id:'D.18',title:'D.18 — Statutory & Regulatory Requirements (Clause 4.1)',detail:'Identify and document all applicable regulatory requirements for each market where devices are sold. Establish process to stay current with regulatory changes.',page:'iso_compliance.html',status:'partial'},
+    ]
+  }
+];
 
-  // --- Employee Summary ---
-  document.getElementById('empSummary').innerHTML=[...byEmp.values()].map(e=>{
-    const et=e.p+e.w+e.o,pct=et>0?Math.round(e.p/et*100):0;
-    const bc=pct>=70?'var(--green)':pct>=40?'var(--amber)':'var(--red)';
-    return`<tr>
-      <td style="font-weight:700">${e.name}</td>
-      <td class="mono">${e.n}</td>
-      <td class="mono" style="color:var(--green);font-weight:700">${hm(e.p)}</td>
-      <td class="mono" style="color:var(--amber);font-weight:700">${hm(e.w)}</td>
-      <td class="mono" style="color:var(--purple)">${hm(e.o)}</td>
-      <td><span class="eff-bar"><span class="eff-fill" style="width:${pct}%;background:${bc};display:block;height:100%"></span></span><span class="mono" style="color:${bc};font-weight:700">${pct}%</span></td>
-      <td>${e.active?'<span class="badge b-g">🟢 Active</span>':'<span class="badge b-gray">Idle</span>'}</td>
-    </tr>`;
-  }).join('')||'<tr><td colspan="7" class="ec">No sessions found for this period.</td></tr>';
+const STATUS_LABELS = {ok:'✓',partial:'~',missing:'✕',na:'N/A'};
+const STATUS_NAMES = {ok:'Compliant',partial:'Partial',missing:'Missing',na:'Not Applicable'};
 
-  // --- Session Log with pagination ---
-  const start=pg*PAGE,slice=filtered.slice(start,start+PAGE);
-  document.getElementById('sessionsBody').innerHTML=slice.length?slice.map(r=>{
-    const m=r.ended_at?dur(r):null;
-    const tc=r.session_type==='productive'?'b-g':r.session_type==='waste'?'b-a':r.session_type==='overtime'?'b-p':'b-gray';
-    const empLink=`<a href="employee_profile.html?emp=${encodeURIComponent(r.employee_name||'')}" style="color:inherit;font-weight:700;text-decoration:none">${r.employee_name||'—'}</a>`;
-    return`<tr>
-      <td>${empLink}</td>
-      <td><span class="badge ${tc}">${r.session_type||'—'}</span></td>
-      <td style="font-size:11px">${r.step_name||r.work_type||r.waste_category||'—'}</td>
-      <td style="font-size:11px">${r.machine||'—'}</td>
-      <td class="mono">${r.order_no||'—'}</td>
-      <td class="mono" style="font-size:10px">${fdt(r.started_at)}</td>
-      <td class="mono" style="font-size:10px">${fdt(r.ended_at)}</td>
-      <td class="mono" style="font-weight:700">${m!==null?m+' min':'<span style="color:var(--green);font-weight:700">LIVE</span>'}</td>
-    </tr>`;
-  }).join(''):'<tr><td colspan="8" class="ec">No sessions found for this period.</td></tr>';
-
-  const totalPages=Math.ceil(filtered.length/PAGE)||1;
-  document.getElementById('pInfo').textContent=`${filtered.length} sessions (page ${pg+1}/${totalPages})`;
-  document.getElementById('btnPrev').disabled=pg===0;
-  document.getElementById('btnNext').disabled=pg>=totalPages-1;
+// Load saved statuses from localStorage if user changed them
+function getStatus(reqId){
+  try{const s=localStorage.getItem('iso_status_'+reqId);return s||null;}catch(e){return null;}
+}
+function saveStatus(reqId,status){
+  try{localStorage.setItem('iso_status_'+reqId,status);}catch(e){}
 }
 
-// Export CSV
-document.getElementById('exportBtn').addEventListener('click',()=>{
-  const rows=[['Employee','Type','Step/Category','Machine','Order','Start','End','Duration(min)']];
-  allSess.forEach(r=>rows.push([r.employee_name||'',r.session_type||'',r.step_name||r.work_type||r.waste_category||'',r.machine||'',r.order_no||'',r.started_at||'',r.ended_at||'',r.ended_at?dur(r):'LIVE']));
-  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=`time-report-${range}-${new Date().toISOString().slice(0,10)}.csv`;a.click();
-});
+function cycleStatus(reqId,el){
+  const order=['ok','partial','missing','na'];
+  const cur=el.dataset.status;
+  const next=order[(order.indexOf(cur)+1)%order.length];
+  el.dataset.status=next;
+  el.className='req-check '+next;
+  el.textContent=STATUS_LABELS[next];
+  saveStatus(reqId,next);
+  calcScore();
+}
 
-document.querySelectorAll('.rt').forEach(btn=>btn.addEventListener('click',()=>{
-  document.querySelectorAll('.rt').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');range=btn.dataset.r;load();
-}));
-document.getElementById('refreshBtn').addEventListener('click',load);
-document.getElementById('searchInput').addEventListener('input',applyFilter);
-document.getElementById('typeFilter').addEventListener('change',applyFilter);
-document.getElementById('btnPrev').addEventListener('click',()=>{if(pg>0){pg--;render();}});
-document.getElementById('btnNext').addEventListener('click',()=>{pg++;render();});
-load();
+function buildUI(){
+  const container=document.getElementById('clausesContainer');
+  container.innerHTML='';
+  CLAUSES.forEach(clause=>{
+    const div=document.createElement('div');
+    div.className='clause-card';
+    let reqs='';
+    clause.reqs.forEach(req=>{
+      const saved=getStatus(req.id);
+      const status=saved||req.status;
+      const pageLink=req.page?`<a href="${req.page}" class="req-page" target="_blank">→ ${req.page.replace('.html','')}</a>`:'';
+      reqs+=`<div class="req-row">
+        <div class="req-check ${status}" data-status="${status}" data-reqid="${req.id}" onclick="cycleStatus('${req.id}',this)" title="Click to cycle: Compliant → Partial → Missing → N/A">
+          ${STATUS_LABELS[status]}
+        </div>
+        <div class="req-text">
+          <div class="req-title">${req.id} — ${req.title}</div>
+          <div class="req-detail">${req.detail}</div>
+          <div>${pageLink}</div>
+        </div>
+        <div style="text-align:right;white-space:nowrap">
+          <span style="font-size:10px;font-weight:700;color:var(--mu)">${STATUS_NAMES[status]}</span>
+        </div>
+      </div>`;
+    });
+    const okCount=clause.reqs.filter(r=>(getStatus(r.id)||r.status)==='ok').length;
+    const totalApplicable=clause.reqs.filter(r=>(getStatus(r.id)||r.status)!=='na').length;
+    const clausePct=totalApplicable>0?Math.round(okCount/totalApplicable*100):100;
+    const clauseColor=clausePct===100?'var(--green)':clausePct>=60?'var(--amber)':'var(--red)';
+    div.innerHTML=`
+      <div class="clause-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+        <span style="font-size:18px">${clause.icon}</span>
+        <div style="flex:1">
+          <div style="font-weight:800;font-size:14px">Clause ${clause.num} — ${clause.title}</div>
+          <div style="font-size:11px;color:var(--mu)">${clause.reqs.length} requirements</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:20px;font-weight:800;font-family:var(--mono);color:${clauseColor}">${clausePct}%</div>
+          <div style="font-size:10px;color:var(--mu)">${okCount}/${totalApplicable} compliant</div>
+        </div>
+      </div>
+      <div class="clause-body">${reqs}</div>`;
+    container.appendChild(div);
+  });
+  calcScore();
+}
+
+function calcScore(){
+  let ok=0,partial=0,missing=0,na=0,total=0;
+  CLAUSES.forEach(clause=>{
+    clause.reqs.forEach(req=>{
+      const status=(document.querySelector(`[data-reqid="${req.id}"]`)||{}).dataset?.status||(getStatus(req.id)||req.status);
+      if(status==='ok')ok++;
+      else if(status==='partial')partial++;
+      else if(status==='missing')missing++;
+      else if(status==='na')na++;
+      total++;
+    });
+  });
+  const applicable=total-na;
+  const pct=applicable>0?Math.round((ok+(partial*.5))/applicable*100):100;
+  document.getElementById('scoreOk').textContent=ok;
+  document.getElementById('scorePartial').textContent=partial;
+  document.getElementById('scoreMiss').textContent=missing;
+  document.getElementById('scorePct').textContent=pct+'%';
+  document.getElementById('progressBar').style.width=pct+'%';
+  document.getElementById('progressLabel').textContent=`${ok} compliant · ${partial} partial · ${missing} missing · ${na} N/A`;
+  const badge=document.getElementById('overallBadge');
+  if(pct>=90){badge.textContent='✅ '+pct+'% — ISO 13485 Ready';badge.style.background='var(--g50)';badge.style.color='var(--green)';badge.style.borderColor='var(--g100)';}
+  else if(pct>=70){badge.textContent='⚠️ '+pct+'% — Action Required';badge.style.background='var(--a50)';badge.style.color='var(--amber)';badge.style.borderColor='var(--a100)';}
+  else{badge.textContent='❌ '+pct+'% — Non-Compliant';badge.style.background='var(--r50)';badge.style.color='var(--red)';badge.style.borderColor='var(--r100)';}
+  // Rebuild clause headers scores
+  CLAUSES.forEach(clause=>{
+    const clauseOk=clause.reqs.filter(r=>{const el=document.querySelector(`[data-reqid="${r.id}"]`);return(el?el.dataset.status:(getStatus(r.id)||r.status))==='ok';}).length;
+    const clauseApplicable=clause.reqs.filter(r=>{const el=document.querySelector(`[data-reqid="${r.id}"]`);return(el?el.dataset.status:(getStatus(r.id)||r.status))!=='na';}).length;
+    const cp=clauseApplicable>0?Math.round(clauseOk/clauseApplicable*100):100;
+  });
+}
+
+buildUI();
 </script>
-</body>
-</html>
+
+<!-- HELP MODAL for iso_compliance.html -->
+<style>
+.modal-bg-help{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:700;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg-help.on{display:flex}
+.help-modal{background:var(--card);border-radius:18px;padding:28px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+</style>
+<div class="modal-bg-help" id="helpModal">
+  <div class="help-modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:16px;font-weight:800">✅ ISO 13485 Compliance Dashboard — Help</div>
+      <button onclick="document.getElementById('helpModal').classList.remove('on')" style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:var(--f);font-size:12px;color:var(--txt)">✕ Close</button>
+    </div>
+    <div style="background:var(--b50);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--blue);font-weight:500">Interactive compliance checklist for ISO 13485:2016. Shows the status of every requirement across all 5 clauses and 4 annexes. Use this to track your certification readiness.</div>
+    <div style="font-size:13px;line-height:1.8"><div style="margin-bottom:10px"><strong style="color:var(--txt)">Compliance Status</strong><br><span style="color:var(--mu);font-size:12px">✓ Compliant (green): requirement fully met. ~ Partial (amber): partially implemented. ✕ Missing (red): not yet implemented. N/A: not applicable.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Click to Change Status</strong><br><span style="color:var(--mu);font-size:12px">Click any checkbox to cycle through: Compliant → Partial → Missing → N/A. Your changes are saved in the browser.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Overall Score</strong><br><span style="color:var(--mu);font-size:12px">Calculated as: (Compliant + Partial×0.5) ÷ Applicable requirements. Shown as % with colour bar.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">→ Page Links</strong><br><span style="color:var(--mu);font-size:12px">Each requirement links to the page in the system that satisfies it. Click to navigate.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Clause Sections</strong><br><span style="color:var(--mu);font-size:12px">Clauses 4–8 cover the main ISO 13485 requirements. Annexes A–D cover correspondence tables and documented information requirements.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">🖨️ Print Report</strong><br><span style="color:var(--mu);font-size:12px">Print the full compliance checklist as a formal assessment document.</span></div></div>
+  </div>
+</div>
+<button onclick="document.getElementById('helpModal').classList.add('on')" style="position:fixed;bottom:50px;right:20px;width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(59,95,226,.4);z-index:800;font-family:var(--f)">?</button>
+
+</body></html>

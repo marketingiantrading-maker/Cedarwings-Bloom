@@ -114,7 +114,9 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
     <div class="sb-s">Integrations</div>
     <a href="bloom_import.html" class="nl"><span class="ic">🌸</span>Bloom Import</a>
     <div class="sb-s">System</div>
+    <a href="iso_compliance.html" class="nl"><span class="ic">✅</span>ISO 13485 Compliance</a>
     <a href="settings.html" class="nl"><span class="ic">⚙</span>Settings</a>
+    <a href="changelog.html" class="nl"><span class="ic">📝</span>Changelog</a>
     <a href="roles.html" class="nl"><span class="ic">🔑</span>Roles</a>
     <div class="sb-s">Terminal</div>
     <a href="clocking.html" class="nl"><span class="ic">&#9201;</span>Clocking Terminal</a>
@@ -521,5 +523,31 @@ document.getElementById('svInst').addEventListener('click',async()=>{
 document.getElementById('btnRef').addEventListener('click',load)
 load();setInterval(load,20000)
 </script>
+
+<!-- COPYRIGHT FOOTER -->
+<div style="position:fixed;bottom:0;left:0;right:0;background:var(--card,#fff);border-top:1px solid var(--bdr,#e2e8f0);padding:6px 20px;display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--dim,#94a3b8);z-index:999;font-family:'DM Sans',sans-serif">
+  <span>© 2026 <strong style="color:var(--mu,#64748b)">Cedarwings SAS</strong> — Dental Aligner Manufacturing Platform</span>
+  <span>v2.0 · ISO 13485 Compliant · All rights reserved</span>
+</div>
+
+
+<!-- HELP MODAL for machines.html -->
+<style>
+.modal-bg-help{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:700;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg-help.on{display:flex}
+.help-modal{background:var(--card);border-radius:18px;padding:28px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+</style>
+<div class="modal-bg-help" id="helpModal">
+  <div class="help-modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:16px;font-weight:800">⚙ Machines — Help</div>
+      <button onclick="document.getElementById('helpModal').classList.remove('on')" style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:var(--f);font-size:12px;color:var(--txt)">✕ Close</button>
+    </div>
+    <div style="background:var(--b50);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--blue);font-weight:500">Manage all production equipment. Track machine status, assign to production steps, and monitor utilisation.</div>
+    <div style="font-size:13px;line-height:1.8"><div style="margin-bottom:10px"><strong style="color:var(--txt)">Machine Status</strong><br><span style="color:var(--mu);font-size:12px">Active: available for production. Maintenance: under service. Out of Service: unavailable.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Step Assignment</strong><br><span style="color:var(--mu);font-size:12px">Each machine is assigned to one or more production steps. Used by clocking and production log.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Maintenance Link</strong><br><span style="color:var(--mu);font-size:12px">Click "View Maintenance" to see the full maintenance history for a machine.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Utilisation</strong><br><span style="color:var(--mu);font-size:12px">Number of production lots and time sessions using each machine.</span></div></div>
+  </div>
+</div>
+<button onclick="document.getElementById('helpModal').classList.add('on')" style="position:fixed;bottom:50px;right:20px;width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(59,95,226,.4);z-index:800;font-family:var(--f)">?</button>
+
 </body>
 </html>

@@ -89,6 +89,7 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc}
     <a href="manager.html" class="nl"><span class="ic">📊</span>Tableau de bord</a>
     <a href="production.html" class="nl"><span class="ic">🏭</span>Production</a>
     <a href="machines.html" class="nl"><span class="ic">⚙</span>Machines</a>
+    <a href="maintenance_history.html" class="nl"><span class="ic">🔧</span>Maintenance History</a>
     <div class="sb-s">Team</div>
     <a href="employees.html" class="nl"><span class="ic">👥</span>Employés</a>
     <a href="time_report.html" class="nl"><span class="ic">📈</span>Rapport Temps</a>
@@ -100,7 +101,9 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc}
     <div class="sb-s">Integrations</div>
     <a href="bloom_import.html" class="nl"><span class="ic">🌸</span>Bloom Import</a>
     <div class="sb-s">System</div>
+    <a href="iso_compliance.html" class="nl"><span class="ic">✅</span>ISO 13485 Compliance</a>
     <a href="settings.html" class="nl"><span class="ic">⚙</span>Settings</a>
+    <a href="changelog.html" class="nl"><span class="ic">📝</span>Changelog</a>
     <a href="roles.html" class="nl"><span class="ic">🔑</span>Roles</a>
     <div class="sb-s">Terminal</div>
     <a href="clocking.html" class="nl"><span class="ic">⏱</span>Terminal Pointage</a>
@@ -377,7 +380,16 @@ async function load(){
   ])
   const lots=lr.data||[]
   const lSel=document.getElementById("qcLot")
-  lSel.innerHTML='<option value="">— Sélectionner le lot —</option>'+lots.map(l=>`<option value="${l.id}" data-order="${l.order_no}" data-num="${l.lot_number}">${l.lot_number} — ${l.order_no} (${l.quality_status})</option>`).join("")
+  if(lots.length === 0){
+    lSel.innerHTML='<option value="">— No production lots found. Log production first. —</option>'
+    // Add manual entry option
+    const manualOpt = document.createElement('option')
+    manualOpt.value = 'manual'
+    manualOpt.textContent = '+ Enter lot number manually'
+    lSel.appendChild(manualOpt)
+  } else {
+    lSel.innerHTML='<option value="">— Select lot —</option>'+lots.map(l=>`<option value="${l.id}" data-order="${l.order_no}" data-num="${l.lot_number}">${l.lot_number} — Order ${l.order_no} (${l.quality_status||'pending'})</option>`).join("")
+  }
   const eSel=document.getElementById("qcController")
   eSel.innerHTML='<option value="">— Sélectionner —</option>'+(er.data||[]).map(e=>`<option value="${e.name}">${e.name}</option>`).join("")
   // History
@@ -475,5 +487,31 @@ document.getElementById("btnNewQC").addEventListener("click",()=>{
 })
 load()
 </script>
+
+<!-- COPYRIGHT FOOTER -->
+<div style="position:fixed;bottom:0;left:0;right:0;background:var(--card,#fff);border-top:1px solid var(--bdr,#e2e8f0);padding:6px 20px;display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--dim,#94a3b8);z-index:999;font-family:'DM Sans',sans-serif">
+  <span>© 2026 <strong style="color:var(--mu,#64748b)">Cedarwings SAS</strong> — Dental Aligner Manufacturing Platform</span>
+  <span>v2.0 · ISO 13485 Compliant · All rights reserved</span>
+</div>
+
+
+<!-- HELP MODAL for qualite.html -->
+<style>
+.modal-bg-help{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:700;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg-help.on{display:flex}
+.help-modal{background:var(--card);border-radius:18px;padding:28px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+</style>
+<div class="modal-bg-help" id="helpModal">
+  <div class="help-modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:16px;font-weight:800">✅ Quality Control — Help</div>
+      <button onclick="document.getElementById('helpModal').classList.remove('on')" style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:var(--f);font-size:12px;color:var(--txt)">✕ Close</button>
+    </div>
+    <div style="background:var(--b50);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--blue);font-weight:500">ISO 13485 quality control checks for each production lot. 16 checkpoints covering dimensional accuracy, surface quality, fit, labelling, and packaging.</div>
+    <div style="font-size:13px;line-height:1.8"><div style="margin-bottom:10px"><strong style="color:var(--txt)">Select Lot</strong><br><span style="color:var(--mu);font-size:12px">Choose a production lot from the dropdown. Lots appear after being created in Production. If empty, log production first.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">16 Checkpoints</strong><br><span style="color:var(--mu);font-size:12px">Each checkpoint is Pass/Fail/NA. All checkpoints must pass for the lot to be approved.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Controller</strong><br><span style="color:var(--mu);font-size:12px">Select the employee performing QC. Their name is recorded on the report.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Submit QC</strong><br><span style="color:var(--mu);font-size:12px">Saves the QC record. Lot status updates to passed or failed automatically.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Failed Lots</strong><br><span style="color:var(--mu);font-size:12px">Failed lots should trigger a Non-Conformity report in the NC Reports page.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Print Report</strong><br><span style="color:var(--mu);font-size:12px">Print the QC certificate for the lot — include in batch records for ISO 13485.</span></div></div>
+  </div>
+</div>
+<button onclick="document.getElementById('helpModal').classList.add('on')" style="position:fixed;bottom:50px;right:20px;width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(59,95,226,.4);z-index:800;font-family:var(--f)">?</button>
+
 </body>
 </html>

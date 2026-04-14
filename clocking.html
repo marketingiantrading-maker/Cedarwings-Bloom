@@ -81,6 +81,8 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
 .jb-actions{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid rgba(0,0,0,.06)}
 .jb-pause{background:#fff;border:1.5px solid var(--g100);color:#15803d;padding:9px 18px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--f)}
 .jb-pause:hover{background:var(--g50)}
+.jb-next{background:linear-gradient(135deg,#3b5fe2,#6366f1);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--f);transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.jb-next:hover{opacity:.85;transform:translateX(2px)}
 /* STEP GRID */
 .sg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
 .sb{padding:10px 7px;border-radius:11px;font-size:11px;font-weight:700;cursor:not-allowed;font-family:var(--f);text-align:center;line-height:1.4;transition:all .15s;position:relative;border:1.5px solid var(--bdr);background:#f8fafc;color:var(--dim)}
@@ -225,8 +227,11 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
             </div>
           </div>
           <div class="jb-actions">
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
               <button class="jb-pause" onclick="showPauseDialog()">&#9208; Stop working on this task</button>
+              <button id="btnNextStep" class="jb-next" onclick="moveToNextStep()" style="display:none">
+                &#9654; Move to Next Step: <span id="nextStepLabel">—</span>
+              </button>
             </div>
           </div>
         </div>
@@ -569,6 +574,18 @@ function updateStepButtons(next,done,machineRunning,inProgress,actStep,allDone){
   })
 }
 /* ===================== CLOCK IN ===================== */
+window.moveToNextStep=async()=>{
+  console.log('[Clock] moveToNextStep called')
+  const btn=document.getElementById("btnNextStep")
+  if(!btn){console.log('[Clock] btnNextStep not found');return}
+  const nextStep=btn.dataset.next
+  const ord=btn.dataset.ord||document.getElementById("ord").value.trim()
+  console.log('[Clock] nextStep=',nextStep,'ord=',ord)
+  if(!nextStep||!ord){setSt("Error","Cannot determine next step","err");return}
+  setSt(`Moving to ${nextStep}...`,"","ok")
+  await window._clockStep(nextStep)
+}
+
 window._clockStep=async(step)=>{
   const ord=document.getElementById("ord").value.trim()
   if(!ord){setSt("Enter order number first","Type the order number above.","err");return}
@@ -885,6 +902,26 @@ function showJobBox(step,ord,type,startTime,mach){
   document.getElementById("jbTitle").textContent=step
   document.getElementById("jbMeta").textContent=`Order: ${ord} · ${mach||"No machine"} · Started: ${fT(startTime.toISOString())}`
   document.getElementById("jbTimer").className="jb-timer "+(type==="waste"?"waste":"prod")
+  // Show Next Step button if this is a productive step and there's a next step
+  console.log('[Clock] showJobBox type=',type,'step=',step)
+  const btnNext=document.getElementById("btnNextStep")
+  const lblNext=document.getElementById("nextStepLabel")
+  if(type==="productive"||type==="Productive"){
+    const stepIdx=STEPS.indexOf(step)
+    const nextStep=stepIdx>=0&&stepIdx<STEPS.length-1?STEPS[stepIdx+1]:null
+    console.log('[Clock] stepIdx=',stepIdx,'nextStep=',nextStep)
+    if(nextStep&&btnNext){
+      lblNext.textContent=nextStep
+      btnNext.style.display="inline-flex"
+      btnNext.dataset.next=nextStep
+      btnNext.dataset.ord=String(ord)
+      console.log('[Clock] Next step button shown:',nextStep)
+    } else if(btnNext){
+      btnNext.style.display="none"
+    }
+  } else {
+    if(btnNext) btnNext.style.display="none"
+  }
 }
 
 function startTimer(){
@@ -1026,9 +1063,19 @@ window.filterOrders=window._filterOrders=(term)=>{
   },200)
   
   // Always trigger pipeline render
-  clearTimeout(pT);pT=setTimeout(()=>{
+  clearTimeout(pT);pT=setTimeout(async()=>{
     const ord=document.getElementById("ord").value.trim()
-    renderPipeline(ord)
+    await renderPipeline(ord)
+    // AUTO-RESUME: if this is the same order as active session, highlight job box
+    if(ord && activeSession && String(activeSession.order)===String(ord)){
+      const jobBox=document.getElementById("jobBox")
+      if(jobBox&&jobBox.style.display!=="none"){
+        jobBox.scrollIntoView({behavior:"smooth",block:"center"})
+        jobBox.style.outline="3px solid var(--blue)"
+        setTimeout(()=>{jobBox.style.outline=""},2000)
+        setSt(`Resuming order ${ord}`,`Currently on: ${activeSession.step} · ${activeSession.machine||""}`,"ok")
+      }
+    }
   },400)
 }
 
@@ -1313,5 +1360,31 @@ cleanOrphans()
     <button onclick="document.getElementById('pauseModal').style.display='none'" style="width:100%;padding:10px;background:#f1f5f9;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;color:#64748b;font-family:var(--f)">Cancel — keep working</button>
   </div>
 </div>
+
+<!-- COPYRIGHT FOOTER -->
+<div style="position:fixed;bottom:0;left:0;right:0;background:var(--card,#fff);border-top:1px solid var(--bdr,#e2e8f0);padding:6px 20px;display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--dim,#94a3b8);z-index:999;font-family:'DM Sans',sans-serif">
+  <span>© 2026 <strong style="color:var(--mu,#64748b)">Cedarwings SAS</strong> — Dental Aligner Manufacturing Platform</span>
+  <span>v2.0 · ISO 13485 Compliant · All rights reserved</span>
+</div>
+
+
+<!-- HELP MODAL for clocking.html -->
+<style>
+.modal-bg-help{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:700;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg-help.on{display:flex}
+.help-modal{background:var(--card);border-radius:18px;padding:28px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+</style>
+<div class="modal-bg-help" id="helpModal">
+  <div class="help-modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:16px;font-weight:800">⏱ Clocking Terminal — Help</div>
+      <button onclick="document.getElementById('helpModal').classList.remove('on')" style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:var(--f);font-size:12px;color:var(--txt)">✕ Close</button>
+    </div>
+    <div style="background:var(--b50);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--blue);font-weight:500">Employee time tracking terminal. Employees clock in/out of production steps, breaks, and waste time. Designed for touchscreen use on the production floor.</div>
+    <div style="font-size:13px;line-height:1.8"><div style="margin-bottom:10px"><strong style="color:var(--txt)">Login</strong><br><span style="color:var(--mu);font-size:12px">Employee enters their name or PIN to start a session.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Order Entry</strong><br><span style="color:var(--mu);font-size:12px">Enter the Bloom order number to link the session to a specific case.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Step Selection</strong><br><span style="color:var(--mu);font-size:12px">Choose the production step: Printing, Cleaning, Thermoforming, Line Cut, Laser Marking, Packaging.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">▶ Move to Next Step</strong><br><span style="color:var(--mu);font-size:12px">Appears during productive steps — advances to the next step without logging out and re-entering.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">W9 Auto-Gap</strong><br><span style="color:var(--mu);font-size:12px">If a session exceeds 9 hours without clocking out, the system automatically closes it.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Auto-Resume</strong><br><span style="color:var(--mu);font-size:12px">Re-entering the same order number highlights the current active step and allows resuming.</span></div></div>
+  </div>
+</div>
+<button onclick="document.getElementById('helpModal').classList.add('on')" style="position:fixed;bottom:50px;right:20px;width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(59,95,226,.4);z-index:800;font-family:var(--f)">?</button>
+
 </body>
 </html>

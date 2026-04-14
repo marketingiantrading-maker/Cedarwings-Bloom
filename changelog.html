@@ -2,11 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Cedarwings SAS — Time Management Report</title>
+<title>Cedarwings SAS — Changelog</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-
 :root{
   --bg:#f0f4f8;--card:#fff;--bdr:#e2e8f0;--txt:#0f172a;--mu:#64748b;--dim:#94a3b8;
   --blue:#3b5fe2;--b50:#eef2ff;--b100:#e0e7ff;
@@ -126,28 +124,21 @@ tbody tr:hover{background:#f8fafc}
 @media(max-width:768px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.g2,.g3{grid-template-columns:1fr}.sidebar{display:none}.content{margin-left:0}}
 @media(max-width:640px){.kpi-grid{grid-template-columns:1fr 1fr}.g2e{grid-template-columns:1fr}}
 
-.main{margin-left:240px;min-height:100vh}
-.body{padding:20px 28px 80px}
-.badge{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:700;white-space:nowrap}
-.b-g{background:var(--g100);color:#15803d}.b-a{background:var(--a100);color:#92400e}
-.b-b{background:var(--b100);color:#1e40af}.b-gray{background:#f1f5f9;color:#475569}
-.b-r{background:var(--r100);color:#991b1b}.b-p{background:var(--p100);color:#5b21b6}
-.card{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:20px;margin-bottom:16px}
-.kpi-grid{display:grid;gap:12px;margin-bottom:20px}
-.kpi{background:var(--card);border-radius:12px;box-shadow:var(--sh);padding:16px;border-top:3px solid var(--bdr);text-decoration:none;display:block}
-.kpi-val{font-size:24px;font-weight:800;font-family:var(--mono)}
-.kpi-lbl{font-size:11px;color:var(--mu);font-weight:600;margin-top:2px}
-.tw{overflow-x:auto;border-radius:11px;border:1px solid var(--bdr)}
-table{width:100%;border-collapse:collapse;font-size:12px}
-thead th{padding:9px 14px;font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;background:#f8fafc;border-bottom:1px solid var(--bdr);text-align:left;white-space:nowrap}
-tbody td{padding:10px 14px;border-bottom:1px solid var(--bdr);vertical-align:middle}
-tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc}
-.ec{color:var(--dim)!important;text-align:center!important;padding:32px!important}
-.mono{font-family:var(--mono);font-size:11px}
-.pager{display:flex;align-items:center;justify-content:space-between;margin-top:12px;font-size:12px;color:var(--mu)}
-.eff-bar{background:var(--bdr);border-radius:999px;height:6px;width:80px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:6px}
-.eff-fill{height:100%;border-radius:999px}
-@media print{.sidebar,.topbar,.help-btn,div[style*="position:fixed;bottom"]{display:none!important}.main{margin-left:0!important}}
+.badge{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:700}
+.b-g{background:var(--g100);color:#15803d}.b-r{background:var(--r100);color:#991b1b}
+.b-a{background:var(--a100);color:#92400e}.b-b{background:var(--b100);color:#1e40af}
+.b-gray{background:#f1f5f9;color:var(--mu)}
+.card{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:22px;margin-bottom:16px}
+.ver-tag{display:inline-flex;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:800;font-family:var(--mono)}
+.v-major{background:var(--blue);color:#fff}
+.v-minor{background:var(--b100);color:var(--blue)}
+.chg{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--bdr);align-items:flex-start}
+.chg:last-child{border:none}
+.cb{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;white-space:nowrap;margin-top:1px;flex-shrink:0}
+.cnew{background:var(--g100);color:#15803d}
+.cfix{background:var(--a100);color:#92400e}
+.cimpr{background:var(--p100);color:#5b21b6}
+.cnewf{background:var(--b100);color:#1e40af}
 </style>
 </head>
 <body>
@@ -172,18 +163,22 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc}
     <div class="sb-s">Team</div>
     <a href="employees.html" class="nl"><span class="ic">👥</span>Employees</a>
     <a href="employee_profile.html" class="nl"><span class="ic">👤</span>Employee Profile</a>
-    <a href="time_report.html" class="nl on"><span class="ic">📈</span>Time Report</a>
+    <a href="time_report.html" class="nl"><span class="ic">📈</span>Time Report</a>
     <div class="sb-s">Quality</div>
     <a href="tracabilite.html" class="nl"><span class="ic">🔖</span>Traceability</a>
     <a href="qualite.html" class="nl"><span class="ic">✅</span>Quality Control</a>
     <a href="non_conformity.html" class="nl"><span class="ic">⚠️</span>Non-Conformity</a>
+    <a href="suppliers.html" class="nl"><span class="ic">🏭</span>Suppliers</a>
+    <a href="customer_feedback.html" class="nl"><span class="ic">💬</span>Customer Feedback</a>
+    <a href="internal_audit.html" class="nl"><span class="ic">🔍</span>Internal Audits</a>
     <div class="sb-s">Resources</div>
     <a href="inventory.html" class="nl"><span class="ic">📦</span>Inventory</a>
     <div class="sb-s">Integrations</div>
     <a href="bloom_import.html" class="nl"><span class="ic">🌸</span>Bloom Import</a>
     <div class="sb-s">System</div>
+    <a href="iso_compliance.html" class="nl"><span class="ic">✅</span>ISO 13485 Compliance</a>
     <a href="settings.html" class="nl"><span class="ic">⚙</span>Settings</a>
-    <a href="changelog.html" class="nl"><span class="ic">📝</span>Changelog</a>
+    <a href="changelog.html" class="nl on"><span class="ic">📝</span>Changelog</a>
     <a href="roles.html" class="nl"><span class="ic">🔑</span>Roles</a>
     <div class="sb-s">Terminal</div>
     <a href="clocking.html" class="nl"><span class="ic">⏱</span>Clocking Terminal</a>
@@ -194,275 +189,210 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc}
 </aside>
 <div class="main">
   <div class="topbar">
-    <div>
-      <div style="font-size:16px;font-weight:800">⏱ Time Management Report</div>
-      <div style="font-size:11px;color:var(--mu)" id="pageDate">Loading…</div>
+    <div class="top-left">
+      <div class="page-title">📝 Changelog</div>
+      <div class="page-date">Version history — Cedarwings SAS Operations Platform</div>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-      <div class="range-tabs">
-        <button class="rt active" data-r="today">Today</button>
-        <button class="rt" data-r="week">This Week</button>
-        <button class="rt" data-r="month">This Month</button>
-      </div>
-      <button class="btn bgh" id="exportBtn">⬇ Export CSV</button>
-      <button class="btn bgh" onclick="window.print()">🖨️ Print</button>
-      <button class="btn btn-blue" id="refreshBtn">↻ Refresh</button>
+    <div class="top-right">
+      <span style="font-size:12px;color:var(--mu);font-weight:600">Current</span>
+      <span class="ver-tag v-major" style="margin-left:6px">v2.0 · April 2026</span>
     </div>
   </div>
+  <div class="body" style="max-width:960px">
 
-  <div class="body">
-    <!-- KPIs -->
-    <div class="kpi-grid" style="grid-template-columns:repeat(5,1fr)">
-      <div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-val" id="kpiSess">—</div><div class="kpi-lbl">Total Sessions</div></div>
-      <div class="kpi" style="border-top-color:var(--green)"><div class="kpi-val" id="kpiProd" style="color:var(--green)">—</div><div class="kpi-lbl">Productive Time</div></div>
-      <div class="kpi" style="border-top-color:var(--amber)"><div class="kpi-val" id="kpiWaste" style="color:var(--amber)">—</div><div class="kpi-lbl">Non-Productive Time</div></div>
-      <div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-val" id="kpiEff" style="color:var(--blue)">—</div><div class="kpi-lbl">Efficiency</div></div>
-      <div class="kpi" style="border-top-color:var(--mu)"><div class="kpi-val" id="kpiEmps">—</div><div class="kpi-lbl">Active Employees</div></div>
-    </div>
-
-    <!-- CHARTS -->
-    <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px">
-      <div class="card">
-        <div style="font-size:13px;font-weight:800;margin-bottom:12px">📊 Productivity by Employee</div>
-        <div style="height:200px"><canvas id="empChart"></canvas></div>
-      </div>
-      <div class="card">
-        <div style="font-size:13px;font-weight:800;margin-bottom:12px">🍩 Session Type Split</div>
-        <div style="height:200px"><canvas id="typeChart"></canvas></div>
+    <div style="background:var(--b50);border:1px solid var(--b100);border-radius:12px;padding:14px 18px;margin-bottom:20px;display:flex;gap:12px;align-items:flex-start">
+      <span style="font-size:26px;flex-shrink:0">🏅</span>
+      <div>
+        <div style="font-size:13px;font-weight:800;color:var(--blue)">ISO 13485:2016 Compliance</div>
+        <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">This platform is designed for dental aligner manufacturers. All changes are documented per ISO 13485 design control and change management requirements (§4.2.3, §4.2.4). Full traceability is maintained across all versions.</div>
       </div>
     </div>
 
-    <!-- EMPLOYEE SUMMARY TABLE -->
+    <!-- v2.0 -->
     <div class="card">
-      <div style="font-size:14px;font-weight:800;margin-bottom:14px">👥 Employee Summary</div>
-      <div class="tw"><table>
-        <thead><tr><th>Employee</th><th>Sessions</th><th>Productive</th><th>Non-Productive</th><th>Overtime</th><th>Efficiency</th><th>Status</th></tr></thead>
-        <tbody id="empSummary"><tr><td colspan="7" class="ec">Loading…</td></tr></tbody>
-      </table></div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--bdr);flex-wrap:wrap">
+        <span class="ver-tag v-major">v2.0</span>
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:800">Major Release — Bloom Integration + Quality Management</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:2px">April 2026</div>
+        </div>
+        <span style="background:var(--g50);color:var(--green);padding:4px 12px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid var(--g100)">● Current Version</span>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">New Pages Added</div>
+      <div style="background:var(--bg);border-radius:10px;padding:12px 16px;margin-bottom:16px"><div class="chg">
+          <span class="cb cnew">NEW PAGE</span>
+          <div><div style="font-size:13px;font-weight:700">🦷 Bloom Cases — bloom_import.html</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">Import & manage bloomaligner.fr cases. CSV + Excel import, all 11 columns, real-time analytics, date/status/order-type filters, case modal, history tab.</div></div>
+        </div><div class="chg">
+          <span class="cb cnew">NEW PAGE</span>
+          <div><div style="font-size:13px;font-weight:700">🔧 Maintenance History — maintenance_history.html</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">Full machine maintenance log. Preventive / corrective / calibration / inspection. KPIs: overdue, due-soon, total cost. Print-ready records.</div></div>
+        </div><div class="chg">
+          <span class="cb cnew">NEW PAGE</span>
+          <div><div style="font-size:13px;font-weight:700">⚠️ Non-Conformity — non_conformity.html</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">ISO 13485 CAPA management. Root cause analysis, corrective actions, severity tracking, printable NC reports with auto-generated NC numbers.</div></div>
+        </div><div class="chg">
+          <span class="cb cnew">NEW PAGE</span>
+          <div><div style="font-size:13px;font-weight:700">📝 Changelog — changelog.html</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">This page — full version history and ISO 13485 compliance review.</div></div>
+        </div></div>
+      <div style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Improvements & Bug Fixes</div>
+      <div style="background:var(--bg);border-radius:10px;padding:12px 16px"><div class="chg">
+          <span class="cb cimpr">IMPROVED</span>
+          <div><div style="font-size:13px;font-weight:700">Dashboard (manager.html)</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">Bloom KPIs: Aligners Produced + Cases Completed from real Bloom data. Day/Week/Month filter applies to all KPIs including Bloom.</div></div>
+        </div><div class="chg">
+          <span class="cb cimpr">IMPROVED</span>
+          <div><div style="font-size:13px;font-weight:700">Production Page</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">Today's Bloom Cases panel linked to bloom_cases by creation_date, shows Upper/Lower aligner counts.</div></div>
+        </div><div class="chg">
+          <span class="cb cimpr">IMPROVED</span>
+          <div><div style="font-size:13px;font-weight:700">Bloom Analytics</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">Analytics uses same date/status/doctor/order-type filters as Cases + Aligners tabs. Counts linked via case_number = case_id.</div></div>
+        </div><div class="chg">
+          <span class="cb cimpr">IMPROVED</span>
+          <div><div style="font-size:13px;font-weight:700">All Pages — Copyright</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">© 2026 Cedarwings SAS footer added to all 15 pages with ISO 13485 badge.</div></div>
+        </div><div class="chg">
+          <span class="cb cimpr">IMPROVED</span>
+          <div><div style="font-size:13px;font-weight:700">All Pages — Sidebar</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">New pages added to navigation sidebar on all 15 pages.</div></div>
+        </div><div class="chg">
+          <span class="cb cfix">FIX</span>
+          <div><div style="font-size:13px;font-weight:700">Bloom Import — Column Types</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">case_id, current_status, patient_name, doctor changed from INTEGER → TEXT. Fixes "invalid input syntax for type integer: DRAFT" error.</div></div>
+        </div><div class="chg">
+          <span class="cb cfix">FIX</span>
+          <div><div style="font-size:13px;font-weight:700">Bloom Date Format</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">DD.MM.YYYY (Bloom native format) now parses and displays correctly throughout.</div></div>
+        </div><div class="chg">
+          <span class="cb cfix">FIX</span>
+          <div><div style="font-size:13px;font-weight:700">Aligner Sheet Columns</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">ALIGNER sheet now reads: Aligner Upper / Aligner lower / Package type / Order type — matching exact Bloom Excel format.</div></div>
+        </div><div class="chg">
+          <span class="cb cfix">FIX</span>
+          <div><div style="font-size:13px;font-weight:700">Clocking Terminal</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">Auto-resume: same order entry highlights current task. New "→ Move to Next Step" button for direct pipeline advancement.</div></div>
+        </div><div class="chg">
+          <span class="cb cfix">FIX</span>
+          <div><div style="font-size:13px;font-weight:700">Quality Control</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">Lot dropdown shows helpful empty state with manual entry option when no production lots exist.</div></div>
+        </div></div>
     </div>
 
-    <!-- SESSION LOG -->
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-        <div style="font-size:14px;font-weight:800">📋 Session Log <span id="sessCount" style="font-size:11px;color:var(--mu);font-weight:500"></span></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <input class="fi" id="searchInput" placeholder="🔍 Search employee, order…" style="width:220px;padding:7px 11px;border:1.5px solid var(--bdr);border-radius:8px;font-family:var(--f);font-size:12px;outline:none"/>
-          <select id="typeFilter" style="padding:7px 11px;border:1.5px solid var(--bdr);border-radius:8px;font-family:var(--f);font-size:12px;background:var(--card);outline:none">
-            <option value="all">All Types</option>
-            <option value="productive">Productive</option>
-            <option value="waste">Non-Productive</option>
-            <option value="overtime">Overtime</option>
-          </select>
+    <!-- v1.0 -->
+    <div class="card" style="opacity:.8">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--bdr);flex-wrap:wrap">
+        <span class="ver-tag v-minor">v1.0</span>
+        <div>
+          <div style="font-size:15px;font-weight:800">Initial Release — Core Operations Platform</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:2px">March 2026</div>
         </div>
       </div>
-      <div class="tw"><table>
-        <thead><tr><th>Employee</th><th>Type</th><th>Step / Category</th><th>Machine</th><th>Order</th><th>Start</th><th>End</th><th>Duration</th></tr></thead>
-        <tbody id="sessionsBody"><tr><td colspan="8" class="ec">Loading…</td></tr></tbody>
-      </table></div>
-      <div class="pager">
-        <span id="pInfo"></span>
-        <div style="display:flex;gap:6px">
-          <button class="btn bgh" id="btnPrev" style="padding:5px 12px">‹</button>
-          <button class="btn bgh" id="btnNext" style="padding:5px 12px">›</button>
+      <div style="background:var(--bg);border-radius:10px;padding:12px 16px"><div class="chg">
+          <span class="cb cnewf">NEW</span>
+          <div><div style="font-size:13px;font-weight:700">Dashboard</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">KPIs: Sessions, Efficiency, Cases Completed, Stock Alerts. 7-Day chart, Session Types breakdown.</div></div>
+        </div><div class="chg">
+          <span class="cb cnewf">NEW</span>
+          <div><div style="font-size:13px;font-weight:700">Production</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">Production lots, material yield rules, FEFO deduction, machine linking.</div></div>
+        </div><div class="chg">
+          <span class="cb cnewf">NEW</span>
+          <div><div style="font-size:13px;font-weight:700">Clocking Terminal</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">Clock-in with machine picker, step pipeline, pause workflow, W9 auto-gap, End of Day summary.</div></div>
+        </div><div class="chg">
+          <span class="cb cnewf">NEW</span>
+          <div><div style="font-size:13px;font-weight:700">Inventory</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">FEFO inventory, low stock alerts, material requisitions.</div></div>
+        </div><div class="chg">
+          <span class="cb cnewf">NEW</span>
+          <div><div style="font-size:13px;font-weight:700">Employees & Profiles</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">Multi-role system, page access control, employee profiles with session history.</div></div>
+        </div><div class="chg">
+          <span class="cb cnewf">NEW</span>
+          <div><div style="font-size:13px;font-weight:700">Traceability</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">Fiche de Traçabilité per order — steps, machines, materials, employees.</div></div>
+        </div><div class="chg">
+          <span class="cb cnewf">NEW</span>
+          <div><div style="font-size:13px;font-weight:700">Quality Control</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">ISO 13485 quality checkpoints per production lot.</div></div>
+        </div><div class="chg">
+          <span class="cb cnewf">NEW</span>
+          <div><div style="font-size:13px;font-weight:700">Machines</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">Machine status, maintenance scheduling, consumable loads.</div></div>
+        </div><div class="chg">
+          <span class="cb cnewf">NEW</span>
+          <div><div style="font-size:13px;font-weight:700">Time Report</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">Productive vs non-productive hours by employee and by day.</div></div>
+        </div><div class="chg">
+          <span class="cb cnewf">NEW</span>
+          <div><div style="font-size:13px;font-weight:700">Settings + Roles</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5">Brevo notifications config + custom role manager with page access flags.</div></div>
+        </div></div>
+    </div>
+
+    <!-- ISO 13485 Review -->
+    <div class="card" style="border:1.5px solid var(--b100)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bdr)">
+        <span style="font-size:22px">🏅</span>
+        <div>
+          <div style="font-size:14px;font-weight:800;color:var(--blue)">ISO 13485 Compliance Review — v2.0</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:2px">4 ✅ compliant · 4 ⚠️ recommendations</div>
         </div>
       </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div style="padding:12px 14px;background:var(--g50);border-radius:10px;border:1px solid var(--green)40">
+      <div style="font-size:12px;font-weight:800;margin-bottom:4px">✅ <span style="color:var(--mu);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px">4.2 Document Control</span></div>
+      <div style="font-size:11px;color:var(--mu);line-height:1.5">NC reports auto-generate unique NC numbers. All records timestamped.</div>
+    </div><div style="padding:12px 14px;background:var(--g50);border-radius:10px;border:1px solid var(--green)40">
+      <div style="font-size:12px;font-weight:800;margin-bottom:4px">✅ <span style="color:var(--mu);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px">8.5 CAPA</span></div>
+      <div style="font-size:11px;color:var(--mu);line-height:1.5">NC page includes Root Cause Analysis + Corrective Action — fully compliant.</div>
+    </div><div style="padding:12px 14px;background:var(--g50);border-radius:10px;border:1px solid var(--green)40">
+      <div style="font-size:12px;font-weight:800;margin-bottom:4px">✅ <span style="color:var(--mu);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px">6.3 Infrastructure</span></div>
+      <div style="font-size:11px;color:var(--mu);line-height:1.5">Maintenance History tracks all equipment maintenance with overdue alerts.</div>
+    </div><div style="padding:12px 14px;background:var(--g50);border-radius:10px;border:1px solid var(--green)40">
+      <div style="font-size:12px;font-weight:800;margin-bottom:4px">✅ <span style="color:var(--mu);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px">7.5 Traceability</span></div>
+      <div style="font-size:11px;color:var(--mu);line-height:1.5">Orders → steps → machines → employees → materials — full lot traceability.</div>
+    </div><div style="padding:12px 14px;background:var(--a50);border-radius:10px;border:1px solid var(--amber)40">
+      <div style="font-size:12px;font-weight:800;margin-bottom:4px">⚠️ <span style="color:var(--mu);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px">4.2.4 Records</span></div>
+      <div style="font-size:11px;color:var(--mu);line-height:1.5">Recommendation: Add e-signature/approval workflow for QC checks and NC closures.</div>
+    </div><div style="padding:12px 14px;background:var(--a50);border-radius:10px;border:1px solid var(--amber)40">
+      <div style="font-size:12px;font-weight:800;margin-bottom:4px">⚠️ <span style="color:var(--mu);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px">4.2.3 Audit Trail</span></div>
+      <div style="font-size:11px;color:var(--mu);line-height:1.5">Recommendation: Add audit_log table tracking all data changes with user + timestamp.</div>
+    </div><div style="padding:12px 14px;background:var(--a50);border-radius:10px;border:1px solid var(--amber)40">
+      <div style="font-size:12px;font-weight:800;margin-bottom:4px">⚠️ <span style="color:var(--mu);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px">7.3 Design Control</span></div>
+      <div style="font-size:11px;color:var(--mu);line-height:1.5">Recommendation: Add document versioning so record amendments are tracked.</div>
+    </div><div style="padding:12px 14px;background:var(--a50);border-radius:10px;border:1px solid var(--amber)40">
+      <div style="font-size:12px;font-weight:800;margin-bottom:4px">⚠️ <span style="color:var(--mu);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px">7.4 Purchasing</span></div>
+      <div style="font-size:11px;color:var(--mu);line-height:1.5">Recommendation: Add Supplier management page for incoming material qualification.</div>
+    </div></div>
     </div>
+
   </div>
 </div>
 
-<!-- HELP MODAL placeholder — filled by shared helper -->
-<div class="modal-bg" id="helpModal" style="position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:700;display:none;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--card);border-radius:18px;padding:28px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-      <div style="font-size:16px;font-weight:800">⏱ Time Report — Help</div>
-      <button onclick="document.getElementById('helpModal').style.display='none'" style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:var(--f);font-size:12px">✕ Close</button>
-    </div>
-    <div style="font-size:13px;line-height:1.7;color:var(--txt)">
-      <div style="background:var(--b50);border-radius:10px;padding:12px 14px;margin-bottom:14px">
-        <strong>🎯 Purpose</strong><br>This page shows all employee time sessions for the selected period. Use it to analyse productivity, identify inefficiencies, and export reports.
-      </div>
-      <strong>📅 Period Filter</strong><br>Use <em>Today / This Week / This Month</em> tabs to change the time range. Data updates immediately.<br><br>
-      <strong>📊 KPI Cards</strong><br>
-      • <em>Total Sessions</em> — count of all clocked sessions<br>
-      • <em>Productive Time</em> — total hours in productive steps<br>
-      • <em>Non-Productive Time</em> — breaks, waiting, waste<br>
-      • <em>Efficiency</em> — Productive ÷ Total × 100<br>
-      • <em>Active Employees</em> — employees with sessions in period<br><br>
-      <strong>👥 Employee Summary</strong><br>Per-employee breakdown with efficiency bar. Green = ≥70%, Amber = ≥40%, Red = &lt;40%.<br><br>
-      <strong>📋 Session Log</strong><br>Full list of every clocked session. Filter by type or search by employee/order. Paginated 25 per page.<br><br>
-      <strong>⬇ Export CSV</strong><br>Downloads all sessions for the selected period as a CSV file for Excel analysis.<br><br>
-      <strong>🖨️ Print</strong><br>Opens browser print dialog — sidebar and buttons are hidden automatically.
-    </div>
-  </div>
-</div>
-
-<!-- HELP BUTTON -->
-<button onclick="document.getElementById('helpModal').style.display='flex'" class="help-btn" style="position:fixed;bottom:50px;right:20px;width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(59,95,226,.4);z-index:800;display:flex;align-items:center;justify-content:center">?</button>
-
-<div style="position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--bdr);padding:6px 20px;display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--dim);z-index:999;font-family:var(--f)">
+<footer style="position:fixed;bottom:0;left:240px;right:0;background:var(--card);border-top:1px solid var(--bdr);padding:6px 28px;display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--dim);z-index:50">
   <span>© 2026 <strong style="color:var(--mu)">Cedarwings SAS</strong> — Dental Aligner Manufacturing Platform</span>
-  <span>v2.0 · ISO 13485 Compliant · All rights reserved</span>
+  <span style="font-family:var(--mono)">v2.0 · ISO 13485</span>
+</footer>
+
+<!-- HELP MODAL for changelog.html -->
+<style>
+.modal-bg-help{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:700;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg-help.on{display:flex}
+.help-modal{background:var(--card);border-radius:18px;padding:28px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+</style>
+<div class="modal-bg-help" id="helpModal">
+  <div class="help-modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:16px;font-weight:800">📝 Changelog — Help</div>
+      <button onclick="document.getElementById('helpModal').classList.remove('on')" style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:var(--f);font-size:12px;color:var(--txt)">✕ Close</button>
+    </div>
+    <div style="background:var(--b50);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--blue);font-weight:500">Version history of the Cedarwings platform. Shows all new features, bug fixes, and improvements per release.</div>
+    <div style="font-size:13px;line-height:1.8"><div style="margin-bottom:10px"><strong style="color:var(--txt)">Version History</strong><br><span style="color:var(--mu);font-size:12px">Each version shows: new features, bug fixes, improvements, and new pages added.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">ISO Assessment</strong><br><span style="color:var(--mu);font-size:12px">Compliance status per ISO 13485 clause — which clauses are met, partial, or planned.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Planned Features</strong><br><span style="color:var(--mu);font-size:12px">v3.0 roadmap: WhatsApp, PDF export, auto-sync with bloomaligner.fr, employee calendar, internal audits.</span></div></div>
+  </div>
 </div>
+<button onclick="document.getElementById('helpModal').classList.add('on')" style="position:fixed;bottom:50px;right:20px;width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(59,95,226,.4);z-index:800;font-family:var(--f)">?</button>
 
-<script type="module">
-import{createClient}from'https://esm.sh/@supabase/supabase-js@2';
-import{SUPABASE_CONFIG}from'./config.js';
-const sb=createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey);
-let range='today',allSess=[],filtered=[],pg=0;
-const PAGE=25;
-const mins=(a,b)=>Math.max(0,Math.round((b-a)/60000));
-const dur=r=>(!r.started_at||!r.ended_at)?0:mins(new Date(r.started_at),new Date(r.ended_at));
-const hm=m=>`${String(Math.floor(m/60)).padStart(2,'0')}h ${String(m%60).padStart(2,'0')}m`;
-const fdt=v=>v?new Date(v).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'—';
-let charts={};
-
-document.getElementById('pageDate').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-
-function getRange(){
-  const n=new Date();let s,e;
-  if(range==='today'){s=new Date(n);s.setHours(0,0,0,0);e=new Date(n);e.setHours(23,59,59,999);}
-  else if(range==='week'){const d=n.getDay(),diff=d===0?-6:1-d;s=new Date(n);s.setDate(n.getDate()+diff);s.setHours(0,0,0,0);e=new Date(n);e.setHours(23,59,59,999);}
-  else{s=new Date(n.getFullYear(),n.getMonth(),1);e=new Date(n);e.setHours(23,59,59,999);}
-  return{s,e};
-}
-
-function mkChart(key,el,type,data,opts){
-  if(charts[key])charts[key].destroy();
-  charts[key]=new Chart(document.getElementById(el),{type,data,options:opts});
-}
-
-const chartOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#64748b',font:{family:"'DM Sans'",size:11}}}}};
-const dOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#64748b',font:{family:"'DM Sans'",size:11},boxWidth:12}}}};
-
-async function load(){
-  const{s,e}=getRange();
-  // Fetch all pages to overcome 1000 row limit
-  let all=[],from=0,batchSize=1000,done=false;
-  while(!done){
-    const{data,error}=await sb.from('time_sessions')
-      .select('id,employee_name,session_type,work_type,waste_category,machine,order_no,started_at,ended_at,step_name')
-      .gte('started_at',s.toISOString())
-      .lte('started_at',e.toISOString())
-      .order('started_at',{ascending:false})
-      .range(from,from+batchSize-1);
-    if(error){console.error('time_sessions error:',error);break;}
-    const rows=data||[];
-    all=[...all,...rows];
-    if(rows.length<batchSize)done=true;
-    else from+=batchSize;
-  }
-  allSess=all;
-  applyFilter();
-}
-
-function applyFilter(){
-  const term=(document.getElementById('searchInput').value||'').toLowerCase();
-  const tf=document.getElementById('typeFilter').value;
-  filtered=allSess.filter(r=>{
-    if(tf!=='all'&&r.session_type!==tf)return false;
-    if(term&&!((r.employee_name||'').toLowerCase().includes(term)||(r.order_no||'').toLowerCase().includes(term)))return false;
-    return true;
-  });
-  pg=0;
-  render();
-}
-
-function render(){
-  // --- KPIs ---
-  let pMin=0,wMin=0,oMin=0;
-  const byEmp=new Map();
-  allSess.forEach(r=>{
-    const m=dur(r),t=r.session_type||'';
-    if(t==='productive')pMin+=m;
-    if(t==='waste')wMin+=m;
-    if(t==='overtime')oMin+=m;
-    const k=r.employee_name||'Unknown';
-    if(!byEmp.has(k))byEmp.set(k,{name:k,n:0,p:0,w:0,o:0,active:false});
-    const it=byEmp.get(k);it.n++;
-    if(t==='productive')it.p+=m;
-    if(t==='waste')it.w+=m;
-    if(t==='overtime')it.o+=m;
-    if(!r.ended_at)it.active=true;
-  });
-  const tot=pMin+wMin+oMin,eff=tot>0?Math.round(pMin/tot*100):0;
-  document.getElementById('kpiSess').textContent=allSess.length;
-  document.getElementById('kpiProd').textContent=hm(pMin);
-  document.getElementById('kpiWaste').textContent=hm(wMin);
-  document.getElementById('kpiEff').textContent=eff+'%';
-  document.getElementById('kpiEmps').textContent=byEmp.size;
-  document.getElementById('sessCount').textContent=`(${filtered.length} shown of ${allSess.length})`;
-
-  // --- Charts ---
-  const empArr=[...byEmp.values()].sort((a,b)=>b.p-a.p).slice(0,10);
-  mkChart('emp','empChart','bar',{
-    labels:empArr.map(e=>e.name),
-    datasets:[
-      {label:'Productive (min)',data:empArr.map(e=>e.p),backgroundColor:'rgba(22,163,74,.75)',borderColor:'#16a34a',borderWidth:1.5,borderRadius:4},
-      {label:'Non-Productive (min)',data:empArr.map(e=>e.w),backgroundColor:'rgba(217,119,6,.65)',borderColor:'#d97706',borderWidth:1.5,borderRadius:4}
-    ]
-  },chartOpts);
-  mkChart('type','typeChart','doughnut',{
-    labels:['Productive','Non-Productive','Overtime'],
-    datasets:[{data:[pMin,wMin,oMin],backgroundColor:['rgba(22,163,74,.8)','rgba(217,119,6,.8)','rgba(124,58,237,.8)'],borderColor:['#16a34a','#d97706','#7c3aed'],borderWidth:2}]
-  },dOpts);
-
-  // --- Employee Summary ---
-  document.getElementById('empSummary').innerHTML=[...byEmp.values()].map(e=>{
-    const et=e.p+e.w+e.o,pct=et>0?Math.round(e.p/et*100):0;
-    const bc=pct>=70?'var(--green)':pct>=40?'var(--amber)':'var(--red)';
-    return`<tr>
-      <td style="font-weight:700">${e.name}</td>
-      <td class="mono">${e.n}</td>
-      <td class="mono" style="color:var(--green);font-weight:700">${hm(e.p)}</td>
-      <td class="mono" style="color:var(--amber);font-weight:700">${hm(e.w)}</td>
-      <td class="mono" style="color:var(--purple)">${hm(e.o)}</td>
-      <td><span class="eff-bar"><span class="eff-fill" style="width:${pct}%;background:${bc};display:block;height:100%"></span></span><span class="mono" style="color:${bc};font-weight:700">${pct}%</span></td>
-      <td>${e.active?'<span class="badge b-g">🟢 Active</span>':'<span class="badge b-gray">Idle</span>'}</td>
-    </tr>`;
-  }).join('')||'<tr><td colspan="7" class="ec">No sessions found for this period.</td></tr>';
-
-  // --- Session Log with pagination ---
-  const start=pg*PAGE,slice=filtered.slice(start,start+PAGE);
-  document.getElementById('sessionsBody').innerHTML=slice.length?slice.map(r=>{
-    const m=r.ended_at?dur(r):null;
-    const tc=r.session_type==='productive'?'b-g':r.session_type==='waste'?'b-a':r.session_type==='overtime'?'b-p':'b-gray';
-    const empLink=`<a href="employee_profile.html?emp=${encodeURIComponent(r.employee_name||'')}" style="color:inherit;font-weight:700;text-decoration:none">${r.employee_name||'—'}</a>`;
-    return`<tr>
-      <td>${empLink}</td>
-      <td><span class="badge ${tc}">${r.session_type||'—'}</span></td>
-      <td style="font-size:11px">${r.step_name||r.work_type||r.waste_category||'—'}</td>
-      <td style="font-size:11px">${r.machine||'—'}</td>
-      <td class="mono">${r.order_no||'—'}</td>
-      <td class="mono" style="font-size:10px">${fdt(r.started_at)}</td>
-      <td class="mono" style="font-size:10px">${fdt(r.ended_at)}</td>
-      <td class="mono" style="font-weight:700">${m!==null?m+' min':'<span style="color:var(--green);font-weight:700">LIVE</span>'}</td>
-    </tr>`;
-  }).join(''):'<tr><td colspan="8" class="ec">No sessions found for this period.</td></tr>';
-
-  const totalPages=Math.ceil(filtered.length/PAGE)||1;
-  document.getElementById('pInfo').textContent=`${filtered.length} sessions (page ${pg+1}/${totalPages})`;
-  document.getElementById('btnPrev').disabled=pg===0;
-  document.getElementById('btnNext').disabled=pg>=totalPages-1;
-}
-
-// Export CSV
-document.getElementById('exportBtn').addEventListener('click',()=>{
-  const rows=[['Employee','Type','Step/Category','Machine','Order','Start','End','Duration(min)']];
-  allSess.forEach(r=>rows.push([r.employee_name||'',r.session_type||'',r.step_name||r.work_type||r.waste_category||'',r.machine||'',r.order_no||'',r.started_at||'',r.ended_at||'',r.ended_at?dur(r):'LIVE']));
-  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=`time-report-${range}-${new Date().toISOString().slice(0,10)}.csv`;a.click();
-});
-
-document.querySelectorAll('.rt').forEach(btn=>btn.addEventListener('click',()=>{
-  document.querySelectorAll('.rt').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');range=btn.dataset.r;load();
-}));
-document.getElementById('refreshBtn').addEventListener('click',load);
-document.getElementById('searchInput').addEventListener('input',applyFilter);
-document.getElementById('typeFilter').addEventListener('change',applyFilter);
-document.getElementById('btnPrev').addEventListener('click',()=>{if(pg>0){pg--;render();}});
-document.getElementById('btnNext').addEventListener('click',()=>{pg++;render();});
-load();
-</script>
 </body>
 </html>

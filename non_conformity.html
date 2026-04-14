@@ -2,11 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Cedarwings SAS — Time Management Report</title>
+<title>Cedarwings SAS — Non-Conformity Reports</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-
 :root{
   --bg:#f0f4f8;--card:#fff;--bdr:#e2e8f0;--txt:#0f172a;--mu:#64748b;--dim:#94a3b8;
   --blue:#3b5fe2;--b50:#eef2ff;--b100:#e0e7ff;
@@ -126,28 +124,27 @@ tbody tr:hover{background:#f8fafc}
 @media(max-width:768px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.g2,.g3{grid-template-columns:1fr}.sidebar{display:none}.content{margin-left:0}}
 @media(max-width:640px){.kpi-grid{grid-template-columns:1fr 1fr}.g2e{grid-template-columns:1fr}}
 
-.main{margin-left:240px;min-height:100vh}
-.body{padding:20px 28px 80px}
-.badge{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:700;white-space:nowrap}
-.b-g{background:var(--g100);color:#15803d}.b-a{background:var(--a100);color:#92400e}
-.b-b{background:var(--b100);color:#1e40af}.b-gray{background:#f1f5f9;color:#475569}
-.b-r{background:var(--r100);color:#991b1b}.b-p{background:var(--p100);color:#5b21b6}
-.card{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:20px;margin-bottom:16px}
-.kpi-grid{display:grid;gap:12px;margin-bottom:20px}
-.kpi{background:var(--card);border-radius:12px;box-shadow:var(--sh);padding:16px;border-top:3px solid var(--bdr);text-decoration:none;display:block}
-.kpi-val{font-size:24px;font-weight:800;font-family:var(--mono)}
-.kpi-lbl{font-size:11px;color:var(--mu);font-weight:600;margin-top:2px}
-.tw{overflow-x:auto;border-radius:11px;border:1px solid var(--bdr)}
-table{width:100%;border-collapse:collapse;font-size:12px}
-thead th{padding:9px 14px;font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;background:#f8fafc;border-bottom:1px solid var(--bdr);text-align:left;white-space:nowrap}
-tbody td{padding:10px 14px;border-bottom:1px solid var(--bdr);vertical-align:middle}
-tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc}
-.ec{color:var(--dim)!important;text-align:center!important;padding:32px!important}
-.mono{font-family:var(--mono);font-size:11px}
-.pager{display:flex;align-items:center;justify-content:space-between;margin-top:12px;font-size:12px;color:var(--mu)}
-.eff-bar{background:var(--bdr);border-radius:999px;height:6px;width:80px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:6px}
-.eff-fill{height:100%;border-radius:999px}
-@media print{.sidebar,.topbar,.help-btn,div[style*="position:fixed;bottom"]{display:none!important}.main{margin-left:0!important}}
+.fi{width:100%;padding:10px 14px;border:1.5px solid var(--bdr);border-radius:9px;font-family:var(--f);font-size:13px;color:var(--txt);background:var(--card);outline:none;transition:border-color .15s}
+.fi:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,95,226,.08)}
+.fi:hover{border-color:var(--dim)}
+.badge{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:700}
+.b-g{background:var(--g100);color:#15803d}.b-r{background:var(--r100);color:#991b1b}
+.b-a{background:var(--a100);color:#92400e}.b-b{background:var(--b100);color:#1e40af}
+.b-gray{background:#f1f5f9;color:var(--mu)}
+.kpi-grid{display:grid;gap:14px;margin-bottom:22px}
+.kpi{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:20px 18px 16px;position:relative;overflow:hidden;border-top:3px solid var(--bdr)}
+.kpi-ico{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px}
+.kpi-val{font-size:32px;font-weight:800;font-family:var(--mono);letter-spacing:-1.5px;line-height:1;color:var(--txt)}
+.kpi-lbl{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-top:8px}
+.card{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:22px;margin-bottom:16px}
+.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:600;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.on{display:flex}
+.modal{background:var(--card);border-radius:18px;padding:28px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:var(--sh2)}
+.notif{position:fixed;bottom:24px;right:24px;padding:13px 18px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;display:none;align-items:center;gap:8px;box-shadow:var(--sh2)}
+.notif.on{display:flex}.notif.ok{background:#f0fdf4;color:#15803d;border:1px solid var(--g100)}.notif.err{background:var(--r50);color:var(--red);border:1px solid var(--r100)}
+.ec{color:var(--dim)!important;text-align:center!important;padding:28px!important}
+.lbl{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px}
+@media print{{.sidebar,.topbar,#pHide,.notif,footer{{display:none!important}}.main{{margin-left:0!important}}}}
 </style>
 </head>
 <body>
@@ -172,16 +169,21 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc}
     <div class="sb-s">Team</div>
     <a href="employees.html" class="nl"><span class="ic">👥</span>Employees</a>
     <a href="employee_profile.html" class="nl"><span class="ic">👤</span>Employee Profile</a>
-    <a href="time_report.html" class="nl on"><span class="ic">📈</span>Time Report</a>
+    <a href="time_report.html" class="nl"><span class="ic">📈</span>Time Report</a>
     <div class="sb-s">Quality</div>
     <a href="tracabilite.html" class="nl"><span class="ic">🔖</span>Traceability</a>
     <a href="qualite.html" class="nl"><span class="ic">✅</span>Quality Control</a>
+    <a href="non_conformity.html" class="nl on"><span class="ic">⚠️</span>Non-Conformity</a>
     <a href="non_conformity.html" class="nl"><span class="ic">⚠️</span>Non-Conformity</a>
+    <a href="suppliers.html" class="nl"><span class="ic">🏭</span>Suppliers</a>
+    <a href="customer_feedback.html" class="nl"><span class="ic">💬</span>Customer Feedback</a>
+    <a href="internal_audit.html" class="nl"><span class="ic">🔍</span>Internal Audits</a>
     <div class="sb-s">Resources</div>
     <a href="inventory.html" class="nl"><span class="ic">📦</span>Inventory</a>
     <div class="sb-s">Integrations</div>
     <a href="bloom_import.html" class="nl"><span class="ic">🌸</span>Bloom Import</a>
     <div class="sb-s">System</div>
+    <a href="iso_compliance.html" class="nl"><span class="ic">✅</span>ISO 13485 Compliance</a>
     <a href="settings.html" class="nl"><span class="ic">⚙</span>Settings</a>
     <a href="changelog.html" class="nl"><span class="ic">📝</span>Changelog</a>
     <a href="roles.html" class="nl"><span class="ic">🔑</span>Roles</a>
@@ -194,275 +196,329 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc}
 </aside>
 <div class="main">
   <div class="topbar">
-    <div>
-      <div style="font-size:16px;font-weight:800">⏱ Time Management Report</div>
-      <div style="font-size:11px;color:var(--mu)" id="pageDate">Loading…</div>
+    <div class="top-left">
+      <div class="page-title">⚠️ Non-Conformity</div>
+      <div class="page-date" id="pageDate">ISO 13485 — Non-Conformity &amp; Corrective Actions (CAPA)</div>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-      <div class="range-tabs">
-        <button class="rt active" data-r="today">Today</button>
-        <button class="rt" data-r="week">This Week</button>
-        <button class="rt" data-r="month">This Month</button>
-      </div>
-      <button class="btn bgh" id="exportBtn">⬇ Export CSV</button>
-      <button class="btn bgh" onclick="window.print()">🖨️ Print</button>
-      <button class="btn btn-blue" id="refreshBtn">↻ Refresh</button>
+    <div id="pHide" class="top-right">
+      <select class="btn btn-ghost" id="fSt" style="cursor:pointer;padding:7px 14px;font-size:12px;font-weight:600">
+        <option value="">All Statuses</option>
+        <option value="open">🔴 Open</option>
+        <option value="in_progress">🟡 In Progress</option>
+        <option value="closed">✅ Closed</option>
+      </select>
+      <select class="btn btn-ghost" id="fSv" style="cursor:pointer;padding:7px 14px;font-size:12px;font-weight:600">
+        <option value="">All Severity</option>
+        <option value="high">🔴 High</option>
+        <option value="medium">🟡 Medium</option>
+        <option value="low">🔵 Low</option>
+      </select>
+      <button class="btn btn-blue" onclick="openNew()">+ New NC Report</button>
     </div>
   </div>
-
   <div class="body">
-    <!-- KPIs -->
+
     <div class="kpi-grid" style="grid-template-columns:repeat(5,1fr)">
-      <div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-val" id="kpiSess">—</div><div class="kpi-lbl">Total Sessions</div></div>
-      <div class="kpi" style="border-top-color:var(--green)"><div class="kpi-val" id="kpiProd" style="color:var(--green)">—</div><div class="kpi-lbl">Productive Time</div></div>
-      <div class="kpi" style="border-top-color:var(--amber)"><div class="kpi-val" id="kpiWaste" style="color:var(--amber)">—</div><div class="kpi-lbl">Non-Productive Time</div></div>
-      <div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-val" id="kpiEff" style="color:var(--blue)">—</div><div class="kpi-lbl">Efficiency</div></div>
-      <div class="kpi" style="border-top-color:var(--mu)"><div class="kpi-val" id="kpiEmps">—</div><div class="kpi-lbl">Active Employees</div></div>
-    </div>
-
-    <!-- CHARTS -->
-    <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px">
-      <div class="card">
-        <div style="font-size:13px;font-weight:800;margin-bottom:12px">📊 Productivity by Employee</div>
-        <div style="height:200px"><canvas id="empChart"></canvas></div>
+      <div class="kpi" style="border-top-color:var(--red)">
+        <div class="kpi-ico" style="background:var(--r50)">🔴</div>
+        <div class="kpi-val" id="kOpen" style="color:var(--red)">—</div>
+        <div class="kpi-lbl">Open</div>
       </div>
-      <div class="card">
-        <div style="font-size:13px;font-weight:800;margin-bottom:12px">🍩 Session Type Split</div>
-        <div style="height:200px"><canvas id="typeChart"></canvas></div>
+      <div class="kpi" style="border-top-color:var(--amber)">
+        <div class="kpi-ico" style="background:var(--a50)">🟡</div>
+        <div class="kpi-val" id="kProg" style="color:var(--amber)">—</div>
+        <div class="kpi-lbl">In Progress</div>
+      </div>
+      <div class="kpi" style="border-top-color:var(--green)">
+        <div class="kpi-ico" style="background:var(--g50)">✅</div>
+        <div class="kpi-val" id="kClosed" style="color:var(--green)">—</div>
+        <div class="kpi-lbl">Closed</div>
+      </div>
+      <div class="kpi" style="border-top-color:var(--red)">
+        <div class="kpi-ico" style="background:var(--r50)">🚨</div>
+        <div class="kpi-val" id="kHigh" style="color:var(--red)">—</div>
+        <div class="kpi-lbl">High Severity</div>
+      </div>
+      <div class="kpi" style="border-top-color:var(--blue)">
+        <div class="kpi-ico" style="background:var(--b50)">📋</div>
+        <div class="kpi-val" id="kTot">—</div>
+        <div class="kpi-lbl">Total NC Reports</div>
       </div>
     </div>
 
-    <!-- EMPLOYEE SUMMARY TABLE -->
     <div class="card">
-      <div style="font-size:14px;font-weight:800;margin-bottom:14px">👥 Employee Summary</div>
-      <div class="tw"><table>
-        <thead><tr><th>Employee</th><th>Sessions</th><th>Productive</th><th>Non-Productive</th><th>Overtime</th><th>Efficiency</th><th>Status</th></tr></thead>
-        <tbody id="empSummary"><tr><td colspan="7" class="ec">Loading…</td></tr></tbody>
-      </table></div>
-    </div>
-
-    <!-- SESSION LOG -->
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-        <div style="font-size:14px;font-weight:800">📋 Session Log <span id="sessCount" style="font-size:11px;color:var(--mu);font-weight:500"></span></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <input class="fi" id="searchInput" placeholder="🔍 Search employee, order…" style="width:220px;padding:7px 11px;border:1.5px solid var(--bdr);border-radius:8px;font-family:var(--f);font-size:12px;outline:none"/>
-          <select id="typeFilter" style="padding:7px 11px;border:1.5px solid var(--bdr);border-radius:8px;font-family:var(--f);font-size:12px;background:var(--card);outline:none">
-            <option value="all">All Types</option>
-            <option value="productive">Productive</option>
-            <option value="waste">Non-Productive</option>
-            <option value="overtime">Overtime</option>
-          </select>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <div style="font-size:14px;font-weight:800">📋 Non-Conformity Records</div>
+        <div style="position:relative">
+          <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--dim);font-size:13px">🔍</span>
+          <input class="fi" id="srch" placeholder="Search NC #, order/lot, description..." style="width:300px;padding-left:34px"/>
         </div>
       </div>
-      <div class="tw"><table>
-        <thead><tr><th>Employee</th><th>Type</th><th>Step / Category</th><th>Machine</th><th>Order</th><th>Start</th><th>End</th><th>Duration</th></tr></thead>
-        <tbody id="sessionsBody"><tr><td colspan="8" class="ec">Loading…</td></tr></tbody>
-      </table></div>
-      <div class="pager">
-        <span id="pInfo"></span>
+      <div style="overflow-x:auto;border-radius:11px;border:1px solid var(--bdr)">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr>
+            <th>NC #</th><th>Date</th><th>Order/Lot</th><th>Category</th>
+            <th>Description</th><th>Severity</th><th>Status</th>
+            <th>Corrective Action</th><th>Closed</th><th></th>
+          </tr></thead>
+          <tbody id="tbl"><tr><td colspan="10" class="ec">Loading...</td></tr></tbody>
+        </table>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px">
+        <span style="font-size:12px;color:var(--mu)" id="pgInfo"></span>
         <div style="display:flex;gap:6px">
-          <button class="btn bgh" id="btnPrev" style="padding:5px 12px">‹</button>
-          <button class="btn bgh" id="btnNext" style="padding:5px 12px">›</button>
+          <button class="btn btn-ghost" id="pgPrev" style="padding:5px 14px">‹</button>
+          <button class="btn btn-ghost" id="pgNext" style="padding:5px 14px">›</button>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- HELP MODAL placeholder — filled by shared helper -->
-<div class="modal-bg" id="helpModal" style="position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:700;display:none;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--card);border-radius:18px;padding:28px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-      <div style="font-size:16px;font-weight:800">⏱ Time Report — Help</div>
-      <button onclick="document.getElementById('helpModal').style.display='none'" style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:var(--f);font-size:12px">✕ Close</button>
-    </div>
-    <div style="font-size:13px;line-height:1.7;color:var(--txt)">
-      <div style="background:var(--b50);border-radius:10px;padding:12px 14px;margin-bottom:14px">
-        <strong>🎯 Purpose</strong><br>This page shows all employee time sessions for the selected period. Use it to analyse productivity, identify inefficiencies, and export reports.
+<!-- NC FORM MODAL -->
+<div class="modal-bg" id="ncModal">
+  <div class="modal" style="max-width:640px">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
+      <div>
+        <div style="font-size:17px;font-weight:800" id="ncTitle">⚠️ New Non-Conformity Report</div>
+        <div style="font-size:11px;color:var(--mu);margin-top:3px">ISO 13485 — Document all non-conformities for CAPA tracking</div>
       </div>
-      <strong>📅 Period Filter</strong><br>Use <em>Today / This Week / This Month</em> tabs to change the time range. Data updates immediately.<br><br>
-      <strong>📊 KPI Cards</strong><br>
-      • <em>Total Sessions</em> — count of all clocked sessions<br>
-      • <em>Productive Time</em> — total hours in productive steps<br>
-      • <em>Non-Productive Time</em> — breaks, waiting, waste<br>
-      • <em>Efficiency</em> — Productive ÷ Total × 100<br>
-      • <em>Active Employees</em> — employees with sessions in period<br><br>
-      <strong>👥 Employee Summary</strong><br>Per-employee breakdown with efficiency bar. Green = ≥70%, Amber = ≥40%, Red = &lt;40%.<br><br>
-      <strong>📋 Session Log</strong><br>Full list of every clocked session. Filter by type or search by employee/order. Paginated 25 per page.<br><br>
-      <strong>⬇ Export CSV</strong><br>Downloads all sessions for the selected period as a CSV file for Excel analysis.<br><br>
-      <strong>🖨️ Print</strong><br>Opens browser print dialog — sidebar and buttons are hidden automatically.
+      <button class="btn btn-ghost" onclick="closeNC()" style="padding:5px 12px">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div><label class="lbl">Date *</label><input type="date" class="fi" id="nDate"/></div>
+      <div><label class="lbl">Order / Lot #</label><input type="text" class="fi" id="nOrder" placeholder="e.g. 5234 or LOT-001"/></div>
+      <div>
+        <label class="lbl">Category *</label>
+        <select class="fi" id="nCat">
+          <option value="material">Material</option>
+          <option value="process">Process</option>
+          <option value="product">Product / Aligner</option>
+          <option value="equipment">Equipment</option>
+          <option value="documentation">Documentation</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div>
+        <label class="lbl">Severity *</label>
+        <select class="fi" id="nSev">
+          <option value="low">🔵 Low</option>
+          <option value="medium" selected>🟡 Medium</option>
+          <option value="high">🔴 High</option>
+        </select>
+      </div>
+      <div><label class="lbl">Detected By *</label><input type="text" class="fi" id="nDet" placeholder="Employee name"/></div>
+      <div>
+        <label class="lbl">Production Step</label>
+        <select class="fi" id="nStep">
+          <option value="">Not step-specific</option>
+          <option>Printing</option><option>Cleaning</option><option>Thermoforming</option>
+          <option>Line Cut</option><option>Laser Marking</option><option>Packaging</option>
+        </select>
+      </div>
+      <div style="grid-column:1/-1">
+        <label class="lbl">Description of Non-Conformity *</label>
+        <textarea class="fi" id="nDesc" rows="3" placeholder="Describe the non-conformity in detail..." style="resize:vertical"></textarea>
+      </div>
+      <div style="grid-column:1/-1">
+        <label class="lbl">Root Cause Analysis</label>
+        <textarea class="fi" id="nRoot" rows="2" placeholder="Why did this happen? (5-Why analysis recommended)" style="resize:vertical"></textarea>
+      </div>
+      <div style="grid-column:1/-1">
+        <label class="lbl">Corrective Action Taken / Planned</label>
+        <textarea class="fi" id="nAction" rows="2" placeholder="What corrective action was or will be taken?" style="resize:vertical"></textarea>
+      </div>
+      <div>
+        <label class="lbl">Status</label>
+        <select class="fi" id="nSt">
+          <option value="open">🔴 Open</option>
+          <option value="in_progress">🟡 In Progress</option>
+          <option value="closed">✅ Closed</option>
+        </select>
+      </div>
+      <div><label class="lbl">Closed Date</label><input type="date" class="fi" id="nClosed"/></div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:22px;padding-top:16px;border-top:1px solid var(--bdr)">
+      <button class="btn btn-ghost" onclick="closeNC()">Cancel</button>
+      <button class="btn btn-blue" id="btnSave" onclick="saveNC()">💾 Save NC Report</button>
     </div>
   </div>
 </div>
 
-<!-- HELP BUTTON -->
-<button onclick="document.getElementById('helpModal').style.display='flex'" class="help-btn" style="position:fixed;bottom:50px;right:20px;width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(59,95,226,.4);z-index:800;display:flex;align-items:center;justify-content:center">?</button>
-
-<div style="position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--bdr);padding:6px 20px;display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--dim);z-index:999;font-family:var(--f)">
-  <span>© 2026 <strong style="color:var(--mu)">Cedarwings SAS</strong> — Dental Aligner Manufacturing Platform</span>
-  <span>v2.0 · ISO 13485 Compliant · All rights reserved</span>
+<!-- VIEW / PRINT MODAL -->
+<div class="modal-bg" id="viewModal">
+  <div class="modal" style="max-width:600px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="font-size:16px;font-weight:800" id="vTitle">NC Report</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="window.print()" style="padding:5px 12px">🖨️ Print</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('viewModal').classList.remove('on')" style="padding:5px 12px">✕</button>
+      </div>
+    </div>
+    <div id="vBody"></div>
+    <div style="margin-top:16px;padding:10px 14px;background:var(--bg);border-radius:10px;font-size:10px;color:var(--dim);text-align:center;border:1px solid var(--bdr)">
+      Cedarwings SAS · ISO 13485:2016 · Non-Conformity Report
+    </div>
+  </div>
 </div>
+
+<div class="notif" id="notif"></div>
+<footer style="position:fixed;bottom:0;left:240px;right:0;background:var(--card);border-top:1px solid var(--bdr);padding:6px 28px;display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--dim);z-index:50">
+  <span>© 2026 <strong style="color:var(--mu)">Cedarwings SAS</strong> — Dental Aligner Manufacturing Platform</span>
+  <span style="font-family:var(--mono)">v2.0 · ISO 13485</span>
+</footer>
 
 <script type="module">
 import{createClient}from'https://esm.sh/@supabase/supabase-js@2';
 import{SUPABASE_CONFIG}from'./config.js';
 const sb=createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey);
-let range='today',allSess=[],filtered=[],pg=0;
-const PAGE=25;
-const mins=(a,b)=>Math.max(0,Math.round((b-a)/60000));
-const dur=r=>(!r.started_at||!r.ended_at)?0:mins(new Date(r.started_at),new Date(r.ended_at));
-const hm=m=>`${String(Math.floor(m/60)).padStart(2,'0')}h ${String(m%60).padStart(2,'0')}m`;
-const fdt=v=>v?new Date(v).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'—';
-let charts={};
-
-document.getElementById('pageDate').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-
-function getRange(){
-  const n=new Date();let s,e;
-  if(range==='today'){s=new Date(n);s.setHours(0,0,0,0);e=new Date(n);e.setHours(23,59,59,999);}
-  else if(range==='week'){const d=n.getDay(),diff=d===0?-6:1-d;s=new Date(n);s.setDate(n.getDate()+diff);s.setHours(0,0,0,0);e=new Date(n);e.setHours(23,59,59,999);}
-  else{s=new Date(n.getFullYear(),n.getMonth(),1);e=new Date(n);e.setHours(23,59,59,999);}
-  return{s,e};
-}
-
-function mkChart(key,el,type,data,opts){
-  if(charts[key])charts[key].destroy();
-  charts[key]=new Chart(document.getElementById(el),{type,data,options:opts});
-}
-
-const chartOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#64748b',font:{family:"'DM Sans'",size:11}}}}};
-const dOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#64748b',font:{family:"'DM Sans'",size:11},boxWidth:12}}}};
+const PAGE=20;let all=[],filtered=[],pg=0,editId=null;
+const $=id=>document.getElementById(id);
+const ntf=(t,ok)=>{const e=$('notif');e.textContent=t;e.className='notif on '+(ok?'ok':'err');setTimeout(()=>e.className='notif',3500);};
+const fdt=v=>{if(!v)return'—';const d=new Date(v);return isNaN(d)?v:d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});};
+const genNC=()=>{const n=new Date();return`NC-${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(Math.floor(Math.random()*900)+100)}`;};
+const sevCls={high:'b-r',medium:'b-a',low:'b-b'};
+const stCls={open:'b-r',in_progress:'b-a',closed:'b-g'};
+const catCls={material:'b-gray',process:'b-b',product:'b-g',equipment:'b-a',documentation:'b-b',other:'b-gray'};
 
 async function load(){
-  const{s,e}=getRange();
-  // Fetch all pages to overcome 1000 row limit
-  let all=[],from=0,batchSize=1000,done=false;
-  while(!done){
-    const{data,error}=await sb.from('time_sessions')
-      .select('id,employee_name,session_type,work_type,waste_category,machine,order_no,started_at,ended_at,step_name')
-      .gte('started_at',s.toISOString())
-      .lte('started_at',e.toISOString())
-      .order('started_at',{ascending:false})
-      .range(from,from+batchSize-1);
-    if(error){console.error('time_sessions error:',error);break;}
-    const rows=data||[];
-    all=[...all,...rows];
-    if(rows.length<batchSize)done=true;
-    else from+=batchSize;
-  }
-  allSess=all;
+  const r=await sb.from('non_conformity_reports').select('*').order('report_date',{ascending:false});
+  all=r.data||[];
+  $('kOpen').textContent=all.filter(x=>x.status==='open').length;
+  $('kProg').textContent=all.filter(x=>x.status==='in_progress').length;
+  $('kClosed').textContent=all.filter(x=>x.status==='closed').length;
+  $('kHigh').textContent=all.filter(x=>x.severity==='high').length;
+  $('kTot').textContent=all.length;
+  $('kOpen').style.color=all.filter(x=>x.status==='open').length>0?'var(--red)':'var(--green)';
+  $('pageDate').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   applyFilter();
 }
 
 function applyFilter(){
-  const term=(document.getElementById('searchInput').value||'').toLowerCase();
-  const tf=document.getElementById('typeFilter').value;
-  filtered=allSess.filter(r=>{
-    if(tf!=='all'&&r.session_type!==tf)return false;
-    if(term&&!((r.employee_name||'').toLowerCase().includes(term)||(r.order_no||'').toLowerCase().includes(term)))return false;
+  const sf=$('fSt').value,sv=$('fSv').value,q=($('srch').value||'').toLowerCase();
+  filtered=all.filter(r=>{
+    if(sf&&r.status!==sf)return false;
+    if(sv&&r.severity!==sv)return false;
+    if(q&&!`${r.nc_number} ${r.order_lot} ${r.description}`.toLowerCase().includes(q))return false;
     return true;
   });
-  pg=0;
-  render();
+  pg=0;render();
 }
 
 function render(){
-  // --- KPIs ---
-  let pMin=0,wMin=0,oMin=0;
-  const byEmp=new Map();
-  allSess.forEach(r=>{
-    const m=dur(r),t=r.session_type||'';
-    if(t==='productive')pMin+=m;
-    if(t==='waste')wMin+=m;
-    if(t==='overtime')oMin+=m;
-    const k=r.employee_name||'Unknown';
-    if(!byEmp.has(k))byEmp.set(k,{name:k,n:0,p:0,w:0,o:0,active:false});
-    const it=byEmp.get(k);it.n++;
-    if(t==='productive')it.p+=m;
-    if(t==='waste')it.w+=m;
-    if(t==='overtime')it.o+=m;
-    if(!r.ended_at)it.active=true;
-  });
-  const tot=pMin+wMin+oMin,eff=tot>0?Math.round(pMin/tot*100):0;
-  document.getElementById('kpiSess').textContent=allSess.length;
-  document.getElementById('kpiProd').textContent=hm(pMin);
-  document.getElementById('kpiWaste').textContent=hm(wMin);
-  document.getElementById('kpiEff').textContent=eff+'%';
-  document.getElementById('kpiEmps').textContent=byEmp.size;
-  document.getElementById('sessCount').textContent=`(${filtered.length} shown of ${allSess.length})`;
-
-  // --- Charts ---
-  const empArr=[...byEmp.values()].sort((a,b)=>b.p-a.p).slice(0,10);
-  mkChart('emp','empChart','bar',{
-    labels:empArr.map(e=>e.name),
-    datasets:[
-      {label:'Productive (min)',data:empArr.map(e=>e.p),backgroundColor:'rgba(22,163,74,.75)',borderColor:'#16a34a',borderWidth:1.5,borderRadius:4},
-      {label:'Non-Productive (min)',data:empArr.map(e=>e.w),backgroundColor:'rgba(217,119,6,.65)',borderColor:'#d97706',borderWidth:1.5,borderRadius:4}
-    ]
-  },chartOpts);
-  mkChart('type','typeChart','doughnut',{
-    labels:['Productive','Non-Productive','Overtime'],
-    datasets:[{data:[pMin,wMin,oMin],backgroundColor:['rgba(22,163,74,.8)','rgba(217,119,6,.8)','rgba(124,58,237,.8)'],borderColor:['#16a34a','#d97706','#7c3aed'],borderWidth:2}]
-  },dOpts);
-
-  // --- Employee Summary ---
-  document.getElementById('empSummary').innerHTML=[...byEmp.values()].map(e=>{
-    const et=e.p+e.w+e.o,pct=et>0?Math.round(e.p/et*100):0;
-    const bc=pct>=70?'var(--green)':pct>=40?'var(--amber)':'var(--red)';
-    return`<tr>
-      <td style="font-weight:700">${e.name}</td>
-      <td class="mono">${e.n}</td>
-      <td class="mono" style="color:var(--green);font-weight:700">${hm(e.p)}</td>
-      <td class="mono" style="color:var(--amber);font-weight:700">${hm(e.w)}</td>
-      <td class="mono" style="color:var(--purple)">${hm(e.o)}</td>
-      <td><span class="eff-bar"><span class="eff-fill" style="width:${pct}%;background:${bc};display:block;height:100%"></span></span><span class="mono" style="color:${bc};font-weight:700">${pct}%</span></td>
-      <td>${e.active?'<span class="badge b-g">🟢 Active</span>':'<span class="badge b-gray">Idle</span>'}</td>
-    </tr>`;
-  }).join('')||'<tr><td colspan="7" class="ec">No sessions found for this period.</td></tr>';
-
-  // --- Session Log with pagination ---
-  const start=pg*PAGE,slice=filtered.slice(start,start+PAGE);
-  document.getElementById('sessionsBody').innerHTML=slice.length?slice.map(r=>{
-    const m=r.ended_at?dur(r):null;
-    const tc=r.session_type==='productive'?'b-g':r.session_type==='waste'?'b-a':r.session_type==='overtime'?'b-p':'b-gray';
-    const empLink=`<a href="employee_profile.html?emp=${encodeURIComponent(r.employee_name||'')}" style="color:inherit;font-weight:700;text-decoration:none">${r.employee_name||'—'}</a>`;
-    return`<tr>
-      <td>${empLink}</td>
-      <td><span class="badge ${tc}">${r.session_type||'—'}</span></td>
-      <td style="font-size:11px">${r.step_name||r.work_type||r.waste_category||'—'}</td>
-      <td style="font-size:11px">${r.machine||'—'}</td>
-      <td class="mono">${r.order_no||'—'}</td>
-      <td class="mono" style="font-size:10px">${fdt(r.started_at)}</td>
-      <td class="mono" style="font-size:10px">${fdt(r.ended_at)}</td>
-      <td class="mono" style="font-weight:700">${m!==null?m+' min':'<span style="color:var(--green);font-weight:700">LIVE</span>'}</td>
-    </tr>`;
-  }).join(''):'<tr><td colspan="8" class="ec">No sessions found for this period.</td></tr>';
-
-  const totalPages=Math.ceil(filtered.length/PAGE)||1;
-  document.getElementById('pInfo').textContent=`${filtered.length} sessions (page ${pg+1}/${totalPages})`;
-  document.getElementById('btnPrev').disabled=pg===0;
-  document.getElementById('btnNext').disabled=pg>=totalPages-1;
+  const sl=filtered.slice(pg*PAGE,(pg+1)*PAGE);
+  $('tbl').innerHTML=sl.length?sl.map(r=>`<tr style="cursor:pointer" onclick="viewNC('${r.id}')">
+    <td style="font-family:var(--mono);font-weight:700;font-size:12px">${r.nc_number||'—'}</td>
+    <td style="font-family:var(--mono);font-size:12px">${fdt(r.report_date)}</td>
+    <td style="font-family:var(--mono);font-size:12px">${r.order_lot||'—'}</td>
+    <td><span class="badge ${catCls[r.category]||'b-gray'}" style="font-size:9px">${r.category||'—'}</span></td>
+    <td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--mu)">${r.description||'—'}</td>
+    <td><span class="badge ${sevCls[r.severity]||'b-gray'}">${r.severity||'—'}</span></td>
+    <td><span class="badge ${stCls[r.status]||'b-gray'}">${(r.status||'open').replace(/_/g,' ')}</span></td>
+    <td style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--mu);font-size:12px">${r.corrective_action||'—'}</td>
+    <td style="font-family:var(--mono);font-size:12px">${fdt(r.closed_date)}</td>
+    <td onclick="event.stopPropagation()" style="display:flex;gap:4px">
+      <button class="btn btn-ghost" style="padding:3px 9px;font-size:11px" onclick="viewNC('${r.id}')">👁</button>
+      <button class="btn btn-ghost" style="padding:3px 9px;font-size:11px" onclick="editNC('${r.id}')">✏️</button>
+    </td>
+  </tr>`).join(''):'<tr><td colspan="10" class="ec">No NC reports yet — click "+ New NC Report" to create one.</td></tr>';
+  const tot=filtered.length,tp=Math.ceil(tot/PAGE)||1;
+  $('pgInfo').textContent=`${tot} records · page ${pg+1} of ${tp}`;
+  $('pgPrev').disabled=pg===0;$('pgNext').disabled=pg>=tp-1;
 }
 
-// Export CSV
-document.getElementById('exportBtn').addEventListener('click',()=>{
-  const rows=[['Employee','Type','Step/Category','Machine','Order','Start','End','Duration(min)']];
-  allSess.forEach(r=>rows.push([r.employee_name||'',r.session_type||'',r.step_name||r.work_type||r.waste_category||'',r.machine||'',r.order_no||'',r.started_at||'',r.ended_at||'',r.ended_at?dur(r):'LIVE']));
-  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=`time-report-${range}-${new Date().toISOString().slice(0,10)}.csv`;a.click();
-});
+window.openNew=()=>{
+  editId=null;$('ncTitle').textContent='⚠️ New Non-Conformity Report';
+  $('nDate').value=new Date().toISOString().slice(0,10);
+  ['nOrder','nDet','nDesc','nRoot','nAction','nClosed'].forEach(id=>$(id).value='');
+  $('nCat').value='material';$('nSev').value='medium';$('nSt').value='open';$('nStep').value='';
+  $('ncModal').classList.add('on');
+};
+window.editNC=(id)=>{
+  const r=all.find(x=>String(x.id)===String(id));if(!r)return;
+  editId=id;$('ncTitle').textContent='✏️ Edit NC — '+r.nc_number;
+  $('nDate').value=r.report_date||'';$('nOrder').value=r.order_lot||'';
+  $('nCat').value=r.category||'material';$('nSev').value=r.severity||'medium';
+  $('nDet').value=r.detected_by||'';$('nStep').value=r.production_step||'';
+  $('nDesc').value=r.description||'';$('nRoot').value=r.root_cause||'';
+  $('nAction').value=r.corrective_action||'';$('nSt').value=r.status||'open';$('nClosed').value=r.closed_date||'';
+  $('ncModal').classList.add('on');
+};
+window.closeNC=()=>{$('ncModal').classList.remove('on');editId=null;};
 
-document.querySelectorAll('.rt').forEach(btn=>btn.addEventListener('click',()=>{
-  document.querySelectorAll('.rt').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');range=btn.dataset.r;load();
-}));
-document.getElementById('refreshBtn').addEventListener('click',load);
-document.getElementById('searchInput').addEventListener('input',applyFilter);
-document.getElementById('typeFilter').addEventListener('change',applyFilter);
-document.getElementById('btnPrev').addEventListener('click',()=>{if(pg>0){pg--;render();}});
-document.getElementById('btnNext').addEventListener('click',()=>{pg++;render();});
+window.saveNC=async()=>{
+  const date=$('nDate').value,det=$('nDet').value.trim(),desc=$('nDesc').value.trim();
+  if(!date||!det||!desc){ntf('⚠️ Fill all required fields (*)');return;}
+  const btn=$('btnSave');btn.disabled=true;btn.textContent='Saving...';
+  const rec={report_date:date,order_lot:$('nOrder').value.trim()||null,category:$('nCat').value,
+    severity:$('nSev').value,detected_by:det,production_step:$('nStep').value||null,
+    description:desc,root_cause:$('nRoot').value.trim()||null,
+    corrective_action:$('nAction').value.trim()||null,
+    status:$('nSt').value,closed_date:$('nClosed').value||null};
+  if(!editId)rec.nc_number=genNC();
+  const{error}=editId?await sb.from('non_conformity_reports').update(rec).eq('id',editId)
+    :await sb.from('non_conformity_reports').insert([rec]);
+  btn.disabled=false;btn.textContent='💾 Save NC Report';
+  if(error){ntf('❌ '+error.message);return;}
+  ntf(editId?'✅ NC updated!':'✅ NC report created!',true);window.closeNC();load();
+};
+
+window.viewNC=(id)=>{
+  const r=all.find(x=>String(x.id)===String(id));if(!r)return;
+  $('vTitle').textContent=`⚠️ ${r.nc_number||'NC Report'}`;
+  const sevColor={high:'var(--red)',medium:'var(--amber)',low:'var(--blue)'};
+  $('vBody').innerHTML=`
+    <div style="background:var(--bg);border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid var(--bdr)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div style="font-size:24px;font-weight:800;font-family:var(--mono);color:${sevColor[r.severity]||'var(--txt)'}">${r.nc_number||'—'}</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:4px">${fdt(r.report_date)} · Detected by: <strong>${r.detected_by||'—'}</strong></div>
+        </div>
+        <div style="display:flex;gap:6px;flex-direction:column;align-items:flex-end">
+          <span class="badge ${sevCls[r.severity]||'b-gray'}">${r.severity}</span>
+          <span class="badge ${stCls[r.status]||'b-gray'}">${(r.status||'').replace(/_/g,' ')}</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;font-size:12px">
+        <div><span style="color:var(--mu);font-weight:600">Order/Lot:</span> ${r.order_lot||'—'}</div>
+        <div><span style="color:var(--mu);font-weight:600">Category:</span> ${r.category||'—'}</div>
+        <div><span style="color:var(--mu);font-weight:600">Production Step:</span> ${r.production_step||'—'}</div>
+        ${r.closed_date?`<div><span style="color:var(--green);font-weight:600">Closed:</span> ${fdt(r.closed_date)}</div>`:''}
+      </div>
+    </div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Non-Conformity Description</div>
+      <div style="padding:12px 16px;background:var(--r50);border-left:3px solid var(--red);border-radius:0 8px 8px 0;font-size:13px;line-height:1.6">${r.description}</div>
+    </div>
+    ${r.root_cause?`<div style="margin-bottom:12px"><div style="font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Root Cause Analysis</div><div style="padding:12px 16px;background:var(--a50);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;font-size:13px;line-height:1.6">${r.root_cause}</div></div>`:''}
+    ${r.corrective_action?`<div style="margin-bottom:12px"><div style="font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Corrective Action</div><div style="padding:12px 16px;background:var(--g50);border-left:3px solid var(--green);border-radius:0 8px 8px 0;font-size:13px;line-height:1.6">${r.corrective_action}</div></div>`:''}`;
+  $('viewModal').classList.add('on');
+};
+
+$('fSt').addEventListener('change',applyFilter);$('fSv').addEventListener('change',applyFilter);
+$('srch').addEventListener('input',applyFilter);
+$('pgPrev').addEventListener('click',()=>{if(pg>0){pg--;render();}});
+$('pgNext').addEventListener('click',()=>{pg++;render();});
 load();
 </script>
+
+<!-- HELP MODAL for non_conformity.html -->
+<style>
+.modal-bg-help{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:700;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg-help.on{display:flex}
+.help-modal{background:var(--card);border-radius:18px;padding:28px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+</style>
+<div class="modal-bg-help" id="helpModal">
+  <div class="help-modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:16px;font-weight:800">⚠️ Non-Conformity Reports — Help</div>
+      <button onclick="document.getElementById('helpModal').classList.remove('on')" style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:var(--f);font-size:12px;color:var(--txt)">✕ Close</button>
+    </div>
+    <div style="background:var(--b50);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--blue);font-weight:500">ISO 13485 Clause 8.3 — record and manage all non-conforming products and processes. Every defect, deviation, or failure must be documented here.</div>
+    <div style="font-size:13px;line-height:1.8"><div style="margin-bottom:10px"><strong style="color:var(--txt)">+ New NC Report</strong><br><span style="color:var(--mu);font-size:12px">Create a report with: date, order/lot, category (material/process/product/equipment), severity, production step, description.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Root Cause Analysis</strong><br><span style="color:var(--mu);font-size:12px">Document WHY the non-conformity occurred. Required for ISO 13485 compliance.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Corrective Action</strong><br><span style="color:var(--mu);font-size:12px">Document WHAT was done to fix it and prevent recurrence (CAPA — Corrective and Preventive Action).</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Severity Levels</strong><br><span style="color:var(--mu);font-size:12px">Low: minor issue, no patient risk. Medium: process deviation. High: potential patient safety impact.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Status Flow</strong><br><span style="color:var(--mu);font-size:12px">Open → In Progress → Closed. Closed requires a closed date.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">🖨️ Print</strong><br><span style="color:var(--mu);font-size:12px">Print the NC report as a formal document for your quality file.</span></div></div>
+  </div>
+</div>
+<button onclick="document.getElementById('helpModal').classList.add('on')" style="position:fixed;bottom:50px;right:20px;width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(59,95,226,.4);z-index:800;font-family:var(--f)">?</button>
+
 </body>
 </html>
