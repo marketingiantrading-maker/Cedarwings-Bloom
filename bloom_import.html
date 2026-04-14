@@ -582,25 +582,22 @@ async function loadAll() {
     return v && v !== '' && v !== '0' && v !== 'null' && !isNaN(Number(v)) && Number(v) > 0;
   }).length;
   document.getElementById('kOverdue').textContent = overdue;
-  // Status Changes = count from history table
-  var histCount = await sb.from('bloom_case_history').select('id', {count:'exact', head:true});
-  document.getElementById('kChanged').textContent = histCount.count || 0;
 
   // Populate filters
   populateFilters();
 
   // Imports count
+  // Imports count + last import stats
   var riAll = await sb.from('bloom_imports').select('*').order('imported_at',{ascending:false});
   var allImports = riAll.data || [];
+  // Count only CSV imports for "cases" stats, Excel for aligners
+  var csvImports = allImports.filter(function(i){ return i.import_type==='csv'; });
+  var lastCSV = csvImports.length > 0 ? csvImports[0] : null;
   document.getElementById('kImports').textContent = allImports.length;
-  if (allImports.length > 0) {
-    var last = allImports[0];
-    document.getElementById('kNew').textContent = last.new_cases !== null ? last.new_cases : 0;
-    document.getElementById('kChanged').textContent = last.updated_cases !== null ? last.updated_cases : 0;
-  } else {
-    document.getElementById('kNew').textContent = 0;
-    document.getElementById('kChanged').textContent = 0;
-  }
+  document.getElementById('kNew').textContent = lastCSV ? (lastCSV.new_cases||0) : 0;
+  // Status changes = total history records
+  var histR = await sb.from('bloom_case_history').select('id', {count:'exact', head:true});
+  document.getElementById('kChanged').textContent = histR.count || 0;
 
   dbg('All data loaded! ' + allCases.length + ' cases, ' + allAligners.length + ' aligner records.');
   
@@ -819,81 +816,78 @@ function renderAligners() {
 
 // ── ANALYTICS ─────────────────────────────────────────────────────────────
 function renderAnalytics() {
-  // Use currently filtered cases if filters are active
-  var term    = (document.getElementById('caseSearch').value || '').toLowerCase();
-  var statusF = document.getElementById('caseStatus').value;
-  var doctorF = document.getElementById('caseDoctor').value;
-  var dateFrom= document.getElementById('caseDateFrom').value;
-  var dateTo  = document.getElementById('caseDateTo').value;
-  var hasFilter = term || statusF || doctorF || dateFrom || dateTo;
+  // Use exact same filters as Cases tab
+  var term     = (document.getElementById('caseSearch').value || '').toLowerCase();
+  var statusF  = document.getElementById('caseStatus').value;
+  var doctorF  = document.getElementById('caseDoctor').value;
+  var dateFrom = document.getElementById('caseDateFrom').value;
+  var dateTo   = document.getElementById('caseDateTo').value;
 
-  var filteredCases = hasFilter ? allCases.filter(function(c) {
+  var filtered = allCases.filter(function(c) {
     if (term && !((c.case_id||'').toString().toLowerCase().includes(term) ||
                   (c.patient_name||'').toLowerCase().includes(term) ||
-                  (c.doctor||'').toLowerCase().includes(term) ||
-                  (c.clinic||'').toLowerCase().includes(term))) return false;
+                  (c.doctor||'').toLowerCase().includes(term))) return false;
     if (statusF && c.current_status !== statusF) return false;
     if (doctorF && c.doctor !== doctorF) return false;
     if (dateFrom || dateTo) {
-      var d = c.creation_date ? new Date(c.creation_date.replace(/(\d{2})\.(\d{2})\.(\d{4})/,'$3-$2-$1')) : null;
-      if (dateFrom && d && d < new Date(dateFrom)) return false;
-      if (dateTo && d && d > new Date(dateTo + 'T23:59:59')) return false;
+      var raw = c.creation_date||'';
+      var d=null, fm=raw.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})/);
+      if(fm) d=new Date(fm[3]+'-'+fm[2].padStart(2,'0')+'-'+fm[1].padStart(2,'0'));
+      else if(raw) d=new Date(raw);
+      if(!d||isNaN(d.getTime())) return false;
+      if(dateFrom && d<new Date(dateFrom)) return false;
+      if(dateTo && d>new Date(dateTo+'T23:59:59')) return false;
     }
     return true;
-  }) : allCases;
-
-  var label = hasFilter ? ' (filtered: ' + filteredCases.length + ')' : '';
-  var anaTitle = document.getElementById('anaTitle');
-  if (anaTitle) anaTitle.textContent = '📊 Cases by Status' + label;
-
-  // Status breakdown
-  var statusCount = {};
-  filteredCases.forEach(function(c) {
-    var s = c.current_status || 'UNKNOWN';
-    statusCount[s] = (statusCount[s] || 0) + 1;
   });
-  var sorted = Object.entries(statusCount).sort(function(a,b){ return b[1]-a[1]; });
-  var total = filteredCases.length;
 
-  var html = sorted.map(function(entry) {
-    var s = entry[0], n = entry[1];
-    var pct = total ? Math.round(n/total*100) : 0;
-    var color = s.includes('RECEIVED') ? 'var(--green)'
-      : s.includes('MADE')||s.includes('PRINTED') ? 'var(--blue)'
-      : s.includes('DECLINED') ? 'var(--red)'
-      : s.includes('REFINEMENT') ? 'var(--amber)'
-      : 'var(--dim)';
-    return '<div style="margin-bottom:10px">' +
-      '<div style="display:flex;justify-content:space-between;margin-bottom:3px">' +
-        '<span style="font-size:11px;font-weight:600;color:var(--txt)">' + s.replace(/_/g,' ') + '</span>' +
-        '<span style="font-size:11px;font-weight:700;color:var(--mu)">' + n + ' <span style="color:var(--dim)">(' + pct + '%)</span></span>' +
-      '</div>' +
-      '<div style="background:var(--bdr);border-radius:999px;height:6px">' +
-        '<div style="width:' + pct + '%;height:6px;border-radius:999px;background:' + color + ';transition:width .4s"></div>' +
+  // Also filter aligners by order type filter
+  var typeF = document.getElementById('alOrderType').value;
+  var filteredAl = typeF ? allAligners.filter(function(a){ return a.order_type===typeF; }) : allAligners;
+
+  // ── Status breakdown ──────────────────────────────────────────
+  var statusCount = {};
+  filtered.forEach(function(c) {
+    var s = c.current_status || 'UNKNOWN';
+    statusCount[s] = (statusCount[s]||0) + 1;
+  });
+  var total = filtered.length;
+  var sorted = Object.entries(statusCount).sort(function(a,b){ return b[1]-a[1]; });
+
+  var html = '<div style="margin-bottom:8px;font-size:11px;color:var(--mu)">'+total+' cases'+(statusF||dateFrom||dateTo ? ' (filtered)' : '')+'</div>';
+  html += sorted.map(function(e) {
+    var s=e[0], n=e[1], pct=total?Math.round(n/total*100):0;
+    var color = s.includes('RECEIVED')?'var(--green)':s.includes('MADE')||s.includes('PRINTED')?'var(--blue)':s.includes('DECLINED')?'var(--red)':s.includes('REFINEMENT')?'var(--amber)':'var(--dim)';
+    return '<div style="margin-bottom:10px">'+
+      '<div style="display:flex;justify-content:space-between;margin-bottom:3px">'+
+        '<span style="font-size:11px;font-weight:600">'+s.replace(/_/g,' ')+'</span>'+
+        '<span style="font-size:11px;color:var(--mu)">'+n+' <span style="color:var(--dim)">('+pct+'%)</span></span>'+
+      '</div>'+
+      '<div style="background:var(--bdr);border-radius:999px;height:6px">'+
+        '<div style="width:'+pct+'%;height:6px;border-radius:999px;background:'+color+';transition:width .4s"></div>'+
       '</div></div>';
   }).join('');
   document.getElementById('analyticsBody').innerHTML = html || '<p style="color:var(--dim);font-size:12px">No data</p>';
 
-  // Aligner type breakdown
-  // Aligner analytics — filter by order type if set
-  var typeF2 = document.getElementById('alOrderType').value;
-  var analyticsAligners = typeF2 ? allAligners.filter(function(a){ return a.order_type===typeF2; }) : allAligners;
+  // ── Aligner type breakdown ────────────────────────────────────
   var typeCount = {};
-  analyticsAligners.forEach(function(a) {
-    var t = a.order_type || 'Unknown';
-    if (!typeCount[t]) typeCount[t] = { count:0, upper:0, lower:0 };
+  filteredAl.forEach(function(a) {
+    var t = a.order_type||'Unknown';
+    if(!typeCount[t]) typeCount[t]={count:0,upper:0,lower:0,total:0};
     typeCount[t].count++;
-    typeCount[t].upper += (a.aligner_upper !== null && a.aligner_upper !== undefined) ? Number(a.aligner_upper) : 0;
-    typeCount[t].lower += (a.aligner_lower !== null && a.aligner_lower !== undefined) ? Number(a.aligner_lower) : 0;
+    typeCount[t].upper += Number(a.aligner_upper)||0;
+    typeCount[t].lower += Number(a.aligner_lower)||0;
+    typeCount[t].total += Number(a.number_of_aligners)||((Number(a.aligner_upper)||0)+(Number(a.aligner_lower)||0));
   });
-  var typeHtml = Object.entries(typeCount).sort(function(a,b){ return b[1].count-a[1].count; }).map(function(e) {
-    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bdr)">' +
-      '<div><div style="font-size:12px;font-weight:700">' + e[0] + '</div>' +
-        '<div style="font-size:10px;color:var(--mu)">↑' + e[1].upper + ' upper · ↓' + e[1].lower + ' lower</div></div>' +
-      '<span class="badge b-b">' + e[1].count + '</span>' +
-    '</div>';
+  var typeHtml = '<div style="margin-bottom:8px;font-size:11px;color:var(--mu)">'+filteredAl.length+' aligners'+(typeF?' (filtered)':'')+'</div>';
+  typeHtml += Object.entries(typeCount).sort(function(a,b){return b[1].count-a[1].count;}).map(function(e){
+    var badge = e[0]==='TreatmentPlan'?'b-g':e[0]==='AlignersOrder'?'b-b':e[0]==='RefinementOrder'?'b-a':'b-gray';
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bdr)">'+
+      '<div><div style="font-size:12px;font-weight:700">'+e[0]+'</div>'+
+      '<div style="font-size:10px;color:var(--mu)">↑'+e[1].upper+' upper · ↓'+e[1].lower+' lower · '+e[1].total+' total</div></div>'+
+      '<span class="badge '+badge+'">'+e[1].count+' cases</span></div>';
   }).join('');
-  document.getElementById('alignerTypeBody').innerHTML = typeHtml || '<p style="color:var(--dim);font-size:12px">No data</p>';
+  document.getElementById('alignerTypeBody').innerHTML = typeHtml||'<p style="color:var(--dim);font-size:12px">No data</p>';
 }
 
 // ── TABS ──────────────────────────────────────────────────────────────────
