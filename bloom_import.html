@@ -52,7 +52,10 @@ body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh
 .rt{padding:5px 14px;font-size:12px;font-weight:600;border:none;background:transparent;color:var(--mu);border-radius:7px;cursor:pointer;font-family:var(--f);transition:all .12s}
 .rt.active{background:var(--card);color:var(--blue);box-shadow:0 1px 3px rgba(0,0,0,.12);font-weight:700}
 /* BUTTONS */
-.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;font-size:13px;font-weight:600;border:none;border-radius:9px;cursor:pointer;font-family:var(--f);transition:all .12s}
+.btn{outline:none;display:inline-flex;align-items:center;gap:6px;padding:8px 16px;font-size:13px;font-weight:600;border:none;border-radius:9px;cursor:pointer;font-family:var(--f);transition:all .12s}
+.bb{background:var(--blue);color:#fff}.bb:hover{background:#2d4fd4}
+.bg2{background:var(--green);color:#fff}.bg2:hover{background:#138a3a}
+.bgh{background:var(--card);border:1.5px solid var(--bdr);color:var(--mu)}.bgh:hover{color:var(--txt);border-color:var(--dim)}
 .btn-ghost{background:var(--card);border:1px solid var(--bdr);color:var(--mu)}.btn-ghost:hover{color:var(--txt);border-color:var(--blue)}
 .btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#2e4fc7}
 /* PAGE BODY */
@@ -134,6 +137,10 @@ tbody tr:hover{background:#f8fafc}
 .sortable:hover{background:rgba(99,102,241,.07)}
 .main{margin-left:240px;min-height:100vh}
 @media(max-width:768px){.main{margin-left:0}.sidebar{display:none}}
+
+.tab{outline:none;display:inline-flex;align-items:center;gap:5px;padding:7px 14px;font-size:12px;font-weight:600;border:1.5px solid var(--bdr);border-radius:9px;cursor:pointer;font-family:var(--f);transition:all .12s;background:var(--card);color:var(--mu);white-space:nowrap}
+.tab:hover{color:var(--txt);border-color:var(--dim)}
+.tab.on{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:700}
 </style>
 </head>
 <body>
@@ -261,27 +268,74 @@ tbody tr:hover{background:#f8fafc}
 
     <!-- TABS -->
     <div class="card">
-      <div class="tab-bar">
-        <button class="tab on" id="tabBtnCases" data-tab="cases">📋 Cases (<span id="tabCountCases">0</span>)</button>
-        <button class="tab" id="tabBtnChanges" data-tab="changes">🔄 History</button>
-        <button class="tab" id="tabBtnAligners" data-tab="aligners">🦷 Aligners (<span id="tabCountAligners">0</span>)</button>
-        <button class="tab" id="tabBtnImports" data-tab="imports">🚀 Imports</button>
-        <button class="tab" id="tabBtnAnalytics" data-tab="analytics">📊 Analytics</button>
+      <!-- Tab Navigation -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="tab on" id="tabBtnCases" data-tab="cases">
+            <span style="font-size:13px">📋</span> Cases
+            <span class="tab-count" style="background:var(--b100);color:var(--blue);border-radius:999px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:2px" id="tabCountCases">0</span>
+          </button>
+          <button class="tab" id="tabBtnChanges" data-tab="changes">
+            <span style="font-size:13px">🔄</span> History
+          </button>
+          <button class="tab" id="tabBtnAligners" data-tab="aligners">
+            <span style="font-size:13px">🦷</span> Aligners
+            <span class="tab-count" style="background:var(--p50);color:var(--purple);border-radius:999px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:2px" id="tabCountAligners">0</span>
+          </button>
+          <button class="tab" id="tabBtnImports" data-tab="imports">
+            <span style="font-size:13px">🚀</span> Imports
+          </button>
+          <button class="tab" id="tabBtnAnalytics" data-tab="analytics">
+            <span style="font-size:13px">📊</span> Analytics
+          </button>
+        </div>
       </div>
 
       <!-- CASES TAB -->
       <div id="tabCases">
-        <div class="filters">
-          <input class="fi" id="caseSearch" placeholder="Search ID, patient, doctor..." style="flex:1;min-width:160px"/>
-          <select class="fi" id="caseStatus"><option value="">All Statuses</option></select>
-          <select class="fi" id="caseDoctor"><option value="">All Doctors</option></select>
-          <div class="date-range">
-            <label>From</label>
-            <input type="date" class="fi" id="caseDateFrom" style="padding:6px 8px"/>
-            <label>To</label>
-            <input type="date" class="fi" id="caseDateTo" style="padding:6px 8px"/>
+        <!-- Filter Bar -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+          <!-- Search pill -->
+          <div style="flex:1;min-width:220px;position:relative">
+            <svg style="position:absolute;left:11px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--dim)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input id="caseSearch" placeholder="Search ID, patient, doctor, clinic..."
+              style="width:100%;height:38px;padding:0 12px 0 32px;border:1.5px solid var(--bdr);border-radius:20px;font-family:var(--f);font-size:13px;background:var(--card);outline:none;color:var(--txt);transition:border .15s,box-shadow .15s"
+              onfocus="this.style.borderColor='var(--blue)';this.style.boxShadow='0 0 0 3px rgba(99,102,241,.12)'"
+              onblur="this.style.borderColor='var(--bdr)';this.style.boxShadow='none'"/>
           </div>
+          <!-- Status pill -->
+          <div style="position:relative">
+            <select id="caseStatus"
+              style="height:38px;padding:0 32px 0 14px;border:1.5px solid var(--bdr);border-radius:20px;font-family:var(--f);font-size:12px;font-weight:600;background:var(--card);outline:none;color:var(--txt);appearance:none;cursor:pointer;transition:border .15s">
+              <option value="">All Statuses</option>
+            </select>
+            <svg style="position:absolute;right:10px;top:50%;transform:translateY(-50%);width:12px;height:12px;pointer-events:none;color:var(--dim)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+          </div>
+          <!-- Doctor pill -->
+          <div style="position:relative">
+            <select id="caseDoctor"
+              style="height:38px;padding:0 32px 0 14px;border:1.5px solid var(--bdr);border-radius:20px;font-family:var(--f);font-size:12px;font-weight:600;background:var(--card);outline:none;color:var(--txt);appearance:none;cursor:pointer;transition:border .15s">
+              <option value="">All Doctors</option>
+            </select>
+            <svg style="position:absolute;right:10px;top:50%;transform:translateY(-50%);width:12px;height:12px;pointer-events:none;color:var(--dim)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+          </div>
+          <!-- Date range pill -->
+          <div style="display:flex;align-items:center;gap:0;height:38px;border:1.5px solid var(--bdr);border-radius:20px;padding:0 14px;background:var(--card);font-size:12px;color:var(--mu);gap:6px">
+            <svg style="width:13px;height:13px;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2"/><path stroke-width="2" d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <input type="date" id="caseDateFrom"
+              style="border:none;outline:none;font-family:var(--f);font-size:12px;background:transparent;color:var(--txt);width:120px"/>
+            <span style="color:var(--dim);font-weight:600">—</span>
+            <input type="date" id="caseDateTo"
+              style="border:none;outline:none;font-family:var(--f);font-size:12px;background:transparent;color:var(--txt);width:120px"/>
+          </div>
+          <!-- Clear button -->
+          <button onclick="clearCaseFilters()"
+            style="height:38px;padding:0 16px;border:1.5px solid var(--bdr);border-radius:20px;font-family:var(--f);font-size:12px;font-weight:600;background:var(--card);color:var(--mu);cursor:pointer;transition:all .15s;white-space:nowrap"
+            onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'"
+            onmouseout="this.style.borderColor='var(--bdr)';this.style.color='var(--mu)'">✕ Clear</button>
         </div>
+        <!-- Active filter chips -->
+        <div id="filterChips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;min-height:0"></div>
         <div style="overflow-x:auto;border-radius:10px;border:1px solid var(--bdr)"><table>
           <thead><tr>
             <th class="sortable" onclick="sortBy('case_id')">ID <span class="sarr" id="sh_case_id">↓</span></th>
@@ -315,15 +369,32 @@ tbody tr:hover{background:#f8fafc}
 
       <!-- ALIGNERS TAB -->
       <div id="tabAligners" style="display:none">
-        <div class="filters">
-          <input class="fi" id="alSearch" placeholder="Search case number..." style="width:200px"/>
-          <select class="fi" id="alOrderType"><option value="">All Types</option></select>
-          <div class="date-range">
-            <label>Shipped From</label>
-            <input type="date" class="fi" id="alDateFrom" style="padding:6px 8px"/>
-            <label>To</label>
-            <input type="date" class="fi" id="alDateTo" style="padding:6px 8px"/>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+          <div style="flex:1;min-width:200px;position:relative">
+            <svg style="position:absolute;left:11px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--dim)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input id="alSearch" placeholder="Search case number..."
+              style="width:100%;height:38px;padding:0 12px 0 32px;border:1.5px solid var(--bdr);border-radius:20px;font-family:var(--f);font-size:13px;background:var(--card);outline:none;color:var(--txt);transition:border .15s,box-shadow .15s"
+              onfocus="this.style.borderColor='var(--blue)';this.style.boxShadow='0 0 0 3px rgba(99,102,241,.12)'"
+              onblur="this.style.borderColor='var(--bdr)';this.style.boxShadow='none'"/>
           </div>
+          <div style="position:relative">
+            <select id="alOrderType"
+              style="height:38px;padding:0 32px 0 14px;border:1.5px solid var(--bdr);border-radius:20px;font-family:var(--f);font-size:12px;font-weight:600;background:var(--card);outline:none;color:var(--txt);appearance:none;cursor:pointer">
+              <option value="">All Order Types</option>
+            </select>
+            <svg style="position:absolute;right:10px;top:50%;transform:translateY(-50%);width:12px;height:12px;pointer-events:none;color:var(--dim)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+          </div>
+          <div style="display:flex;align-items:center;height:38px;border:1.5px solid var(--bdr);border-radius:20px;padding:0 14px;background:var(--card);font-size:12px;color:var(--mu);gap:6px">
+            <svg style="width:13px;height:13px;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2"/><path stroke-width="2" d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <span style="font-size:11px;font-weight:600;color:var(--dim)">Shipped</span>
+            <input type="date" id="alDateFrom" style="border:none;outline:none;font-family:var(--f);font-size:12px;background:transparent;color:var(--txt);width:120px"/>
+            <span style="color:var(--dim);font-weight:600">—</span>
+            <input type="date" id="alDateTo" style="border:none;outline:none;font-family:var(--f);font-size:12px;background:transparent;color:var(--txt);width:120px"/>
+          </div>
+          <button onclick="clearAlFilters()"
+            style="height:38px;padding:0 16px;border:1.5px solid var(--bdr);border-radius:20px;font-family:var(--f);font-size:12px;font-weight:600;background:var(--card);color:var(--mu);cursor:pointer;transition:all .15s"
+            onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'"
+            onmouseout="this.style.borderColor='var(--bdr)';this.style.color='var(--mu)'">✕ Clear</button>
         </div>
         <div style="overflow-x:auto;border-radius:10px;border:1px solid var(--bdr)"><table>
           <thead><tr>
@@ -358,7 +429,7 @@ tbody tr:hover{background:#f8fafc}
       <div id="tabAnalytics" style="display:none">
         <div class="anal-grid">
           <div>
-            <div style="font-size:13px;font-weight:800;margin-bottom:14px">📊 Cases by Status</div>
+            <div style="font-size:13px;font-weight:800;margin-bottom:14px" id="anaTitle">📊 Cases by Status</div>
             <div id="analyticsBody"><p style="color:var(--dim);font-size:12px">Loading...</p></div>
           </div>
           <div>
@@ -597,6 +668,17 @@ function sortAligners(col) {
 // ── RENDER CASES ──────────────────────────────────────────────────────────
 function renderCases() {
   var term    = (document.getElementById('caseSearch').value || '').toLowerCase();
+  // Update filter chips
+  var chips = [];
+  var sf = document.getElementById('caseStatus').value;
+  var df = document.getElementById('caseDoctor').value;
+  var dfrom = document.getElementById('caseDateFrom').value;
+  var dto = document.getElementById('caseDateTo').value;
+  if (sf) chips.push('<span style="background:var(--b50);color:var(--blue);padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600">'+sf.replace(/_/g,' ')+'</span>');
+  if (df) chips.push('<span style="background:var(--g50);color:var(--green);padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600">Dr. '+df+'</span>');
+  if (dfrom || dto) chips.push('<span style="background:var(--a50);color:var(--amber);padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600">📅 '+(dfrom||'…')+' → '+(dto||'…')+'</span>');
+  var chipsEl = document.getElementById('filterChips');
+  if (chipsEl) chipsEl.innerHTML = chips.join('');
   var statusF = document.getElementById('caseStatus').value;
   var doctorF = document.getElementById('caseDoctor').value;
   var dateFrom= document.getElementById('caseDateFrom').value;
@@ -695,14 +777,41 @@ function renderAligners() {
 
 // ── ANALYTICS ─────────────────────────────────────────────────────────────
 function renderAnalytics() {
+  // Use currently filtered cases if filters are active
+  var term    = (document.getElementById('caseSearch').value || '').toLowerCase();
+  var statusF = document.getElementById('caseStatus').value;
+  var doctorF = document.getElementById('caseDoctor').value;
+  var dateFrom= document.getElementById('caseDateFrom').value;
+  var dateTo  = document.getElementById('caseDateTo').value;
+  var hasFilter = term || statusF || doctorF || dateFrom || dateTo;
+
+  var filteredCases = hasFilter ? allCases.filter(function(c) {
+    if (term && !((c.case_id||'').toString().toLowerCase().includes(term) ||
+                  (c.patient_name||'').toLowerCase().includes(term) ||
+                  (c.doctor||'').toLowerCase().includes(term) ||
+                  (c.clinic||'').toLowerCase().includes(term))) return false;
+    if (statusF && c.current_status !== statusF) return false;
+    if (doctorF && c.doctor !== doctorF) return false;
+    if (dateFrom || dateTo) {
+      var d = c.creation_date ? new Date(c.creation_date.replace(/(\d{2})\.(\d{2})\.(\d{4})/,'$3-$2-$1')) : null;
+      if (dateFrom && d && d < new Date(dateFrom)) return false;
+      if (dateTo && d && d > new Date(dateTo + 'T23:59:59')) return false;
+    }
+    return true;
+  }) : allCases;
+
+  var label = hasFilter ? ' (filtered: ' + filteredCases.length + ')' : '';
+  var anaTitle = document.getElementById('anaTitle');
+  if (anaTitle) anaTitle.textContent = '📊 Cases by Status' + label;
+
   // Status breakdown
   var statusCount = {};
-  allCases.forEach(function(c) {
+  filteredCases.forEach(function(c) {
     var s = c.current_status || 'UNKNOWN';
     statusCount[s] = (statusCount[s] || 0) + 1;
   });
   var sorted = Object.entries(statusCount).sort(function(a,b){ return b[1]-a[1]; });
-  var total = allCases.length;
+  var total = filteredCases.length;
 
   var html = sorted.map(function(entry) {
     var s = entry[0], n = entry[1];
@@ -1021,11 +1130,11 @@ document.getElementById('btnChooseCSV').addEventListener('click',function(){ doc
 document.getElementById('btnChooseXLSX').addEventListener('click',function(){ document.getElementById('xlsxInput').click(); });
 document.getElementById('btnConfirmImport').addEventListener('click',confirmImport);
 document.getElementById('btnCancelPreview').addEventListener('click',function(){ pendingImport=null; document.getElementById('previewCard').style.display='none'; msg('',''); });
-document.getElementById('caseSearch').addEventListener('input',function(){ casesPage=0; renderCases(); });
-document.getElementById('caseStatus').addEventListener('change',function(){ casesPage=0; renderCases(); });
-document.getElementById('caseDoctor').addEventListener('change',function(){ casesPage=0; renderCases(); });
-document.getElementById('caseDateFrom').addEventListener('change',function(){ casesPage=0; renderCases(); });
-document.getElementById('caseDateTo').addEventListener('change',function(){ casesPage=0; renderCases(); });
+document.getElementById('caseSearch').addEventListener('input',function(){ casesPage=0; renderCases(); if(document.getElementById('tabAnalytics').style.display!=='none') renderAnalytics(); });
+document.getElementById('caseStatus').addEventListener('change',function(){ casesPage=0; renderCases(); if(document.getElementById('tabAnalytics').style.display!=='none') renderAnalytics(); });
+document.getElementById('caseDoctor').addEventListener('change',function(){ casesPage=0; renderCases(); if(document.getElementById('tabAnalytics').style.display!=='none') renderAnalytics(); });
+document.getElementById('caseDateFrom').addEventListener('change',function(){ casesPage=0; renderCases(); if(document.getElementById('tabAnalytics').style.display!=='none') renderAnalytics(); });
+document.getElementById('caseDateTo').addEventListener('change',function(){ casesPage=0; renderCases(); if(document.getElementById('tabAnalytics').style.display!=='none') renderAnalytics(); });
 document.getElementById('casesPrev').addEventListener('click',function(){ if(casesPage>0){casesPage--;renderCases();} });
 document.getElementById('casesNext').addEventListener('click',function(){ casesPage++;renderCases(); });
 document.getElementById('alSearch').addEventListener('input',function(){ alPage=0; renderAligners(); });
@@ -1048,6 +1157,8 @@ window.openCase=openCase; window.confirmImport=confirmImport; window.switchTab=s
 // ── INIT ──────────────────────────────────────────────────────────────────
 dbg('Connecting...');
 loadAll();
+
+</script>();
 
 </script>
 </body>
