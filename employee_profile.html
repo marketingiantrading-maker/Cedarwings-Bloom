@@ -29,7 +29,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh
 .bg{background:var(--green);color:#fff}.bg:hover{background:#15803d}
 .bgh{background:var(--card);border:1px solid var(--bdr);color:var(--mu)}.bgh:hover{color:var(--txt)}
 .br{background:var(--red);color:#fff}
-.body{padding:22px 28px 60px}
+.body{padding:20px 28px 80px}
 /* EMP SELECTOR */
 .emp-select{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:14px;box-shadow:var(--sh);padding:16px 22px;margin-bottom:20px}
 .emp-select lbl{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;margin-bottom:0}
@@ -810,16 +810,7 @@ loadEmps()
 </div>
 
 
-<style>
-.modal-bg-help{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:700;display:none;align-items:center;justify-content:center;padding:20px}
-.modal-bg-help.on{display:flex}
-.help-modal{background:var(--card);border-radius:18px;padding:28px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
-</style>
-<div class="modal-bg-help" id="helpModal">
-  <div class="help-modal">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div style="font-size:16px;font-weight:800">👤 Employee Profile — Help</div>
-      <button onclick="document.getElementById('helpModal').classList.remove('on')" style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:var(--f);font-size:12px;color:var(--txt)">✕ Close</button>
+
     </div>
     <div style="background:var(--b50);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--blue);font-weight:500">Detailed profile page for each employee. View their complete session history, productivity charts, and personal information. Accessible by clicking an employee from the Employees list.</div>
     <div style="font-size:13px;line-height:1.8"><div style="margin-bottom:10px"><strong style="color:var(--txt)">📊 Productivity Charts</strong><br><span style="color:var(--mu);font-size:12px">Bar chart of productive vs non-productive hours over the past 30 days.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">📋 Session History</strong><br><span style="color:var(--mu);font-size:12px">Complete log of all clocked sessions for this employee with duration and type.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">✏️ Edit Profile</strong><br><span style="color:var(--mu);font-size:12px">Update employee name, role, PIN, and page access permissions.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">📅 Period Filter</strong><br><span style="color:var(--mu);font-size:12px">Change the date range to view historical performance.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">🔗 Back to Employees</strong><br><span style="color:var(--mu);font-size:12px">Return to the full employee list.</span></div></div>
@@ -827,5 +818,52 @@ loadEmps()
 </div>
 <button onclick="document.getElementById('helpModal').classList.add('on')" style="position:fixed;bottom:50px;right:20px;width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(59,95,226,.4);z-index:800;font-family:var(--f)">?</button>
 
+
+<!-- HELP BUTTON + PANEL: Employee Profile -->
+<button id="helpBtn" onclick="document.getElementById('helpPanel').style.display='flex'" 
+  style="position:fixed;bottom:50px;right:20px;width:42px;height:42px;border-radius:50%;
+         background:var(--blue);color:#fff;border:none;font-size:20px;font-weight:800;
+         cursor:pointer;box-shadow:0 4px 20px rgba(59,95,226,.5);z-index:9000;
+         display:flex;align-items:center;justify-content:center;font-family:var(--f);
+         transition:transform .15s,box-shadow .15s"
+  onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 28px rgba(59,95,226,.7)'"
+  onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(59,95,226,.5)'">?</button>
+
+<div id="helpPanel" style="position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:9001;
+     display:none;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--card);border-radius:18px;width:100%;max-width:560px;
+              max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);
+              display:flex;flex-direction:column">
+    <!-- Header -->
+    <div style="padding:20px 22px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:12px;position:sticky;top:0;background:var(--card);border-radius:18px 18px 0 0;z-index:1">
+      <div style="width:40px;height:40px;background:var(--b50);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">👤</div>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:800;color:var(--txt)">Employee Profile</div>
+        <div style="font-size:11px;color:var(--mu);margin-top:1px">Role: <strong>Manager / HR</strong></div>
+      </div>
+      <button onclick="document.getElementById('helpPanel').style.display='none'"
+        style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:5px 12px;
+               cursor:pointer;font-family:var(--f);font-size:12px;color:var(--mu)">✕ Close</button>
+    </div>
+    <!-- Purpose -->
+    <div style="padding:14px 22px 10px">
+      <div style="background:var(--b50);border-left:3px solid var(--blue);border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;color:var(--blue);font-weight:500;line-height:1.5">Deep-dive into one employee's performance. View their complete session history, productivity charts, and personal details. Accessible from the Employees list.</div>
+    </div>
+    <!-- Process -->
+    <div style="padding:4px 22px 10px">
+      <div style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Process Flow</div>
+      <div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">1</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">1. Select period</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Change Today/Week/Month to see performance over different timeframes.</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">2</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">2. Read productivity chart</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Bar chart shows productive (green) vs non-productive (amber) hours per day.</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">3</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">3. Review sessions</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Full list of every clocked session — step, machine, order, duration.</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">4</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">4. Edit profile</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Update employee details directly from this page.</div></div></div>
+    </div>
+    <!-- Buttons -->
+    <div style="padding:4px 22px 20px">
+      <div style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Buttons & Controls</div>
+      <div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">← Back</span><span style="font-size:11px;color:var(--mu)">Return to the full employees list.</span></div><div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">✏️ Edit Profile</span><span style="font-size:11px;color:var(--mu)">Update employee name, PIN, or role.</span></div><div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">⬇ Export</span><span style="font-size:11px;color:var(--mu)">Download this employee's session history as CSV.</span></div><div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">Period tabs</span><span style="font-size:11px;color:var(--mu)">Today / Week / Month — changes all charts and session log.</span></div>
+    </div>
+    <!-- Footer -->
+    <div style="padding:12px 22px;border-top:1px solid var(--bdr);background:#f8fafc;border-radius:0 0 18px 18px">
+      <div style="font-size:10px;color:var(--dim);text-align:center">© 2026 Cedarwings SAS · ISO 13485 Platform v2.0 · Press ? anytime for this help</div>
+    </div>
+  </div>
+</div>
 </body>
 </html>

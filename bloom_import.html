@@ -59,7 +59,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh
 .btn-ghost{background:var(--card);border:1px solid var(--bdr);color:var(--mu)}.btn-ghost:hover{color:var(--txt);border-color:var(--blue)}
 .btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#2e4fc7}
 /* PAGE BODY */
-.body{padding:22px 28px 60px}
+.body{padding:20px 28px 80px}
 /* KPI GRID */
 .kpi-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:14px;margin-bottom:22px}
 .kpi{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:20px 18px 16px;position:relative;overflow:hidden;transition:box-shadow .2s;cursor:default;cursor:pointer;transition:box-shadow .15s,transform .12s;text-decoration:none;display:block;color:inherit}
@@ -1292,17 +1292,7 @@ loadAll();
 </div>
 
 
-<!-- HELP MODAL for bloom_import.html -->
-<style>
-.modal-bg-help{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:700;display:none;align-items:center;justify-content:center;padding:20px}
-.modal-bg-help.on{display:flex}
-.help-modal{background:var(--card);border-radius:18px;padding:28px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
-</style>
-<div class="modal-bg-help" id="helpModal">
-  <div class="help-modal">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div style="font-size:16px;font-weight:800">🔵 Bloom Import — Help</div>
-      <button onclick="document.getElementById('helpModal').classList.remove('on')" style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:var(--f);font-size:12px;color:var(--txt)">✕ Close</button>
+
     </div>
     <div style="background:var(--b50);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--blue);font-weight:500">Import and manage patient aligner cases from bloomaligner.fr. Supports both CSV (case status updates) and Excel (shipping + aligner details) file formats.</div>
     <div style="font-size:13px;line-height:1.8"><div style="margin-bottom:10px"><strong style="color:var(--txt)">📂 CSV Import</strong><br><span style="color:var(--mu);font-size:12px">Export from bloomaligner.fr and import here. Updates case statuses, overdue flags, doctor/distributor info for all cases.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">📊 Excel Import</strong><br><span style="color:var(--mu);font-size:12px">Import the Bloom Excel file. Reads SHIPPING sheet (box numbers, dates) and ALIGNER sheet (upper/lower counts, order type).</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Cases Tab</strong><br><span style="color:var(--mu);font-size:12px">Full list of all Bloom cases with sortable columns and filters: status, doctor, date range, search.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Aligners Tab</strong><br><span style="color:var(--mu);font-size:12px">All aligner orders with patient name, upper/lower counts, package type, shipping info.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Analytics Tab</strong><br><span style="color:var(--mu);font-size:12px">Charts showing cases by status and aligners by order type. Uses same filters as the tables.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">History Tab</strong><br><span style="color:var(--mu);font-size:12px">Log of all status changes per case over time.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Imports Tab</strong><br><span style="color:var(--mu);font-size:12px">Log of all CSV/Excel import events with timestamps.</span></div></div>
@@ -1310,5 +1300,52 @@ loadAll();
 </div>
 <button onclick="document.getElementById('helpModal').classList.add('on')" style="position:fixed;bottom:50px;right:20px;width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(59,95,226,.4);z-index:800;font-family:var(--f)">?</button>
 
+
+<!-- HELP BUTTON + PANEL: Bloom Import -->
+<button id="helpBtn" onclick="document.getElementById('helpPanel').style.display='flex'" 
+  style="position:fixed;bottom:50px;right:20px;width:42px;height:42px;border-radius:50%;
+         background:var(--blue);color:#fff;border:none;font-size:20px;font-weight:800;
+         cursor:pointer;box-shadow:0 4px 20px rgba(59,95,226,.5);z-index:9000;
+         display:flex;align-items:center;justify-content:center;font-family:var(--f);
+         transition:transform .15s,box-shadow .15s"
+  onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 28px rgba(59,95,226,.7)'"
+  onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(59,95,226,.5)'">?</button>
+
+<div id="helpPanel" style="position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:9001;
+     display:none;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--card);border-radius:18px;width:100%;max-width:560px;
+              max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);
+              display:flex;flex-direction:column">
+    <!-- Header -->
+    <div style="padding:20px 22px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:12px;position:sticky;top:0;background:var(--card);border-radius:18px 18px 0 0;z-index:1">
+      <div style="width:40px;height:40px;background:var(--b50);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🔵</div>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:800;color:var(--txt)">Bloom Import</div>
+        <div style="font-size:11px;color:var(--mu);margin-top:1px">Role: <strong>Production Manager / Order Manager</strong></div>
+      </div>
+      <button onclick="document.getElementById('helpPanel').style.display='none'"
+        style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:5px 12px;
+               cursor:pointer;font-family:var(--f);font-size:12px;color:var(--mu)">✕ Close</button>
+    </div>
+    <!-- Purpose -->
+    <div style="padding:14px 22px 10px">
+      <div style="background:var(--b50);border-left:3px solid var(--blue);border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;color:var(--blue);font-weight:500;line-height:1.5">Sync patient aligner cases from bloomaligner.fr into the system. Two import formats: CSV for case status updates, Excel for aligner and shipping details.</div>
+    </div>
+    <!-- Process -->
+    <div style="padding:4px 22px 10px">
+      <div style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Process Flow</div>
+      <div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">1</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">CSV Import</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Export from bloomaligner.fr → import CSV here → updates all case statuses, overdue flags, doctor/distributor info.</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">2</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">Excel Import</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Import Bloom Excel file → reads SHIPPING sheet (boxes, dates) + ALIGNER sheet (upper/lower counts, order type).</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">3</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">Cases tab</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Full sortable/filterable list of all cases. Filter by status, doctor, date range. Search by name or case ID.</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">4</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">Aligners tab</div><div style="font-size:11px;color:var(--mu);margin-top:1px">All aligner orders with patient, upper/lower counts, package type, shipping info.</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">5</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">Analytics tab</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Charts: cases by status, aligners by order type. Uses same filters as tables.</div></div></div>
+    </div>
+    <!-- Buttons -->
+    <div style="padding:4px 22px 20px">
+      <div style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Buttons & Controls</div>
+      <div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">📂 Import CSV</span><span style="font-size:11px;color:var(--mu)">Upload a CSV export from bloomaligner.fr to update case data.</span></div><div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">📊 Import Excel</span><span style="font-size:11px;color:var(--mu)">Upload the Bloom Excel file to import aligner and shipping data.</span></div><div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">↻ Refresh</span><span style="font-size:11px;color:var(--mu)">Reload all data from the database.</span></div><div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">Tab buttons</span><span style="font-size:11px;color:var(--mu)">Switch between Cases, Aligners, History, Imports, Analytics views.</span></div><div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">Filter chips</span><span style="font-size:11px;color:var(--mu)">Shows active filters — click ✕ to clear each filter.</span></div>
+    </div>
+    <!-- Footer -->
+    <div style="padding:12px 22px;border-top:1px solid var(--bdr);background:#f8fafc;border-radius:0 0 18px 18px">
+      <div style="font-size:10px;color:var(--dim);text-align:center">© 2026 Cedarwings SAS · ISO 13485 Platform v2.0 · Press ? anytime for this help</div>
+    </div>
+  </div>
+</div>
 </body>
 </html>

@@ -56,7 +56,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh
 .btn-ghost{background:var(--card);border:1px solid var(--bdr);color:var(--mu)}.btn-ghost:hover{color:var(--txt);border-color:var(--blue)}
 .btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#2e4fc7}
 /* PAGE BODY */
-.body{padding:22px 28px 60px}
+.body{padding:20px 28px 80px}
 /* KPI GRID */
 .kpi-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:14px;margin-bottom:22px}
 .kpi{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:20px 18px 16px;position:relative;overflow:hidden;transition:box-shadow .2s;cursor:default;cursor:pointer;transition:box-shadow .15s,transform .12s;text-decoration:none;display:block;color:inherit}
@@ -493,17 +493,7 @@ function calcScore(){
 buildUI();
 </script>
 
-<!-- HELP MODAL for iso_compliance.html -->
-<style>
-.modal-bg-help{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:700;display:none;align-items:center;justify-content:center;padding:20px}
-.modal-bg-help.on{display:flex}
-.help-modal{background:var(--card);border-radius:18px;padding:28px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
-</style>
-<div class="modal-bg-help" id="helpModal">
-  <div class="help-modal">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div style="font-size:16px;font-weight:800">✅ ISO 13485 Compliance Dashboard — Help</div>
-      <button onclick="document.getElementById('helpModal').classList.remove('on')" style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:var(--f);font-size:12px;color:var(--txt)">✕ Close</button>
+
     </div>
     <div style="background:var(--b50);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--blue);font-weight:500">Interactive compliance checklist for ISO 13485:2016. Shows the status of every requirement across all 5 clauses and 4 annexes. Use this to track your certification readiness.</div>
     <div style="font-size:13px;line-height:1.8"><div style="margin-bottom:10px"><strong style="color:var(--txt)">Compliance Status</strong><br><span style="color:var(--mu);font-size:12px">✓ Compliant (green): requirement fully met. ~ Partial (amber): partially implemented. ✕ Missing (red): not yet implemented. N/A: not applicable.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Click to Change Status</strong><br><span style="color:var(--mu);font-size:12px">Click any checkbox to cycle through: Compliant → Partial → Missing → N/A. Your changes are saved in the browser.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Overall Score</strong><br><span style="color:var(--mu);font-size:12px">Calculated as: (Compliant + Partial×0.5) ÷ Applicable requirements. Shown as % with colour bar.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">→ Page Links</strong><br><span style="color:var(--mu);font-size:12px">Each requirement links to the page in the system that satisfies it. Click to navigate.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Clause Sections</strong><br><span style="color:var(--mu);font-size:12px">Clauses 4–8 cover the main ISO 13485 requirements. Annexes A–D cover correspondence tables and documented information requirements.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">🖨️ Print Report</strong><br><span style="color:var(--mu);font-size:12px">Print the full compliance checklist as a formal assessment document.</span></div></div>
@@ -511,4 +501,51 @@ buildUI();
 </div>
 <button onclick="document.getElementById('helpModal').classList.add('on')" style="position:fixed;bottom:50px;right:20px;width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(59,95,226,.4);z-index:800;font-family:var(--f)">?</button>
 
+
+<!-- HELP BUTTON + PANEL: ISO 13485 Compliance Dashboard -->
+<button id="helpBtn" onclick="document.getElementById('helpPanel').style.display='flex'" 
+  style="position:fixed;bottom:50px;right:20px;width:42px;height:42px;border-radius:50%;
+         background:var(--blue);color:#fff;border:none;font-size:20px;font-weight:800;
+         cursor:pointer;box-shadow:0 4px 20px rgba(59,95,226,.5);z-index:9000;
+         display:flex;align-items:center;justify-content:center;font-family:var(--f);
+         transition:transform .15s,box-shadow .15s"
+  onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 28px rgba(59,95,226,.7)'"
+  onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(59,95,226,.5)'">?</button>
+
+<div id="helpPanel" style="position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:9001;
+     display:none;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--card);border-radius:18px;width:100%;max-width:560px;
+              max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);
+              display:flex;flex-direction:column">
+    <!-- Header -->
+    <div style="padding:20px 22px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:12px;position:sticky;top:0;background:var(--card);border-radius:18px 18px 0 0;z-index:1">
+      <div style="width:40px;height:40px;background:var(--b50);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">✅</div>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:800;color:var(--txt)">ISO 13485 Compliance Dashboard</div>
+        <div style="font-size:11px;color:var(--mu);margin-top:1px">Role: <strong>Quality Manager / Management / Certification Body</strong></div>
+      </div>
+      <button onclick="document.getElementById('helpPanel').style.display='none'"
+        style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:5px 12px;
+               cursor:pointer;font-family:var(--f);font-size:12px;color:var(--mu)">✕ Close</button>
+    </div>
+    <!-- Purpose -->
+    <div style="padding:14px 22px 10px">
+      <div style="background:var(--b50);border-left:3px solid var(--blue);border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;color:var(--blue);font-weight:500;line-height:1.5">Interactive checklist of ALL ISO 13485:2016 requirements. Use this to track your certification readiness, prepare for audits, and demonstrate compliance to your notified body.</div>
+    </div>
+    <!-- Process -->
+    <div style="padding:4px 22px 10px">
+      <div style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Process Flow</div>
+      <div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">1</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">1. Review each clause</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Expand each clause section to see individual requirements.</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">2</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">2. Click to update status</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Click any checkbox to cycle: ✓ Compliant → ~ Partial → ✕ Missing → N/A. Your selections are saved in your browser.</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">3</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">3. Follow page links</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Each requirement shows a → link to the page in the system that satisfies it.</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">4</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">4. Track overall score</div><div style="font-size:11px;color:var(--mu);margin-top:1px">The progress bar and % score updates in real time as you mark requirements.</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">5</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">5. Print for auditor</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Click 🖨️ Print Report to generate a formal compliance assessment document.</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">6</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">6. Review annexes</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Annex C = regulatory requirements by market. Annex D = all required documented records.</div></div></div>
+    </div>
+    <!-- Buttons -->
+    <div style="padding:4px 22px 20px">
+      <div style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Buttons & Controls</div>
+      <div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">🖨️ Print Report</span><span style="font-size:11px;color:var(--mu)">Print the full compliance checklist as a formal audit-ready document.</span></div><div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">Expand/Collapse sections</span><span style="font-size:11px;color:var(--mu)">Click any clause header to show/hide its requirements.</span></div><div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">Requirement checkboxes</span><span style="font-size:11px;color:var(--mu)">Click to cycle status: Compliant → Partial → Missing → N/A.</span></div><div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">→ page links</span><span style="font-size:11px;color:var(--mu)">Navigate directly to the platform page that satisfies each requirement.</span></div>
+    </div>
+    <!-- Footer -->
+    <div style="padding:12px 22px;border-top:1px solid var(--bdr);background:#f8fafc;border-radius:0 0 18px 18px">
+      <div style="font-size:10px;color:var(--dim);text-align:center">© 2026 Cedarwings SAS · ISO 13485 Platform v2.0 · Press ? anytime for this help</div>
+    </div>
+  </div>
+</div>
 </body></html>

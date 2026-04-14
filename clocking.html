@@ -29,7 +29,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh
 .ab-btn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--f);border:none}
 .ab-white{background:#fff;color:#dc2626}.ab-ghost{background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);color:#fff}.ab-x{background:rgba(0,0,0,.2);color:#fff;padding:7px 10px}
 /* BODY */
-.body{padding:20px 28px 60px;max-width:1400px;margin:0 auto}
+.body{padding:20px 28px 80px;max-width:1400px;margin:0 auto}
 /* EMPLOYEE PICKER OVERLAY */
 
 /* MAIN GRID */
@@ -1368,17 +1368,7 @@ cleanOrphans()
 </div>
 
 
-<!-- HELP MODAL for clocking.html -->
-<style>
-.modal-bg-help{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:700;display:none;align-items:center;justify-content:center;padding:20px}
-.modal-bg-help.on{display:flex}
-.help-modal{background:var(--card);border-radius:18px;padding:28px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
-</style>
-<div class="modal-bg-help" id="helpModal">
-  <div class="help-modal">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div style="font-size:16px;font-weight:800">⏱ Clocking Terminal — Help</div>
-      <button onclick="document.getElementById('helpModal').classList.remove('on')" style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:var(--f);font-size:12px;color:var(--txt)">✕ Close</button>
+
     </div>
     <div style="background:var(--b50);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--blue);font-weight:500">Employee time tracking terminal. Employees clock in/out of production steps, breaks, and waste time. Designed for touchscreen use on the production floor.</div>
     <div style="font-size:13px;line-height:1.8"><div style="margin-bottom:10px"><strong style="color:var(--txt)">Login</strong><br><span style="color:var(--mu);font-size:12px">Employee enters their name or PIN to start a session.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Order Entry</strong><br><span style="color:var(--mu);font-size:12px">Enter the Bloom order number to link the session to a specific case.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Step Selection</strong><br><span style="color:var(--mu);font-size:12px">Choose the production step: Printing, Cleaning, Thermoforming, Line Cut, Laser Marking, Packaging.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">▶ Move to Next Step</strong><br><span style="color:var(--mu);font-size:12px">Appears during productive steps — advances to the next step without logging out and re-entering.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">W9 Auto-Gap</strong><br><span style="color:var(--mu);font-size:12px">If a session exceeds 9 hours without clocking out, the system automatically closes it.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Auto-Resume</strong><br><span style="color:var(--mu);font-size:12px">Re-entering the same order number highlights the current active step and allows resuming.</span></div></div>
@@ -1386,5 +1376,52 @@ cleanOrphans()
 </div>
 <button onclick="document.getElementById('helpModal').classList.add('on')" style="position:fixed;bottom:50px;right:20px;width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(59,95,226,.4);z-index:800;font-family:var(--f)">?</button>
 
+
+<!-- HELP BUTTON + PANEL: Clocking Terminal -->
+<button id="helpBtn" onclick="document.getElementById('helpPanel').style.display='flex'" 
+  style="position:fixed;bottom:50px;right:20px;width:42px;height:42px;border-radius:50%;
+         background:var(--blue);color:#fff;border:none;font-size:20px;font-weight:800;
+         cursor:pointer;box-shadow:0 4px 20px rgba(59,95,226,.5);z-index:9000;
+         display:flex;align-items:center;justify-content:center;font-family:var(--f);
+         transition:transform .15s,box-shadow .15s"
+  onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 28px rgba(59,95,226,.7)'"
+  onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(59,95,226,.5)'">?</button>
+
+<div id="helpPanel" style="position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:9001;
+     display:none;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--card);border-radius:18px;width:100%;max-width:560px;
+              max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);
+              display:flex;flex-direction:column">
+    <!-- Header -->
+    <div style="padding:20px 22px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:12px;position:sticky;top:0;background:var(--card);border-radius:18px 18px 0 0;z-index:1">
+      <div style="width:40px;height:40px;background:var(--b50);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">⏲</div>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:800;color:var(--txt)">Clocking Terminal</div>
+        <div style="font-size:11px;color:var(--mu);margin-top:1px">Role: <strong>Production Operator / All Employees</strong></div>
+      </div>
+      <button onclick="document.getElementById('helpPanel').style.display='none'"
+        style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:5px 12px;
+               cursor:pointer;font-family:var(--f);font-size:12px;color:var(--mu)">✕ Close</button>
+    </div>
+    <!-- Purpose -->
+    <div style="padding:14px 22px 10px">
+      <div style="background:var(--b50);border-left:3px solid var(--blue);border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;color:var(--blue);font-weight:500;line-height:1.5">Shop floor time tracking terminal. Employees clock in when starting a task and clock out when done. Every session is linked to an order, step, and machine for full traceability.</div>
+    </div>
+    <!-- Process -->
+    <div style="padding:4px 22px 10px">
+      <div style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Process Flow</div>
+      <div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">1</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">1. Enter name</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Type your name or select from the list.</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">2</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">2. Enter order number</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Type the Bloom case/order number you are working on.</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">3</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">3. Select step</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Choose: Printing, Cleaning, Thermoforming, Line Cut, Laser Marking, or Packaging.</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">4</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">4. Clock In</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Press the large clock-in button. Timer starts.</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">5</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">5. Move to next step</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Press ▶ Move to Next Step to advance without clocking out — no re-entry needed.</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">6</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">6. Clock Out</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Press clock-out when done. Session is saved automatically.</div></div></div>
+    </div>
+    <!-- Buttons -->
+    <div style="padding:4px 22px 20px">
+      <div style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Buttons & Controls</div>
+      <div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">▶ Move to Next Step</span><span style="font-size:11px;color:var(--mu)">Advance to the next production step instantly — saves current session and starts next.</span></div><div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">Clock In</span><span style="font-size:11px;color:var(--mu)">Start a new timed session for the selected step.</span></div><div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">Clock Out</span><span style="font-size:11px;color:var(--mu)">End the current session and save the time record.</span></div><div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">W9 Auto-Gap</span><span style="font-size:11px;color:var(--mu)">If 9+ hours pass without clocking out, the session is auto-closed to prevent data errors.</span></div>
+    </div>
+    <!-- Footer -->
+    <div style="padding:12px 22px;border-top:1px solid var(--bdr);background:#f8fafc;border-radius:0 0 18px 18px">
+      <div style="font-size:10px;color:var(--dim);text-align:center">© 2026 Cedarwings SAS · ISO 13485 Platform v2.0 · Press ? anytime for this help</div>
+    </div>
+  </div>
+</div>
 </body>
 </html>

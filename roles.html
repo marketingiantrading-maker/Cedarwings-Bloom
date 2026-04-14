@@ -25,7 +25,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh
 .bg{background:var(--green);color:#fff}
 .br{background:var(--red);color:#fff}
 .bgh{background:var(--card);border:1px solid var(--bdr);color:var(--mu)}.bgh:hover{color:var(--txt)}
-.body{padding:22px 28px 60px}
+.body{padding:20px 28px 80px}
 /* ROLE CARDS GRID */
 .roles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;margin-bottom:20px}
 .role-card{background:var(--card);border-radius:16px;box-shadow:var(--sh);overflow:hidden;transition:box-shadow .2s}
@@ -568,17 +568,7 @@ load()
 </div>
 
 
-<!-- HELP MODAL for roles.html -->
-<style>
-.modal-bg-help{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:700;display:none;align-items:center;justify-content:center;padding:20px}
-.modal-bg-help.on{display:flex}
-.help-modal{background:var(--card);border-radius:18px;padding:28px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
-</style>
-<div class="modal-bg-help" id="helpModal">
-  <div class="help-modal">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div style="font-size:16px;font-weight:800">🔐 Roles & Permissions — Help</div>
-      <button onclick="document.getElementById('helpModal').classList.remove('on')" style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:var(--f);font-size:12px;color:var(--txt)">✕ Close</button>
+
     </div>
     <div style="background:var(--b50);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--blue);font-weight:500">Define custom roles and page access permissions. Each role specifies which pages an employee can access.</div>
     <div style="font-size:13px;line-height:1.8"><div style="margin-bottom:10px"><strong style="color:var(--txt)">Default Roles</strong><br><span style="color:var(--mu);font-size:12px">Manager: all pages. Operator: production, clocking, inventory. Custom roles can be created.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Create Role</strong><br><span style="color:var(--mu);font-size:12px">Name the role, select which pages are accessible, set notification preferences.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Assign Role</strong><br><span style="color:var(--mu);font-size:12px">Assign roles to employees from the Employees page.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Page Access Matrix</strong><br><span style="color:var(--mu);font-size:12px">Visual grid showing which role can access which page.</span></div></div>
@@ -586,5 +576,52 @@ load()
 </div>
 <button onclick="document.getElementById('helpModal').classList.add('on')" style="position:fixed;bottom:50px;right:20px;width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(59,95,226,.4);z-index:800;font-family:var(--f)">?</button>
 
+
+<!-- HELP BUTTON + PANEL: Roles & Permissions -->
+<button id="helpBtn" onclick="document.getElementById('helpPanel').style.display='flex'" 
+  style="position:fixed;bottom:50px;right:20px;width:42px;height:42px;border-radius:50%;
+         background:var(--blue);color:#fff;border:none;font-size:20px;font-weight:800;
+         cursor:pointer;box-shadow:0 4px 20px rgba(59,95,226,.5);z-index:9000;
+         display:flex;align-items:center;justify-content:center;font-family:var(--f);
+         transition:transform .15s,box-shadow .15s"
+  onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 28px rgba(59,95,226,.7)'"
+  onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(59,95,226,.5)'">?</button>
+
+<div id="helpPanel" style="position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:9001;
+     display:none;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--card);border-radius:18px;width:100%;max-width:560px;
+              max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);
+              display:flex;flex-direction:column">
+    <!-- Header -->
+    <div style="padding:20px 22px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:12px;position:sticky;top:0;background:var(--card);border-radius:18px 18px 0 0;z-index:1">
+      <div style="width:40px;height:40px;background:var(--b50);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🔐</div>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:800;color:var(--txt)">Roles & Permissions</div>
+        <div style="font-size:11px;color:var(--mu);margin-top:1px">Role: <strong>System Administrator</strong></div>
+      </div>
+      <button onclick="document.getElementById('helpPanel').style.display='none'"
+        style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:5px 12px;
+               cursor:pointer;font-family:var(--f);font-size:12px;color:var(--mu)">✕ Close</button>
+    </div>
+    <!-- Purpose -->
+    <div style="padding:14px 22px 10px">
+      <div style="background:var(--b50);border-left:3px solid var(--blue);border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;color:var(--blue);font-weight:500;line-height:1.5">Define custom roles and control which pages each role can access. Every employee is assigned a role. Roles determine what they see in the sidebar and can interact with.</div>
+    </div>
+    <!-- Process -->
+    <div style="padding:4px 22px 10px">
+      <div style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Process Flow</div>
+      <div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">1</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">1. Review default roles</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Manager = all pages. Operator = production/clocking. View the permissions matrix.</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">2</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">2. Create custom role</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Name the role, then toggle which pages are accessible.</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">3</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">3. Assign to employees</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Go to Employees page to assign the role to specific team members.</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">4</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">4. Notification settings</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Each role can have different notification preferences.</div></div></div>
+    </div>
+    <!-- Buttons -->
+    <div style="padding:4px 22px 20px">
+      <div style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Buttons & Controls</div>
+      <div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">+ New Role</span><span style="font-size:11px;color:var(--mu)">Create a custom role with specific page access.</span></div><div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">✏️ Edit</span><span style="font-size:11px;color:var(--mu)">Modify which pages a role can access.</span></div><div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">🗑️ Delete</span><span style="font-size:11px;color:var(--mu)">Remove a custom role (employees using it revert to default).</span></div><div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">Permissions matrix</span><span style="font-size:11px;color:var(--mu)">Visual grid showing all roles vs all pages.</span></div>
+    </div>
+    <!-- Footer -->
+    <div style="padding:12px 22px;border-top:1px solid var(--bdr);background:#f8fafc;border-radius:0 0 18px 18px">
+      <div style="font-size:10px;color:var(--dim);text-align:center">© 2026 Cedarwings SAS · ISO 13485 Platform v2.0 · Press ? anytime for this help</div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
