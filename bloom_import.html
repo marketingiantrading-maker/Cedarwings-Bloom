@@ -640,10 +640,10 @@ function parseCSV(text, filename) {
     var p = lines[i].split(sep).map(function(v){ return v.trim().replace(/^"|"$/g,''); });
     var cid = idx.id >= 0 ? p[idx.id] : '';
     if (!cid || !cid.trim()) continue;
-    var cidInt = parseInt(cid.trim(), 10);
-    if (isNaN(cidInt)) continue; // skip non-numeric IDs
+    var cidTrimmed = cid.trim();
+    if (isNaN(parseInt(cidTrimmed, 10))) continue; // skip non-numeric IDs
     cases.push({
-      case_id: cidInt,
+      case_id: parseInt(cidTrimmed, 10),
       patient_name: idx.patient>=0 ? p[idx.patient] : '',
       doctor: idx.doctor>=0 ? p[idx.doctor] : '',
       distributor: idx.distributor>=0 ? p[idx.distributor] : '',
@@ -687,10 +687,20 @@ async function saveCasesData(cases, filename) {
     document.getElementById('progSub').textContent = (i+batch.length) + ' / ' + cases.length;
 
     // Check existing for history tracking
-    var ids = batch.map(function(c){ return c.case_id; });
+    var ids = batch.map(function(c){ return c.case_id; }).filter(function(n){ return typeof n === 'number' && n > 0; });
+    if (!ids.length) { continue; }
     var ex = await sb.from('bloom_cases').select('case_id,current_status').in('case_id', ids);
+    if (ex.error) console.warn('[Bloom] Check query error:', ex.error.message);
     var existMap = {};
     (ex.data||[]).forEach(function(e){ existMap[parseInt(e.case_id,10)] = e.current_status; });
+
+    // Pre-flight: verify all case_ids are valid integers
+    var badRows = batch.filter(function(c){ return typeof c.case_id !== 'number' || isNaN(c.case_id) || c.case_id <= 0; });
+    if (badRows.length) {
+      console.error('[Bloom] Bad rows found:', JSON.stringify(badRows.slice(0,3)));
+      batch = batch.filter(function(c){ return typeof c.case_id === 'number' && !isNaN(c.case_id) && c.case_id > 0; });
+    }
+    if (!batch.length) continue;
 
     // Upsert
     var ur = await sb.from('bloom_cases').upsert(batch, { onConflict:'case_id' });
@@ -707,7 +717,7 @@ async function saveCasesData(cases, filename) {
       if (existMap[c.case_id] === undefined) newCount++;
       else if (existMap[c.case_id] !== c.current_status) {
         updCount++;
-        hist.push({case_id:c.case_id, patient_name:c.patient_name,
+        hist.push({case_id:parseInt(c.case_id,10), patient_name:c.patient_name,
                    old_status:existMap[c.case_id], new_status:c.current_status,
                    changed_at:new Date().toISOString()});
       }
