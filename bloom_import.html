@@ -185,13 +185,13 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc;cursor:poin
         </div>
         <div class="tw"><table>
           <thead><tr>
-            <th class="sortable" onclick="sortBy('case_id')">ID <span class="sarr" id="sh_case_id"></span></th>
+            <th class="sortable" onclick="sortBy('case_id')">ID <span class="sarr" id="sh_case_id">↓</span></th>
             <th class="sortable" onclick="sortBy('patient_name')">Patient <span class="sarr" id="sh_patient_name"></span></th>
             <th class="sortable" onclick="sortBy('doctor')">Doctor <span class="sarr" id="sh_doctor"></span></th>
             <th class="sortable" onclick="sortBy('distributor')">Distributor <span class="sarr" id="sh_distributor"></span></th>
             <th class="sortable" onclick="sortBy('clinic')">Clinic <span class="sarr" id="sh_clinic"></span></th>
             <th class="sortable" onclick="sortBy('current_status')">Status <span class="sarr" id="sh_current_status"></span></th>
-            <th class="sortable" onclick="sortBy('creation_date')">Created <span class="sarr" id="sh_creation_date">↓</span></th>
+            <th class="sortable" onclick="sortBy('creation_date')">Created <span class="sarr" id="sh_creation_date"></span></th>
             <th class="sortable" onclick="sortBy('action_required_for')">Action Required <span class="sarr" id="sh_action_required_for"></span></th>
             <th class="sortable" onclick="sortBy('overdue_for')">Overdue For <span class="sarr" id="sh_overdue_for"></span></th>
           </tr></thead>
@@ -278,7 +278,7 @@ const PAGE = 50;
 // ── STATE ──────────────────────────────────────────────────────────────────
 var allCases = [], allAligners = [];
 var casesPage = 0, alPage = 0;
-var cSort = { col: 'creation_date', dir: -1 };  // -1=desc newest first
+var cSort = { col: 'case_id', dir: -1 };  // -1=desc = biggest ID first
 var aSort = { col: 'case_number',   dir: -1 };  // -1=desc highest first
 var pendingImport = null, csvFilename = '', XLSX = null;
 
@@ -299,10 +299,21 @@ function ntf(t, type) {
 }
 function fdt(v) {
   if (!v) return '-';
-  var s = String(v);
-  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) s += 'T00:00:00';
+  var s = String(v).trim();
+  if (!s || s === 'null' || s === 'undefined') return '-';
+  // DD/MM/YYYY or DD/MM/YY (French format from bloomaligner.fr)
+  var frMatch = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+  if (frMatch) {
+    var yr = frMatch[3].length === 2 ? '20' + frMatch[3] : frMatch[3];
+    s = yr + '-' + frMatch[2].padStart(2,'0') + '-' + frMatch[1].padStart(2,'0') + 'T00:00:00';
+  }
+  // YYYY-MM-DD (ISO date only)
+  else if (/^\d{4}-\d{2}-\d{2}$/.test(s)) s += 'T00:00:00';
+  // YYYY/MM/DD
+  else if (/^\d{4}\/\d{2}\/\d{2}$/.test(s)) s = s.replace(/\//g,'-') + 'T00:00:00';
   var d = new Date(s);
-  return isNaN(d.getTime()) ? v : d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+  if (isNaN(d.getTime())) return s.slice(0,10) || v;
+  return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
 }
 function statusBadge(s) {
   if (!s) return '<span class="badge b-gray">—</span>';
@@ -337,6 +348,14 @@ async function loadAll() {
   var rc = await fetchAll('bloom_cases', 'creation_date', false);
   if (rc.error) { dbg('ERROR: ' + (rc.error.message || JSON.stringify(rc.error))); return; }
   allCases = rc.data || [];
+  if (allCases.length > 0) {
+    var sample = allCases[0];
+    console.log('[Bloom] Sample case:', JSON.stringify({
+      case_id: sample.case_id,
+      creation_date: sample.creation_date,
+      fdt_result: fdt(sample.creation_date)
+    }));
+  }
   dbg('Loaded ' + allCases.length + ' cases. Loading aligners...');
 
   var ra = await fetchAll('bloom_aligner_details', 'case_number', true);
@@ -402,7 +421,14 @@ function applySort(which) {
     var col = cSort.col, dir = cSort.dir;
     allCases.sort(function(a, b) {
       var av = a[col] || '', bv = b[col] || '';
-      if (!isNaN(+av) && !isNaN(+bv)) return dir * (+av - +bv);
+      // Numeric sort for case_id
+      var an = Number(av), bn = Number(bv);
+      if (!isNaN(an) && !isNaN(bn) && an !== 0 && bn !== 0) return dir * (an - bn);
+      // Date sort
+      if (col === 'creation_date' || col === 'status_change_date') {
+        var ad = new Date(av), bd = new Date(bv);
+        if (!isNaN(ad) && !isNaN(bd)) return dir * (ad - bd);
+      }
       if (av < bv) return -dir; if (av > bv) return dir; return 0;
     });
     // Update arrows
