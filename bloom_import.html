@@ -641,9 +641,9 @@ function parseCSV(text, filename) {
     var cid = idx.id >= 0 ? p[idx.id] : '';
     if (!cid || !cid.trim()) continue;
     var cidTrimmed = cid.trim();
-    if (isNaN(parseInt(cidTrimmed, 10))) continue; // skip non-numeric IDs
+    if (!cidTrimmed || isNaN(Number(cidTrimmed))) continue; // skip empty/non-numeric
     cases.push({
-      case_id: parseInt(cidTrimmed, 10),
+      case_id: cidTrimmed,  // keep as string — works with TEXT column
       patient_name: idx.patient>=0 ? p[idx.patient] : '',
       doctor: idx.doctor>=0 ? p[idx.doctor] : '',
       distributor: idx.distributor>=0 ? p[idx.distributor] : '',
@@ -679,15 +679,15 @@ async function saveCasesData(cases, filename) {
   for (var i = 0; i < cases.length; i += batchSize) {
     // Normalise every row — cast case_id to INT, drop rows with invalid ID
     var batch = cases.slice(i, i + batchSize).map(function(c) {
-      return Object.assign({}, c, { case_id: parseInt(c.case_id, 10) });
-    }).filter(function(c){ return !isNaN(c.case_id) && c.case_id > 0; });
+      return Object.assign({}, c);
+    }).filter(function(c){ return c.case_id && c.case_id.toString().trim() !== ''; });
     if (!batch.length) continue;
 
     document.getElementById('progFill').style.width = Math.round(i/cases.length*100) + '%';
     document.getElementById('progSub').textContent = (i+batch.length) + ' / ' + cases.length;
 
     // Check existing for history tracking
-    var ids = batch.map(function(c){ return c.case_id; }).filter(function(n){ return typeof n === 'number' && n > 0; });
+    var ids = batch.map(function(c){ return c.case_id; }).filter(function(n){ return n && n.toString().trim() !== ''; });
     if (!ids.length) { continue; }
     var ex = await sb.from('bloom_cases').select('case_id,current_status').in('case_id', ids);
     if (ex.error) console.warn('[Bloom] Check query error:', ex.error.message);
@@ -695,7 +695,7 @@ async function saveCasesData(cases, filename) {
     (ex.data||[]).forEach(function(e){ existMap[parseInt(e.case_id,10)] = e.current_status; });
 
     // Pre-flight: verify all case_ids are valid integers
-    var badRows = batch.filter(function(c){ return typeof c.case_id !== 'number' || isNaN(c.case_id) || c.case_id <= 0; });
+    var badRows = batch.filter(function(c){ return !c.case_id || c.case_id.toString().trim() === '' || c.case_id === 'NaN'; });
     if (badRows.length) {
       console.error('[Bloom] Bad rows found:', JSON.stringify(badRows.slice(0,3)));
       batch = batch.filter(function(c){ return typeof c.case_id === 'number' && !isNaN(c.case_id) && c.case_id > 0; });
@@ -717,7 +717,7 @@ async function saveCasesData(cases, filename) {
       if (existMap[c.case_id] === undefined) newCount++;
       else if (existMap[c.case_id] !== c.current_status) {
         updCount++;
-        hist.push({case_id:parseInt(c.case_id,10), patient_name:c.patient_name,
+        hist.push({case_id:String(c.case_id), patient_name:c.patient_name,
                    old_status:existMap[c.case_id], new_status:c.current_status,
                    changed_at:new Date().toISOString()});
       }
