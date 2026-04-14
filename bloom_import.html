@@ -570,22 +570,30 @@ async function loadAll() {
   // Don't override tabCountCases here — renderCases() handles it with filtered count
   document.getElementById('tabCountAligners').textContent = allAligners.length;
 
+  // Overdue = cases with overdue_for > 0
   var overdue = allCases.filter(function(c) {
-    return (c.overdue_for && c.overdue_for !== '0' && c.overdue_for !== '') ||
-           (c.current_status && c.current_status.toUpperCase().includes('OVERDUE'));
+    var v = c.overdue_for;
+    return v && v !== '' && v !== '0' && v !== 'null' && !isNaN(Number(v)) && Number(v) > 0;
   }).length;
   document.getElementById('kOverdue').textContent = overdue;
+  // Status Changes = count from history table
+  var histCount = await sb.from('bloom_case_history').select('id', {count:'exact', head:true});
+  document.getElementById('kChanged').textContent = histCount.count || 0;
 
   // Populate filters
   populateFilters();
 
   // Imports count
-  var riAll = await sb.from('bloom_imports').select('id');
-  document.getElementById('kImports').textContent = (riAll.data || []).length;
-  var riLast = await sb.from('bloom_imports').select('*').order('imported_at',{ascending:false}).limit(1);
-  if (riLast.data && riLast.data.length > 0) {
-    document.getElementById('kNew').textContent = riLast.data[0].new_cases || 0;
-    document.getElementById('kChanged').textContent = riLast.data[0].updated_cases || 0;
+  var riAll = await sb.from('bloom_imports').select('*').order('imported_at',{ascending:false});
+  var allImports = riAll.data || [];
+  document.getElementById('kImports').textContent = allImports.length;
+  if (allImports.length > 0) {
+    var last = allImports[0];
+    document.getElementById('kNew').textContent = last.new_cases !== null ? last.new_cases : 0;
+    document.getElementById('kChanged').textContent = last.updated_cases !== null ? last.updated_cases : 0;
+  } else {
+    document.getElementById('kNew').textContent = 0;
+    document.getElementById('kChanged').textContent = 0;
   }
 
   dbg('All data loaded! ' + allCases.length + ' cases, ' + allAligners.length + ' aligner records.');
@@ -715,8 +723,10 @@ function renderCases() {
 
   document.getElementById('tCases').innerHTML = page.length
     ? page.map(function(c) {
-        var ovd = c.overdue_for && c.overdue_for !== '0' && c.overdue_for !== 'null' ? c.overdue_for + 'd' : null;
-        var act = c.action_required_for && c.action_required_for !== '0' && c.action_required_for !== 'null' ? c.action_required_for + 'd' : null;
+        var ovdNum = Number(c.overdue_for);
+        var actNum = Number(c.action_required_for);
+        var ovd = c.overdue_for && !isNaN(ovdNum) && ovdNum > 0 ? ovdNum + 'd' : null;
+        var act = c.action_required_for && !isNaN(actNum) && actNum > 0 ? actNum + 'd' : null;
         return '<tr onclick="openCase(\''+c.case_id+'\')">' +
           '<td class="mono" style="font-weight:700">' + (c.case_id||'-') + '</td>' +
           '<td>' + (c.patient_name||'-') + '</td>' +
@@ -752,12 +762,16 @@ function renderAligners() {
     if (term && !(a.case_number||'').toLowerCase().includes(term)) return false;
     if (typeF && a.order_type !== typeF) return false;
     if (dateFrom || dateTo) {
-      var ships = allShipping.filter(function(s){ return s.case_number === a.case_number; });
-      if (ships.length) {
-        var d = new Date(ships[ships.length-1].date_of_shipment);
-        if (dateFrom && d < new Date(dateFrom)) return false;
-        if (dateTo   && d > new Date(dateTo + 'T23:59:59')) return false;
-      }
+      // Match aligner case to bloom_cases by case_number → get creation_date
+      var matchCase = allCases.find(function(c){ return String(c.case_id) === String(a.case_number); });
+      var raw = matchCase ? (matchCase.creation_date || '') : '';
+      var d = null;
+      var fm = raw.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})/);
+      if (fm) d = new Date(fm[3]+'-'+fm[2].padStart(2,'0')+'-'+fm[1].padStart(2,'0'));
+      else if (raw) d = new Date(raw);
+      if (!d || isNaN(d.getTime())) return false;
+      if (dateFrom && d < new Date(dateFrom)) return false;
+      if (dateTo   && d > new Date(dateTo+'T23:59:59')) return false;
     }
     return true;
   });
@@ -845,8 +859,11 @@ function renderAnalytics() {
   document.getElementById('analyticsBody').innerHTML = html || '<p style="color:var(--dim);font-size:12px">No data</p>';
 
   // Aligner type breakdown
+  // Aligner analytics — filter by order type if set
+  var typeF2 = document.getElementById('alOrderType').value;
+  var analyticsAligners = typeF2 ? allAligners.filter(function(a){ return a.order_type===typeF2; }) : allAligners;
   var typeCount = {};
-  allAligners.forEach(function(a) {
+  analyticsAligners.forEach(function(a) {
     var t = a.order_type || 'Unknown';
     if (!typeCount[t]) typeCount[t] = { count:0, upper:0, lower:0 };
     typeCount[t].count++;
@@ -978,9 +995,18 @@ async function saveCasesData(cases, filename) {
   document.getElementById('progTitle').textContent = 'Saving ' + cases.length + ' cases...';
   var newCount=0, updCount=0, batchSize=100;
   for (var i=0; i<cases.length; i+=batchSize) {
-    var batch = cases.slice(i,i+batchSize).filter(function(c){
-      return c.case_id && c.case_id.toString().trim() !== '';
-    });
+    var batch = cases.slice(i,i+batchSize)
+      .filter(function(c){ return c.case_id && c.case_id.toString().trim() !== ''; })
+      .map(function(c){
+        // Sanitize — convert all values to string or null, never numbers/booleans
+        var clean = {};
+        Object.keys(c).forEach(function(k){
+          var v = c[k];
+          if (v === null || v === undefined || v === '') clean[k] = null;
+          else clean[k] = String(v);
+        });
+        return clean;
+      });
     if (!batch.length) continue;
     document.getElementById('progFill').style.width = Math.round(i/cases.length*100) + '%';
     document.getElementById('progSub').textContent = (i+batch.length) + ' / ' + cases.length;
