@@ -854,10 +854,35 @@ function renderAnalytics() {
   var filteredCaseIds = new Set(filteredCases.map(function(c){ return String(c.case_id); }));
 
   // ── Filter aligners — linked to filtered cases by case_number = case_id ─
+  // Build case lookup map fresh each time (handles data loaded at different times)
+  var caseIdMap = {};
+  allCases.forEach(function(c){ caseIdMap[String(c.case_id)] = c; });
+
   var filteredAligners = allAligners.filter(function(a) {
-    // Must belong to a filtered case (applies date + status + doctor filter via case)
-    if (!filteredCaseIds.has(String(a.case_number))) return false;
-    // Also apply order type filter if active
+    var cn = String(a.case_number);
+    var matchedCase = caseIdMap[cn];
+
+    // If no matching case exists in bloom_cases, still include if no date/status filter
+    if (!matchedCase) {
+      // No case link — only exclude if date filter is active
+      if (dateFrom || dateTo || statusF || doctorF) return false;
+      // Include in unfiltered view
+    } else {
+      // Apply date filter via matched case
+      if (dateFrom || dateTo) {
+        var raw = matchedCase.creation_date||'';
+        var d=null, fm=raw.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})/);
+        if(fm) d=new Date(fm[3]+'-'+fm[2].padStart(2,'0')+'-'+fm[1].padStart(2,'0'));
+        else if(raw) d=new Date(raw);
+        if(!d||isNaN(d.getTime())) return false;
+        if(dateFrom && d<new Date(dateFrom)) return false;
+        if(dateTo && d>new Date(dateTo+'T23:59:59')) return false;
+      }
+      // Apply status filter via matched case
+      if (statusF && matchedCase.current_status !== statusF) return false;
+      if (doctorF && matchedCase.doctor !== doctorF) return false;
+    }
+    // Apply order type filter directly on aligner
     if (typeF && a.order_type !== typeF) return false;
     return true;
   });
