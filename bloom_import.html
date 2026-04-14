@@ -575,14 +575,14 @@ function updateStepButtons(next,done,machineRunning,inProgress,actStep,allDone){
 }
 /* ===================== CLOCK IN ===================== */
 window.moveToNextStep=async()=>{
+  console.log('[Clock] moveToNextStep called')
   const btn=document.getElementById("btnNextStep")
-  if(!btn)return
+  if(!btn){console.log('[Clock] btnNextStep not found');return}
   const nextStep=btn.dataset.next
   const ord=btn.dataset.ord||document.getElementById("ord").value.trim()
+  console.log('[Clock] nextStep=',nextStep,'ord=',ord)
   if(!nextStep||!ord){setSt("Error","Cannot determine next step","err");return}
-  // Confirm before moving
-  if(!confirm(`Move to next step: ${nextStep}?\nThis will complete the current step.`))return
-  setSt("Moving to next step...","","ok")
+  setSt(`Moving to ${nextStep}...`,"","ok")
   await window._clockStep(nextStep)
 }
 
@@ -903,21 +903,23 @@ function showJobBox(step,ord,type,startTime,mach){
   document.getElementById("jbMeta").textContent=`Order: ${ord} · ${mach||"No machine"} · Started: ${fT(startTime.toISOString())}`
   document.getElementById("jbTimer").className="jb-timer "+(type==="waste"?"waste":"prod")
   // Show Next Step button if this is a productive step and there's a next step
-  if(type==="productive"){
-    const idx=STEPS.indexOf(step)
-    const nextStep=idx>=0&&idx<STEPS.length-1?STEPS[idx+1]:null
-    const btnNext=document.getElementById("btnNextStep")
-    const lblNext=document.getElementById("nextStepLabel")
+  console.log('[Clock] showJobBox type=',type,'step=',step)
+  const btnNext=document.getElementById("btnNextStep")
+  const lblNext=document.getElementById("nextStepLabel")
+  if(type==="productive"||type==="Productive"){
+    const stepIdx=STEPS.indexOf(step)
+    const nextStep=stepIdx>=0&&stepIdx<STEPS.length-1?STEPS[stepIdx+1]:null
+    console.log('[Clock] stepIdx=',stepIdx,'nextStep=',nextStep)
     if(nextStep&&btnNext){
       lblNext.textContent=nextStep
       btnNext.style.display="inline-flex"
       btnNext.dataset.next=nextStep
-      btnNext.dataset.ord=ord
+      btnNext.dataset.ord=String(ord)
+      console.log('[Clock] Next step button shown:',nextStep)
     } else if(btnNext){
       btnNext.style.display="none"
     }
   } else {
-    const btnNext=document.getElementById("btnNextStep")
     if(btnNext) btnNext.style.display="none"
   }
 }
