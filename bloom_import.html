@@ -334,8 +334,8 @@ function fdt(v) {
   if (!isNaN(d.getTime())) {
     return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
   }
-  // DD/MM/YYYY or D/M/YYYY (French format)
-  var fr = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+  // DD.MM.YYYY (Bloom format) or DD/MM/YYYY
+  var fr = s.match(/^(\d{1,2})[\.\/\-](\d{1,2})[\.\/\-](\d{2,4})/);
   if (fr) {
     var yr = fr[3].length === 2 ? '20' + fr[3] : fr[3];
     d = new Date(yr + '-' + fr[2].padStart(2,'0') + '-' + fr[1].padStart(2,'0'));
@@ -643,17 +643,17 @@ function parseCSV(text, filename) {
     var cidTrimmed = cid.trim();
     if (!cidTrimmed || isNaN(Number(cidTrimmed))) continue; // skip empty/non-numeric
     cases.push({
-      case_id: cidTrimmed,  // keep as string — works with TEXT column
-      patient_name: idx.patient>=0 ? p[idx.patient] : '',
-      doctor: idx.doctor>=0 ? p[idx.doctor] : '',
-      distributor: idx.distributor>=0 ? p[idx.distributor] : '',
-      clinic: idx.clinic>=0 ? p[idx.clinic] : '',
-      current_status: idx.status>=0 ? p[idx.status] : '',
-      creation_date: idx.date>=0 ? p[idx.date] : '',
-      status_change_date: idx.status_change>=0 ? p[idx.status_change] : '',
-      action_required_for: idx.action>=0 ? p[idx.action] : '',
-      overdue_for: idx.overdue>=0 ? p[idx.overdue] : '',
-      number_of_extra_refinements: idx.extra>=0 ? p[idx.extra] : ''
+      case_id: cidTrimmed,
+      patient_name:                idx.patient>=0&&p[idx.patient]!==''?p[idx.patient]:null,
+      doctor:                      idx.doctor>=0&&p[idx.doctor]!==''?p[idx.doctor]:null,
+      distributor:                 idx.distributor>=0&&p[idx.distributor]!==''?p[idx.distributor]:null,
+      clinic:                      idx.clinic>=0&&p[idx.clinic]!==''?p[idx.clinic]:null,
+      current_status:              idx.status>=0&&p[idx.status]!==''?p[idx.status]:null,
+      creation_date:               idx.date>=0&&p[idx.date]!==''?p[idx.date]:null,
+      status_change_date:          idx.status_change>=0&&p[idx.status_change]!==''?p[idx.status_change]:null,
+      action_required_for:         idx.action>=0&&p[idx.action]!==''?p[idx.action]:null,
+      overdue_for:                 idx.overdue>=0&&p[idx.overdue]!==''?p[idx.overdue]:null,
+      number_of_extra_refinements: idx.extra>=0&&p[idx.extra]!==''?p[idx.extra]:null
     });
   }
   if (!cases.length) { msg('No valid cases found. Check column names.','var(--red)'); return; }
