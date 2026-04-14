@@ -567,7 +567,7 @@ async function loadAll() {
   // KPIs
   document.getElementById('kTotal').textContent = allCases.length;
   document.getElementById('kAligners').textContent = allAligners.length;
-  document.getElementById('tabCountCases').textContent = allCases.length;
+  // Don't override tabCountCases here — renderCases() handles it with filtered count
   document.getElementById('tabCountAligners').textContent = allAligners.length;
 
   var overdue = allCases.filter(function(c) {
@@ -692,10 +692,18 @@ function renderCases() {
     if (statusF && c.current_status !== statusF) return false;
     if (doctorF && c.doctor !== doctorF) return false;
     if (dateFrom || dateTo) {
-      var d = c.creation_date ? new Date(c.creation_date.replace(/(\d{2})\.(\d{2})\.(\d{4})/,'$3-$2-$1')) : null;
-      if (d && isNaN(d.getTime())) d = null;
-      if (dateFrom && d && d < new Date(dateFrom)) return false;
-      if (dateTo   && d && d > new Date(dateTo + 'T23:59:59')) return false;
+      // Parse creation_date regardless of format (DD.MM.YYYY or YYYY-MM-DD or ISO)
+      var raw = c.creation_date || '';
+      var d = null;
+      var frMatch = raw.match(/^(\d{1,2})[.\/\-](\d{1,2})[.\/\-](\d{4})/);
+      if (frMatch) {
+        d = new Date(frMatch[3] + '-' + frMatch[2].padStart(2,'0') + '-' + frMatch[1].padStart(2,'0'));
+      } else if (raw) {
+        d = new Date(raw);
+      }
+      if (!d || isNaN(d.getTime())) return false; // can't parse — exclude from date filter
+      if (dateFrom && d < new Date(dateFrom)) return false;
+      if (dateTo   && d > new Date(dateTo + 'T23:59:59')) return false;
     }
     return true;
   });
@@ -724,7 +732,11 @@ function renderCases() {
     : '<tr><td colspan="9" class="ec">No cases found.</td></tr>';
 
   var totalPages = Math.ceil(total / PAGE);
-  document.getElementById('casesPagerInfo').textContent = total + ' cases (page ' + (casesPage+1) + '/' + (totalPages||1) + ')';
+  var filterActive = term || statusF || doctorF || dateFrom || dateTo;
+  var pagerLabel = filterActive
+    ? total + ' filtered of ' + allCases.length + ' (page ' + (casesPage+1) + '/' + (totalPages||1) + ')'
+    : total + ' cases (page ' + (casesPage+1) + '/' + (totalPages||1) + ')';
+  document.getElementById('casesPagerInfo').textContent = pagerLabel;
   document.getElementById('casesPrev').disabled = casesPage === 0;
   document.getElementById('casesNext').disabled = casesPage >= totalPages - 1;
 }
