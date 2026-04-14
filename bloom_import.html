@@ -8,10 +8,9 @@
 :root{--bg:#f0f4f8;--card:#fff;--bdr:#e2e8f0;--txt:#0f172a;--mu:#64748b;--dim:#94a3b8;--blue:#3b5fe2;--b50:#eef2ff;--b100:#e0e7ff;--green:#16a34a;--g50:#f0fdf4;--g100:#dcfce7;--amber:#d97706;--a50:#fffbeb;--a100:#fef3c7;--red:#dc2626;--r50:#fef2f2;--r100:#fee2e2;--purple:#7c3aed;--p50:#f5f3ff;--f:"DM Sans",sans-serif;--mono:"JetBrains Mono",monospace;--sh:0 1px 3px rgba(0,0,0,.07),0 0 0 1px rgba(0,0,0,.04)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--f);background:var(--bg);color:var(--txt)}
-.sb{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--card);border-right:1px solid var(--bdr);display:flex;flex-direction:column;z-index:100;overflow-y:auto}
 .sb-top{display:flex;align-items:center;gap:12px;padding:18px 16px;border-bottom:1px solid var(--bdr)}
 .logo{width:38px;height:38px;background:linear-gradient(135deg,#3b5fe2,#6366f1);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-.sb-nm{font-weight:800;font-size:14px}.sb-role{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;margin-top:3px;background:var(--b50);color:var(--blue)}
+
 .sb-nav{flex:1;padding:10px}.sb-s{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;padding:14px 8px 6px}
 .nl{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13px;font-weight:500;color:var(--mu);text-decoration:none;transition:all .12s}
 .nl:hover{background:var(--bg);color:var(--txt)}.nl.on{background:var(--b50);color:var(--blue);font-weight:700}
@@ -57,7 +56,7 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc;cursor:poin
 .s-aligners{background:#dcfce7;color:#15803d}.s-draft{background:#f1f5f9;color:#475569}
 .s-delivered{background:#e0e7ff;color:#3730a3}.s-refinement{background:#fef3c7;color:#92400e}
 .s-replacement{background:#fee2e2;color:#991b1b}.s-other{background:#f8fafc;color:#475569}
-@media(max-width:768px){.sb{display:none}.content{margin-left:0}.kpi-grid{grid-template-columns:repeat(3,1fr)}.upload-grid{grid-template-columns:1fr}}
+@media(max-width:768px){.content{margin-left:0}.kpi-grid{grid-template-columns:repeat(3,1fr)}.upload-grid{grid-template-columns:1fr}}
   .sortable { cursor:pointer; user-select:none; white-space:nowrap; }
   .sortable:hover { background:rgba(99,102,241,.08); }
   .sarr { font-size:11px; margin-left:3px; color:var(--blue,#6366f1); }
@@ -326,22 +325,24 @@ function ntf(t, type) {
   setTimeout(function(){ el.className = 'notif'; }, 3500);
 }
 function fdt(v) {
-  if (!v) return '-';
+  if (v === null || v === undefined || v === '') return '-';
   var s = String(v).trim();
   if (!s || s === 'null' || s === 'undefined') return '-';
-  // DD/MM/YYYY or DD/MM/YY (French format from bloomaligner.fr)
-  var frMatch = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
-  if (frMatch) {
-    var yr = frMatch[3].length === 2 ? '20' + frMatch[3] : frMatch[3];
-    s = yr + '-' + frMatch[2].padStart(2,'0') + '-' + frMatch[1].padStart(2,'0') + 'T00:00:00';
+  var d;
+  // Try direct parse first (handles ISO 8601 like 2024-03-15T00:00:00)
+  d = new Date(s);
+  if (!isNaN(d.getTime())) {
+    return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
   }
-  // YYYY-MM-DD (ISO date only)
-  else if (/^\d{4}-\d{2}-\d{2}$/.test(s)) s += 'T00:00:00';
-  // YYYY/MM/DD
-  else if (/^\d{4}\/\d{2}\/\d{2}$/.test(s)) s = s.replace(/\//g,'-') + 'T00:00:00';
-  var d = new Date(s);
-  if (isNaN(d.getTime())) return s.slice(0,10) || v;
-  return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+  // DD/MM/YYYY or D/M/YYYY (French format)
+  var fr = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+  if (fr) {
+    var yr = fr[3].length === 2 ? '20' + fr[3] : fr[3];
+    d = new Date(yr + '-' + fr[2].padStart(2,'0') + '-' + fr[1].padStart(2,'0'));
+    if (!isNaN(d.getTime())) return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+  }
+  // Return first 10 chars as fallback (shows raw date)
+  return s.length >= 10 ? s.slice(0,10) : s;
 }
 function statusBadge(s) {
   if (!s) return '<span class="badge b-gray">—</span>';
@@ -376,14 +377,6 @@ async function loadAll() {
   var rc = await fetchAll('bloom_cases', 'creation_date', false);
   if (rc.error) { dbg('ERROR: ' + (rc.error.message || JSON.stringify(rc.error))); return; }
   allCases = rc.data || [];
-  if (allCases.length > 0) {
-    var sample = allCases[0];
-    console.log('[Bloom] Sample case:', JSON.stringify({
-      case_id: sample.case_id,
-      creation_date: sample.creation_date,
-      fdt_result: fdt(sample.creation_date)
-    }));
-  }
   dbg('Loaded ' + allCases.length + ' cases. Loading aligners...');
 
   var ra = await fetchAll('bloom_aligner_details', 'case_number', true);
