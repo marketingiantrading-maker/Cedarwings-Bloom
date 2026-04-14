@@ -2,79 +2,140 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Cedarwings - Bloom Cases</title>
+<title>Cedarwings — Bloom Cases</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
 <style>
-:root{--bg:#f0f4f8;--card:#fff;--bdr:#e2e8f0;--txt:#0f172a;--mu:#64748b;--dim:#94a3b8;--blue:#3b5fe2;--b50:#eef2ff;--b100:#e0e7ff;--green:#16a34a;--g50:#f0fdf4;--g100:#dcfce7;--amber:#d97706;--a50:#fffbeb;--a100:#fef3c7;--red:#dc2626;--r50:#fef2f2;--r100:#fee2e2;--purple:#7c3aed;--p50:#f5f3ff;--f:"DM Sans",sans-serif;--mono:"JetBrains Mono",monospace;--sh:0 1px 3px rgba(0,0,0,.07),0 0 0 1px rgba(0,0,0,.04)}
+
+:root{
+  --bg:#f0f4f8;--card:#fff;--bdr:#e2e8f0;--txt:#0f172a;--mu:#64748b;--dim:#94a3b8;
+  --blue:#3b5fe2;--b50:#eef2ff;--b100:#e0e7ff;
+  --green:#16a34a;--g50:#f0fdf4;--g100:#dcfce7;
+  --amber:#d97706;--a50:#fffbeb;--a100:#fef3c7;
+  --red:#dc2626;--r50:#fef2f2;--r100:#fee2e2;
+  --purple:#7c3aed;--p50:#f5f3ff;--p100:#ede9fe;
+  --teal:#0d9488;--t50:#f0fdfa;--t100:#ccfbf1;
+  --f:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 0 0 1px rgba(0,0,0,.04);
+  --sh2:0 6px 24px rgba(0,0,0,.09),0 0 0 1px rgba(0,0,0,.04)
+}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--f);background:var(--bg);color:var(--txt)}
-.sb-top{display:flex;align-items:center;gap:12px;padding:18px 16px;border-bottom:1px solid var(--bdr)}
-.logo{width:38px;height:38px;background:linear-gradient(135deg,#3b5fe2,#6366f1);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-
-.sb-nav{flex:1;padding:10px}.sb-s{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;padding:14px 8px 6px}
-.nl{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13px;font-weight:500;color:var(--mu);text-decoration:none;transition:all .12s}
-.nl:hover{background:var(--bg);color:var(--txt)}.nl.on{background:var(--b50);color:var(--blue);font-weight:700}
-.nl .ic{font-size:15px;width:18px;text-align:center}.sb-foot{padding:12px 10px;border-top:1px solid var(--bdr)}
-.content{margin-left:240px;min-height:100vh}
-.topbar{background:var(--card);border-bottom:1px solid var(--bdr);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:50}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;font-size:13px;font-weight:700;border:none;border-radius:9px;cursor:pointer;font-family:var(--f);transition:all .12s}
-.bb{background:var(--blue);color:#fff}.bg2{background:var(--green);color:#fff}.bgh{background:var(--card);border:1.5px solid var(--bdr);color:var(--mu)}
-.body{padding:20px 28px 60px}
-.debug-bar{background:#1e293b;color:#a3e635;font-family:var(--mono);font-size:11px;padding:8px 14px;border-radius:8px;margin-bottom:14px}
-.card{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:20px;margin-bottom:16px}
-.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px}
-.kpi{background:var(--card);border-radius:12px;box-shadow:var(--sh);padding:14px;border-top:3px solid var(--bdr)}
-.kpi-val{font-size:22px;font-weight:800;font-family:var(--mono)}
-.kpi-lbl{font-size:11px;color:var(--mu);font-weight:600;margin-top:2px}
-.upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-.upload-box{border:2.5px dashed var(--bdr);border-radius:14px;padding:24px;text-align:center;background:#f8fafc}
-.tab-bar{display:flex;gap:3px;background:var(--bg);border:1px solid var(--bdr);border-radius:10px;padding:3px;margin-bottom:14px;flex-wrap:wrap}
-.tab{padding:7px 14px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--mu);font-family:var(--f)}
-.tab.on{background:var(--card);color:var(--blue);box-shadow:var(--sh)}
-.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.fi{padding:8px 11px;border:1.5px solid var(--bdr);border-radius:8px;font-family:var(--f);font-size:12px;background:#fff;outline:none}
-.fi:focus{border-color:var(--blue)}
-.tw{overflow-x:auto;border-radius:11px;border:1px solid var(--bdr)}
-table{width:100%;border-collapse:collapse;font-size:12px}
-thead th{padding:8px 12px;font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;background:#f8fafc;border-bottom:1px solid var(--bdr);text-align:left;white-space:nowrap}
-tbody td{padding:9px 12px;border-bottom:1px solid var(--bdr);vertical-align:middle}
-tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc;cursor:pointer}
-.ec{color:var(--dim)!important;text-align:center!important;padding:28px!important}
-.mono{font-family:var(--mono);font-size:11px}
-.badge{display:inline-flex;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:700;white-space:nowrap}
-.b-g{background:var(--g100);color:#15803d}.b-a{background:var(--a100);color:#92400e}
-.b-b{background:var(--b100);color:#1e40af}.b-gray{background:#f1f5f9;color:#475569}
-.b-r{background:var(--r100);color:#991b1b}
-.pager{display:flex;align-items:center;justify-content:space-between;margin-top:10px;font-size:12px;color:var(--mu)}
-.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.7);z-index:600;display:none;align-items:center;justify-content:center;padding:20px}
-.modal-bg.on{display:flex}
-.modal{background:var(--card);border-radius:18px;padding:28px;width:100%;max-width:680px;max-height:88vh;overflow-y:auto}
-.prog-wrap{background:var(--bdr);border-radius:999px;height:8px;margin:8px 0}
-.prog-fill{height:8px;border-radius:999px;transition:width .3s;background:var(--blue)}
-.notif{position:fixed;bottom:24px;right:24px;padding:13px 18px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;display:none;box-shadow:0 6px 24px rgba(0,0,0,.15)}
-.notif.on{display:block}.notif.ok{background:#15803d;color:#fff}.notif.err{background:var(--red);color:#fff}
-.s-aligners{background:#dcfce7;color:#15803d}.s-draft{background:#f1f5f9;color:#475569}
-.s-delivered{background:#e0e7ff;color:#3730a3}.s-refinement{background:#fef3c7;color:#92400e}
-.s-replacement{background:#fee2e2;color:#991b1b}.s-other{background:#f8fafc;color:#475569}
-@media(max-width:768px){.content{margin-left:0}.kpi-grid{grid-template-columns:repeat(3,1fr)}.upload-grid{grid-template-columns:1fr}}
-  .sortable { cursor:pointer; user-select:none; white-space:nowrap; }
-  .sortable:hover { background:rgba(99,102,241,.08); }
-  .sarr { font-size:11px; margin-left:3px; color:var(--blue,#6366f1); }
-
-/* Sidebar styles from manager */
+body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh;opacity:1!important}
+/* SIDEBAR */
 .sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--card);border-right:1px solid var(--bdr);display:flex;flex-direction:column;z-index:100;overflow-y:auto}
-.sidebar{display:none}
+.sb-top{display:flex;align-items:center;gap:12px;padding:20px 18px 16px;border-bottom:1px solid var(--bdr)}
 .sb-logo{width:40px;height:40px;background:linear-gradient(135deg,#3b5fe2,#6366f1);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:0 4px 12px rgba(59,95,226,.3)}
 .sb-name{font-weight:800;font-size:14px;letter-spacing:-.2px}
 .sb-badge{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;margin-top:3px;background:var(--b50);color:var(--blue)}
+.sb-nav{flex:1;padding:10px}
+.sb-sec{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;padding:14px 8px 6px}
+.nav-link{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13px;font-weight:500;color:var(--mu);text-decoration:none;transition:background .12s,color .12s}
+.nav-link:hover{background:var(--bg);color:var(--txt)}
+.nav-link.active{background:var(--b50);color:var(--blue);font-weight:700}
+.nav-link .ic{font-size:15px;width:18px;text-align:center;flex-shrink:0}
+.sb-foot{padding:12px 10px;border-top:1px solid var(--bdr)}
+.sb-s{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;padding:14px 8px 6px}
+.nl{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13px;font-weight:500;color:var(--mu);text-decoration:none;transition:all .12s}
+.nl:hover{background:var(--bg);color:var(--txt)}
+.nl.on{background:var(--b50);color:var(--blue);font-weight:700}
+.nl .ic{font-size:15px;width:18px;text-align:center;flex-shrink:0}
+/* MAIN CONTENT */
+.content{margin-left:240px;min-height:100vh}
+.topbar{background:var(--card);border-bottom:1px solid var(--bdr);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:50;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.top-left .page-title{font-size:20px;font-weight:800;letter-spacing:-.4px}
+.top-left .page-date{font-size:12px;color:var(--mu);margin-top:2px}
+.top-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.live-badge{display:flex;align-items:center;gap:6px;background:var(--g50);border:1px solid var(--g100);padding:5px 13px;border-radius:999px;font-size:12px;font-weight:700;color:var(--green)}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(22,163,74,.4)}60%{box-shadow:0 0 0 5px rgba(22,163,74,0)}}
+/* RANGE TABS */
+.range-tabs{display:flex;background:var(--bg);border:1px solid var(--bdr);border-radius:9px;padding:3px;gap:2px}
+.rt{padding:5px 14px;font-size:12px;font-weight:600;border:none;background:transparent;color:var(--mu);border-radius:7px;cursor:pointer;font-family:var(--f);transition:all .12s}
+.rt.active{background:var(--card);color:var(--blue);box-shadow:0 1px 3px rgba(0,0,0,.12);font-weight:700}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;font-size:13px;font-weight:600;border:none;border-radius:9px;cursor:pointer;font-family:var(--f);transition:all .12s}
+.btn-ghost{background:var(--card);border:1px solid var(--bdr);color:var(--mu)}.btn-ghost:hover{color:var(--txt);border-color:var(--blue)}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#2e4fc7}
+/* PAGE BODY */
+.body{padding:22px 28px 60px}
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:14px;margin-bottom:22px}
+.kpi{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:20px 18px 16px;position:relative;overflow:hidden;transition:box-shadow .2s;cursor:default;cursor:pointer;transition:box-shadow .15s,transform .12s;text-decoration:none;display:block;color:inherit}
+.kpi:hover{box-shadow:var(--sh2);transform:translateY(-2px)}
+.kpi:hover{box-shadow:var(--sh2);transform:translateY(-1px)}
+.kpi-stripe{position:absolute;top:0;left:0;right:0;height:3px}
+.kpi-ico{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px}
+.kpi-val{font-size:32px;font-weight:800;font-family:var(--mono);letter-spacing:-1.5px;line-height:1;color:var(--txt)}
+.kpi-lbl{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-top:8px}
+.kpi-sub{font-size:11px;color:var(--dim);margin-top:4px;min-height:16px}
+/* SECTION */
+.section-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:8px}
+.section-title{font-size:15px;font-weight:700;letter-spacing:-.1px}
+.section-sub{font-size:12px;color:var(--mu);margin-top:3px}
+/* CARDS */
+.card{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:22px;margin-bottom:16px}
+/* GRIDS */
+.g2{display:grid;grid-template-columns:3fr 2fr;gap:16px;margin-bottom:16px}
+.g2e{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+/* TABLE */
+.tw{overflow-x:auto;border-radius:12px;border:1px solid var(--bdr)}
+table{width:100%;border-collapse:collapse}
+thead th{padding:10px 14px;font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;background:#f8fafc;border-bottom:1px solid var(--bdr);white-space:nowrap;text-align:left}
+tbody td{padding:12px 14px;font-size:13px;border-bottom:1px solid var(--bdr);color:var(--txt)}
+tbody tr:last-child td{border:none}
+tbody tr:hover{background:#f8fafc}
+.mono{font-family:var(--mono);font-size:12px}
+/* BADGES */
+.bdg{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700}
+.b-g{background:var(--g100);color:#15803d}
+.b-a{background:var(--a100);color:#92400e}
+.b-r{background:var(--r100);color:#991b1b}
+.b-b{background:var(--b100);color:#1e40af}
+.b-p{background:var(--p100);color:#5b21b6}
+.b-t{background:var(--t100);color:#0f766e}
+.b-gray{background:#f1f5f9;color:var(--mu)}
+/* ACTIVE SESSION CARDS */
+.ac{background:var(--bg);border:1.5px solid var(--bdr);border-radius:12px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;transition:border-color .15s}
+.ac:hover{border-color:var(--blue)}
+.ac-av{width:42px;height:42px;border-radius:12px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0}
+.ac-name{font-size:14px;font-weight:700}
+.ac-meta{font-size:12px;color:var(--mu);margin-top:3px;line-height:1.5}
+.ac-time{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--green);line-height:1}
+.ac-time.waste{color:var(--amber)}
+.ac-type{font-size:11px;font-weight:600;margin-top:3px}
+/* ALERT ITEMS */
+.ali{display:flex;gap:10px;padding:11px 14px;border-radius:10px;margin-bottom:7px;align-items:flex-start}
+.ali-d{background:var(--r50);border:1px solid var(--r100)}
+.ali-w{background:var(--a50);border:1px solid var(--a100)}
+.ali-i{font-size:20px;flex-shrink:0;margin-top:1px}
+.ali-title{font-size:13px;font-weight:700}
+.ali-desc{font-size:11px;color:var(--mu);margin-top:2px}
+/* EFF BAR */
+.eff{display:flex;align-items:center;gap:8px}
+.eff-bg{flex:1;height:7px;background:var(--bg);border-radius:999px;overflow:hidden;border:1px solid var(--bdr)}
+.eff-f{height:100%;border-radius:999px}
+.eff-pct{font-family:var(--mono);font-size:11px;min-width:34px;font-weight:700}
+/* EMPTY */
+.empty-cell{color:var(--dim)!important;text-align:center;padding:28px!important}
+/* REQ ITEM */
+.req-i{background:var(--bg);border:1px solid var(--bdr);border-radius:10px;padding:12px;margin-bottom:7px;display:flex;gap:10px;align-items:flex-start}
+.req-name{font-size:13px;font-weight:700}
+.req-meta{font-size:11px;color:var(--mu);margin-top:3px}
+@media(max-width:1400px){.kpi-grid{grid-template-columns:repeat(4,1fr)}}@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.g2,.g3{grid-template-columns:1fr}.sidebar{display:none}.content{margin-left:0}}
+@media(max-width:640px){.kpi-grid{grid-template-columns:1fr 1fr}.g2e{grid-template-columns:1fr}}
+
+/* Bloom-specific additions */
+.anal-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.date-range{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.date-range label{font-size:11px;font-weight:600;color:var(--mu)}
+.sarr{font-size:10px;margin-left:2px;color:var(--blue)}
+.sortable{cursor:pointer;user-select:none}
+.sortable:hover{background:rgba(99,102,241,.07)}
 </style>
-<script type="importmap">
-{"imports":{"https://esm.sh/@supabase/supabase-js@2":"https://esm.sh/@supabase/supabase-js@2"}}
-</script>
 </head>
 <body>
 
-<!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sb-top" style="flex-direction:column;align-items:flex-start">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
@@ -114,37 +175,39 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc;cursor:poin
   </div>
 </aside>
 
-<!-- MAIN<!-- MAIN CONTENT -->
-<div class="content">
+<div class="main">
   <div class="topbar">
-    <div style="font-size:15px;font-weight:800">🦷 Bloom Cases Import</div>
-    <div style="display:flex;gap:8px">
+    <div>
+      <div style="font-size:16px;font-weight:800">🦷 Bloom Cases</div>
+      <div style="font-size:11px;color:var(--mu)">Import and manage cases from bloomaligner.fr</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="debug-bar" id="debugBar" style="margin:0;padding:6px 12px">⏳ Connecting...</div>
       <button class="btn bgh" id="btnRefresh">🔄 Refresh</button>
     </div>
   </div>
 
   <div class="body">
-    <div class="debug-bar" id="debugBar">⏳ Connecting...</div>
 
     <!-- KPIs -->
-    <div class="kpi-grid">
-      <div class="kpi" style="border-top-color:#3b5fe2">
-        <div class="kpi-val" id="kTotal">0</div><div class="kpi-lbl">Total Cases</div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(6,1fr)">
+      <div class="kpi" style="border-top-color:var(--blue)">
+        <div class="kpi-val" id="kTotal">—</div><div class="kpi-lbl">Total Cases</div>
       </div>
-      <div class="kpi" style="border-top-color:#16a34a">
+      <div class="kpi" style="border-top-color:var(--green)">
         <div class="kpi-val" id="kNew" style="color:var(--green)">—</div><div class="kpi-lbl">New (last import)</div>
       </div>
-      <div class="kpi" style="border-top-color:#d97706">
+      <div class="kpi" style="border-top-color:var(--amber)">
         <div class="kpi-val" id="kChanged" style="color:var(--amber)">0</div><div class="kpi-lbl">Status Changes</div>
       </div>
-      <div class="kpi" style="border-top-color:#dc2626">
+      <div class="kpi" style="border-top-color:var(--red)">
         <div class="kpi-val" id="kOverdue" style="color:var(--red)">0</div><div class="kpi-lbl">Overdue</div>
       </div>
-      <div class="kpi" style="border-top-color:#7c3aed">
-        <div class="kpi-val" id="kAligners" style="color:var(--purple)">0</div><div class="kpi-lbl">Total Aligners</div>
+      <div class="kpi" style="border-top-color:var(--purple)">
+        <div class="kpi-val" id="kAligners" style="color:var(--purple)">—</div><div class="kpi-lbl">Total Aligners</div>
       </div>
       <div class="kpi" style="border-top-color:#0891b2">
-        <div class="kpi-val" id="kImports" style="color:#0891b2">0</div><div class="kpi-lbl">Imports</div>
+        <div class="kpi-val" id="kImports" style="color:#0891b2">0</div><div class="kpi-lbl">Imports Done</div>
       </div>
     </div>
 
@@ -152,28 +215,28 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc;cursor:poin
     <div class="card">
       <div style="font-size:15px;font-weight:800;margin-bottom:4px">🚀 Daily Upload</div>
       <div style="font-size:12px;color:var(--mu);margin-bottom:14px">Upload files exported from bloomaligner.fr</div>
-      <div class="upload-grid">
-        <div class="upload-box">
-          <div style="font-size:32px;margin-bottom:8px">📄</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px">
+        <div style="border:2px dashed var(--bdr);border-radius:12px;padding:20px;text-align:center">
+          <div style="font-size:28px;margin-bottom:6px">📄</div>
           <div style="font-weight:700;color:var(--blue);margin-bottom:4px">Cases CSV</div>
-          <div style="font-size:11px;color:var(--mu);margin-bottom:14px">bloomaligner.fr → Cases → EXPORT CSV</div>
+          <div style="font-size:11px;color:var(--mu);margin-bottom:12px">bloomaligner.fr → Cases → EXPORT CSV</div>
           <button class="btn bb" style="width:100%;justify-content:center" id="btnChooseCSV">📁 Choose CSV File</button>
           <input type="file" id="csvInput" accept=".csv,.txt" style="display:none"/>
         </div>
-        <div class="upload-box">
-          <div style="font-size:32px;margin-bottom:8px">📊</div>
+        <div style="border:2px dashed var(--bdr);border-radius:12px;padding:20px;text-align:center">
+          <div style="font-size:28px;margin-bottom:6px">📊</div>
           <div style="font-weight:700;color:var(--green);margin-bottom:4px">Aligners Excel</div>
-          <div style="font-size:11px;color:var(--mu);margin-bottom:14px">Reads SHIPPING + ALIGNER sheets automatically</div>
+          <div style="font-size:11px;color:var(--mu);margin-bottom:12px">SHIPPING + ALIGNER sheets</div>
           <button class="btn bg2" style="width:100%;justify-content:center" id="btnChooseXLSX">📁 Choose Excel File</button>
           <input type="file" id="xlsxInput" accept=".xlsx,.xls" style="display:none"/>
         </div>
       </div>
-      <div id="uploadProg" style="display:none;padding:12px;background:var(--b50);border-radius:10px;border:1px solid var(--b100);margin-bottom:10px">
+      <div id="uploadProg" style="display:none;padding:10px;background:var(--b50);border-radius:10px;border:1px solid var(--b100)">
         <div style="font-size:13px;font-weight:700;margin-bottom:6px" id="progTitle">Processing...</div>
-        <div class="prog-wrap"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+        <div style="background:var(--bdr);border-radius:999px;height:7px"><div id="progFill" style="height:7px;border-radius:999px;background:var(--blue);width:0%;transition:width .3s"></div></div>
         <div style="font-size:11px;color:var(--mu);margin-top:4px" id="progSub"></div>
       </div>
-      <div id="uploadMsg" style="font-size:13px;min-height:18px"></div>
+      <div id="uploadMsg" style="font-size:13px;min-height:16px;margin-top:8px"></div>
     </div>
 
     <!-- PREVIEW -->
@@ -188,7 +251,7 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc;cursor:poin
           <button class="btn bg2" id="btnConfirmImport">⚡ Confirm Import</button>
         </div>
       </div>
-      <div class="tw"><table>
+      <div style="overflow-x:auto;border-radius:10px;border:1px solid var(--bdr)"><table>
         <thead><tr><th>Type</th><th>ID</th><th>Patient</th><th>Doctor</th><th>Status</th><th>Created</th></tr></thead>
         <tbody id="prevRows"></tbody>
       </table></div>
@@ -197,20 +260,27 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc;cursor:poin
     <!-- TABS -->
     <div class="card">
       <div class="tab-bar">
-        <button class="tab on" id="tabBtnCases"   data-tab="cases">📋 Cases (<span id="tabCountCases">0</span>)</button>
-        <button class="tab"    id="tabBtnChanges" data-tab="changes">🔄 History (—)</button>
-        <button class="tab"    id="tabBtnAligners" data-tab="aligners">🦷 Aligners (<span id="tabCountAligners">0</span>)</button>
-        <button class="tab"    id="tabBtnImports" data-tab="imports">🚀 Imports</button>
+        <button class="tab on" id="tabBtnCases" data-tab="cases">📋 Cases (<span id="tabCountCases">0</span>)</button>
+        <button class="tab" id="tabBtnChanges" data-tab="changes">🔄 History</button>
+        <button class="tab" id="tabBtnAligners" data-tab="aligners">🦷 Aligners (<span id="tabCountAligners">0</span>)</button>
+        <button class="tab" id="tabBtnImports" data-tab="imports">🚀 Imports</button>
+        <button class="tab" id="tabBtnAnalytics" data-tab="analytics">📊 Analytics</button>
       </div>
 
       <!-- CASES TAB -->
       <div id="tabCases">
         <div class="filters">
-          <input class="fi" id="caseSearch" placeholder="Search ID, patient, doctor..." style="flex:1;min-width:180px"/>
+          <input class="fi" id="caseSearch" placeholder="Search ID, patient, doctor..." style="flex:1;min-width:160px"/>
           <select class="fi" id="caseStatus"><option value="">All Statuses</option></select>
           <select class="fi" id="caseDoctor"><option value="">All Doctors</option></select>
+          <div class="date-range">
+            <label>From</label>
+            <input type="date" class="fi" id="caseDateFrom" style="padding:6px 8px"/>
+            <label>To</label>
+            <input type="date" class="fi" id="caseDateTo" style="padding:6px 8px"/>
+          </div>
         </div>
-        <div class="tw"><table>
+        <div style="overflow-x:auto;border-radius:10px;border:1px solid var(--bdr)"><table>
           <thead><tr>
             <th class="sortable" onclick="sortBy('case_id')">ID <span class="sarr" id="sh_case_id">↓</span></th>
             <th class="sortable" onclick="sortBy('patient_name')">Patient <span class="sarr" id="sh_patient_name"></span></th>
@@ -219,23 +289,23 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc;cursor:poin
             <th class="sortable" onclick="sortBy('clinic')">Clinic <span class="sarr" id="sh_clinic"></span></th>
             <th class="sortable" onclick="sortBy('current_status')">Status <span class="sarr" id="sh_current_status"></span></th>
             <th class="sortable" onclick="sortBy('creation_date')">Created <span class="sarr" id="sh_creation_date"></span></th>
-            <th class="sortable" onclick="sortBy('action_required_for')">Action Required <span class="sarr" id="sh_action_required_for"></span></th>
-            <th class="sortable" onclick="sortBy('overdue_for')">Overdue For <span class="sarr" id="sh_overdue_for"></span></th>
+            <th class="sortable" onclick="sortBy('action_required_for')">Action (days) <span class="sarr" id="sh_action_required_for"></span></th>
+            <th class="sortable" onclick="sortBy('overdue_for')">Overdue (days) <span class="sarr" id="sh_overdue_for"></span></th>
           </tr></thead>
           <tbody id="tCases"><tr><td colspan="9" class="ec">Loading...</td></tr></tbody>
         </table></div>
         <div class="pager">
           <span id="casesPagerInfo"></span>
           <div style="display:flex;gap:6px">
-            <button class="btn bgh" id="casesPrev" style="padding:5px 12px;font-size:12px">&#8249;</button>
-            <button class="btn bgh" id="casesNext" style="padding:5px 12px;font-size:12px">&#8250;</button>
+            <button class="btn bgh" id="casesPrev" style="padding:5px 12px">‹</button>
+            <button class="btn bgh" id="casesNext" style="padding:5px 12px">›</button>
           </div>
         </div>
       </div>
 
       <!-- HISTORY TAB -->
       <div id="tabChanges" style="display:none">
-        <div class="tw"><table>
+        <div style="overflow-x:auto;border-radius:10px;border:1px solid var(--bdr)"><table>
           <thead><tr><th>Case ID</th><th>Patient</th><th>Old Status</th><th>New Status</th><th>Changed At</th></tr></thead>
           <tbody id="tChanges"><tr><td colspan="5" class="ec">No history yet.</td></tr></tbody>
         </table></div>
@@ -244,9 +314,16 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc;cursor:poin
       <!-- ALIGNERS TAB -->
       <div id="tabAligners" style="display:none">
         <div class="filters">
-          <input class="fi" id="alSearch" placeholder="Search case number..." style="width:220px"/>
+          <input class="fi" id="alSearch" placeholder="Search case number..." style="width:200px"/>
+          <select class="fi" id="alOrderType"><option value="">All Types</option></select>
+          <div class="date-range">
+            <label>Shipped From</label>
+            <input type="date" class="fi" id="alDateFrom" style="padding:6px 8px"/>
+            <label>To</label>
+            <input type="date" class="fi" id="alDateTo" style="padding:6px 8px"/>
+          </div>
         </div>
-        <div class="tw"><table>
+        <div style="overflow-x:auto;border-radius:10px;border:1px solid var(--bdr)"><table>
           <thead><tr>
             <th class="sortable" onclick="sortAligners('case_number')">Case # <span class="sarr" id="ash_case_number">↓</span></th>
             <th class="sortable" onclick="sortAligners('aligner_upper')">Upper <span class="sarr" id="ash_aligner_upper"></span></th>
@@ -261,23 +338,37 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc;cursor:poin
         <div class="pager">
           <span id="alPagerInfo"></span>
           <div style="display:flex;gap:6px">
-            <button class="btn bgh" id="alPrev" style="padding:5px 12px;font-size:12px">&#8249;</button>
-            <button class="btn bgh" id="alNext" style="padding:5px 12px;font-size:12px">&#8250;</button>
+            <button class="btn bgh" id="alPrev" style="padding:5px 12px">‹</button>
+            <button class="btn bgh" id="alNext" style="padding:5px 12px">›</button>
           </div>
         </div>
       </div>
 
       <!-- IMPORTS TAB -->
       <div id="tabImports" style="display:none">
-        <div class="tw"><table>
-          <thead><tr><th>Import ID</th><th>Filename</th><th>Type</th><th>New</th><th>Updated</th><th>Date</th></tr></thead>
+        <div style="overflow-x:auto;border-radius:10px;border:1px solid var(--bdr)"><table>
+          <thead><tr><th>ID</th><th>Filename</th><th>Type</th><th>New</th><th>Updated</th><th>Date</th></tr></thead>
           <tbody id="tImports"><tr><td colspan="6" class="ec">No imports yet.</td></tr></tbody>
         </table></div>
       </div>
 
+      <!-- ANALYTICS TAB -->
+      <div id="tabAnalytics" style="display:none">
+        <div class="anal-grid">
+          <div>
+            <div style="font-size:13px;font-weight:800;margin-bottom:14px">📊 Cases by Status</div>
+            <div id="analyticsBody"><p style="color:var(--dim);font-size:12px">Loading...</p></div>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:800;margin-bottom:14px">🦷 Aligners by Order Type</div>
+            <div id="alignerTypeBody"><p style="color:var(--dim);font-size:12px">Loading...</p></div>
+          </div>
+        </div>
+      </div>
+
     </div><!-- end card -->
   </div><!-- end body -->
-</div><!-- end content -->
+</div><!-- end main -->
 
 <!-- CASE MODAL -->
 <div class="modal-bg" id="caseModal">
@@ -295,24 +386,34 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc;cursor:poin
 <script type="module">
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { SUPABASE_CONFIG } from './config.js';
-
 const sb = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
 console.log('[Bloom] Supabase ready');
 
-// ── CONSTANTS ──────────────────────────────────────────────────────────────
+// ── CONSTANTS ─────────────────────────────────────────────────────────────
 const PAGE = 50;
+const STATUSES = ['DRAFT','CARD_CREATED','TREATMENT_ASSESSMENT_PERFORMED',
+  'PLAN_WITH_BLOOM_ADDED','PLAN_WITH_BLOOM_PROCESSED','PLAN_WITH_BLOOM_CONFIRMED',
+  'PLAN_WITH_BLOOM_CONFIRMATION_PROCESSED','TREATMENT_PLAN_DECLINED_DOCTOR',
+  'TREATMENT_PLAN_DECLINED_OBSERVER','TREATMENT_PLAN_INITIAL_DATA_CHANGED',
+  'ALIGNERS_ORDER_CREATED','ORDER_IS_PRINTED','ALIGNERS_ARE_MADE','ALIGNERS_RECEIVED',
+  'REFINEMENT_PLAN_ADDED','REFINEMENT_PLAN_PROCESSED','REFINEMENT_PLAN_CONFIRMED',
+  'REFINEMENT_PLAN_CONFIRMATION_PROCESSED','REFINEMENT_PLAN_DECLINED_DOCTOR',
+  'REFINEMENT_PLAN_DECLINED_OBSERVER','REFINEMENT_PLAN_INITIAL_DATA_CHANGED',
+  'REFINEMENT_ORDER_CREATED','REFINEMENT_ORDER_IS_PRINTED','REFINEMENT_ALIGNERS_ARE_MADE',
+  'REFINEMENT_ALIGNERS_RECEIVED','REPLACEMENT_ALIGNERS_RECEIVED',
+  'RETAINER_ORDER_IS_PRINTED','RETAINER_ALIGNERS_RECEIVED'];
 
-// ── STATE ──────────────────────────────────────────────────────────────────
-var allCases = [], allAligners = [];
+// ── STATE ─────────────────────────────────────────────────────────────────
+var allCases = [], allAligners = [], allShipping = [];
 var casesPage = 0, alPage = 0;
-var cSort = { col: 'case_id', dir: -1 };  // -1=desc = biggest ID first
-var aSort = { col: 'case_number',   dir: -1 };  // -1=desc highest first
+var cSort = { col: 'case_id', dir: -1 };
+var aSort = { col: 'case_number', dir: -1 };
 var pendingImport = null, csvFilename = '', XLSX = null;
 
-// ── HELPERS ────────────────────────────────────────────────────────────────
+// ── HELPERS ───────────────────────────────────────────────────────────────
 function dbg(m) {
   var el = document.getElementById('debugBar');
-  if (el) el.innerHTML = m ? '&#128309; ' + m : '';
+  if (el) el.innerHTML = m ? '🟢 ' + m : '';
   if (m) console.log('[Bloom]', m);
 }
 function msg(t, c) {
@@ -325,38 +426,33 @@ function ntf(t, type) {
   setTimeout(function(){ el.className = 'notif'; }, 3500);
 }
 function fdt(v) {
-  if (v === null || v === undefined || v === '') return '-';
+  if (!v) return '-';
   var s = String(v).trim();
-  if (!s || s === 'null' || s === 'undefined') return '-';
-  var d;
-  // Try direct parse first (handles ISO 8601 like 2024-03-15T00:00:00)
-  d = new Date(s);
-  if (!isNaN(d.getTime())) {
-    return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
-  }
-  // DD.MM.YYYY (Bloom format) or DD/MM/YYYY
-  var fr = s.match(/^(\d{1,2})[\.\/\-](\d{1,2})[\.\/\-](\d{2,4})/);
+  if (!s || s === 'null') return '-';
+  var d = new Date(s);
+  if (!isNaN(d.getTime())) return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+  // DD.MM.YYYY or DD/MM/YYYY
+  var fr = s.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2,4})/);
   if (fr) {
     var yr = fr[3].length === 2 ? '20' + fr[3] : fr[3];
     d = new Date(yr + '-' + fr[2].padStart(2,'0') + '-' + fr[1].padStart(2,'0'));
     if (!isNaN(d.getTime())) return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
   }
-  // Return first 10 chars as fallback (shows raw date)
-  return s.length >= 10 ? s.slice(0,10) : s;
+  return s.slice(0,10) || v;
 }
 function statusBadge(s) {
   if (!s) return '<span class="badge b-gray">—</span>';
   var l = s.toUpperCase();
   var cls = l.includes('RECEIVED') ? 'b-g'
-    : l.includes('DELIVERED')  ? 'b-b'
-    : l.includes('OVERDUE')    ? 'b-r'
+    : l.includes('MADE') || l.includes('PRINTED') ? 'b-b'
+    : l.includes('DECLINED') || l.includes('REPLACEMENT') ? 'b-r'
     : l.includes('REFINEMENT') ? 'b-a'
-    : l.includes('DRAFT')      ? 'b-gray'
+    : l.includes('DRAFT') || l.includes('CARD') ? 'b-gray'
     : 'b-gray';
-  return '<span class="badge ' + cls + '">' + s + '</span>';
+  return '<span class="badge ' + cls + '" title="' + s + '">' + s.replace(/_/g,' ') + '</span>';
 }
 
-// ── FETCH ALL ROWS (pagination) ────────────────────────────────────────────
+// ── FETCH ALL (paginated) ─────────────────────────────────────────────────
 async function fetchAll(table, orderCol, asc) {
   var rows = [], from = 0, ps = 1000;
   while (true) {
@@ -370,103 +466,97 @@ async function fetchAll(table, orderCol, asc) {
   return { data: rows, error: null };
 }
 
-// ── LOAD ALL ───────────────────────────────────────────────────────────────
+// ── LOAD ALL ──────────────────────────────────────────────────────────────
 async function loadAll() {
   dbg('Loading cases...');
-
-  var rc = await fetchAll('bloom_cases', 'creation_date', false);
+  var rc = await fetchAll('bloom_cases', 'case_id', false);
   if (rc.error) { dbg('ERROR: ' + (rc.error.message || JSON.stringify(rc.error))); return; }
   allCases = rc.data || [];
   dbg('Loaded ' + allCases.length + ' cases. Loading aligners...');
 
   var ra = await fetchAll('bloom_aligner_details', 'case_number', true);
   allAligners = ra.data || [];
-
-  // Merge shipping boxes
   var rs = await fetchAll('bloom_aligners', 'case_number', true);
+  allShipping = rs.data || [];
+
+  // Merge shipping into aligners
   var shipMap = {};
-  (rs.data || []).forEach(function(s) {
+  allShipping.forEach(function(s) {
     if (!shipMap[s.case_number]) shipMap[s.case_number] = [];
     shipMap[s.case_number].push(s);
   });
   allAligners.forEach(function(a) {
-    var ships = shipMap[a.case_number] || [];
+    var ships = shipMap[String(a.case_number)] || [];
     a._boxes = ships.length;
     a._shipped = ships.length ? fdt(ships[ships.length-1].date_of_shipment) : '-';
   });
 
   // KPIs
-  document.getElementById('kTotal').textContent    = allCases.length;
+  document.getElementById('kTotal').textContent = allCases.length;
   document.getElementById('kAligners').textContent = allAligners.length;
-  // Update tab counters
-  document.getElementById('tabCountCases').textContent    = allCases.length;
+  document.getElementById('tabCountCases').textContent = allCases.length;
   document.getElementById('tabCountAligners').textContent = allAligners.length;
-  var now = new Date();
+
   var overdue = allCases.filter(function(c) {
-    if (c.overdue_for && c.overdue_for.trim()) return true;
-    var done = ['ALIGNERS_RECEIVED','CANCELLED','DELIVERED'];
-    if (done.indexOf((c.current_status||'').toUpperCase()) >= 0) return false;
-    if (!c.creation_date) return false;
-    return (now - new Date(c.creation_date)) / 86400000 > 30;
+    return (c.overdue_for && c.overdue_for !== '0' && c.overdue_for !== '') ||
+           (c.current_status && c.current_status.toUpperCase().includes('OVERDUE'));
   }).length;
-  document.getElementById('kOverdue').textContent  = overdue;
+  document.getElementById('kOverdue').textContent = overdue;
 
-  // Populate doctor filter
-  var docs = [...new Set(allCases.map(function(c){ return c.doctor||''; }).filter(Boolean))].sort();
-  var dsel = document.getElementById('caseDoctor');
-  dsel.innerHTML = '<option value="">All Doctors</option>';
-  docs.forEach(function(d){ dsel.innerHTML += '<option value="'+d+'">'+d+'</option>'; });
-
-  // Populate status filter
-  var stats = [...new Set(allCases.map(function(c){ return c.current_status||''; }).filter(Boolean))].sort();
-  var ssel = document.getElementById('caseStatus');
-  ssel.innerHTML = '<option value="">All Statuses</option>';
-  stats.forEach(function(s){ ssel.innerHTML += '<option value="'+s+'">'+s+'</option>'; });
+  // Populate filters
+  populateFilters();
 
   // Imports count
   var ri = await sb.from('bloom_imports').select('id', { count: 'exact', head: true });
   document.getElementById('kImports').textContent = ri.count || 0;
 
-  // Check if new columns exist in data
+  dbg('All data loaded! ' + allCases.length + ' cases, ' + allAligners.length + ' aligner records.');
+  
+  // Check columns
   if (allCases.length > 0) {
     var s = allCases[0];
-    var hasAction = s.action_required_for !== undefined;
-    var hasOverdue = s.overdue_for !== undefined;
-    if (!hasAction || !hasOverdue) {
-      console.warn('[Bloom] Missing columns! action_required_for:', hasAction, 'overdue_for:', hasOverdue);
-      console.warn('[Bloom] Run SQL: ALTER TABLE bloom_cases ADD COLUMN IF NOT EXISTS action_required_for TEXT; ALTER TABLE bloom_cases ADD COLUMN IF NOT EXISTS overdue_for TEXT;');
-    } else {
-      var nonNullAction = allCases.filter(function(c){ return c.action_required_for && c.action_required_for.trim(); }).length;
-      var nonNullOverdue = allCases.filter(function(c){ return c.overdue_for && c.overdue_for.trim(); }).length;
-      console.log('[Bloom] action_required_for non-null:', nonNullAction, '/ overdue_for non-null:', nonNullOverdue);
-    }
+    var missing = [];
+    ['action_required_for','overdue_for','distributor','clinic'].forEach(function(c){ if (!(c in s)) missing.push(c); });
+    if (missing.length) console.warn('[Bloom] Missing DB columns:', missing.join(', '), '— Run SQL to add them');
   }
-  dbg('All data loaded! ' + allCases.length + ' cases, ' + allAligners.length + ' aligner records.');
-  applySort('cases');
-  casesPage = 0;
-  renderCases();
-  applySort('aligners');
-  alPage = 0;
-  renderAligners();
+
+  applySort('cases'); casesPage = 0; renderCases();
+  applySort('aligners'); alPage = 0; renderAligners();
+  renderAnalytics();
 }
 
-// ── SORT ───────────────────────────────────────────────────────────────────
+function populateFilters() {
+  // Status filter
+  var statuses = [...new Set(allCases.map(function(c){ return c.current_status||''; }).filter(Boolean))].sort();
+  var ssel = document.getElementById('caseStatus');
+  ssel.innerHTML = '<option value="">All Statuses</option>';
+  statuses.forEach(function(s){ ssel.innerHTML += '<option value="'+s+'">'+s.replace(/_/g,' ')+'</option>'; });
+
+  // Doctor filter
+  var docs = [...new Set(allCases.map(function(c){ return c.doctor||''; }).filter(Boolean))].sort();
+  var dsel = document.getElementById('caseDoctor');
+  dsel.innerHTML = '<option value="">All Doctors</option>';
+  docs.forEach(function(d){ dsel.innerHTML += '<option value="'+d+'">'+d+'</option>'; });
+
+  // Order type filter for aligners
+  var types = [...new Set(allAligners.map(function(a){ return a.order_type||''; }).filter(Boolean))].sort();
+  var tsel = document.getElementById('alOrderType');
+  tsel.innerHTML = '<option value="">All Types</option>';
+  types.forEach(function(t){ tsel.innerHTML += '<option value="'+t+'">'+t+'</option>'; });
+}
+
+// ── SORT ──────────────────────────────────────────────────────────────────
 function applySort(which) {
   if (which === 'cases') {
     var col = cSort.col, dir = cSort.dir;
     allCases.sort(function(a, b) {
-      var av = a[col] || '', bv = b[col] || '';
-      // Numeric sort for case_id
-      var an = Number(av), bn = Number(bv);
-      if (!isNaN(an) && !isNaN(bn) && an !== 0 && bn !== 0) return dir * (an - bn);
-      // Date sort
-      if (col === 'creation_date' || col === 'status_change_date') {
-        var ad = new Date(av), bd = new Date(bv);
-        if (!isNaN(ad) && !isNaN(bd)) return dir * (ad - bd);
-      }
+      var av = a[col] !== undefined ? a[col] : '';
+      var bv = b[col] !== undefined ? b[col] : '';
+      if (col === 'case_id') return dir * (Number(av) - Number(bv));
+      if (col === 'creation_date' || col === 'status_change_date') return dir * (new Date(fdt(av)||0) - new Date(fdt(bv)||0));
+      av = String(av).toLowerCase(); bv = String(bv).toLowerCase();
       if (av < bv) return -dir; if (av > bv) return dir; return 0;
     });
-    // Update arrows
     ['case_id','patient_name','doctor','distributor','clinic','current_status','creation_date','action_required_for','overdue_for'].forEach(function(c) {
       var el = document.getElementById('sh_' + c);
       if (el) el.textContent = c === col ? (dir === 1 ? '↑' : '↓') : '';
@@ -474,8 +564,9 @@ function applySort(which) {
   } else {
     var col = aSort.col, dir = aSort.dir;
     allAligners.sort(function(a, b) {
-      var av = a[col] || '', bv = b[col] || '';
+      var av = a[col] !== undefined ? a[col] : '', bv = b[col] !== undefined ? b[col] : '';
       if (!isNaN(+av) && !isNaN(+bv)) return dir * (+av - +bv);
+      av = String(av).toLowerCase(); bv = String(bv).toLowerCase();
       if (av < bv) return -dir; if (av > bv) return dir; return 0;
     });
     ['case_number','aligner_upper','aligner_lower','number_of_aligners','order_type','_shipped'].forEach(function(c) {
@@ -487,7 +578,7 @@ function applySort(which) {
 
 function sortBy(col) {
   if (cSort.col === col) cSort.dir *= -1;
-  else { cSort.col = col; cSort.dir = (col==='creation_date'||col==='action_required_for'||col==='overdue_for') ? -1 : 1; }
+  else { cSort.col = col; cSort.dir = (col==='case_id'||col==='creation_date') ? -1 : 1; }
   casesPage = 0; applySort('cases'); renderCases();
 }
 function sortAligners(col) {
@@ -496,25 +587,39 @@ function sortAligners(col) {
   alPage = 0; applySort('aligners'); renderAligners();
 }
 
-// ── RENDER CASES ───────────────────────────────────────────────────────────
+// ── RENDER CASES ──────────────────────────────────────────────────────────
 function renderCases() {
   var term    = (document.getElementById('caseSearch').value || '').toLowerCase();
   var statusF = document.getElementById('caseStatus').value;
   var doctorF = document.getElementById('caseDoctor').value;
+  var dateFrom= document.getElementById('caseDateFrom').value;
+  var dateTo  = document.getElementById('caseDateTo').value;
+
   var fl = allCases.filter(function(c) {
-    if (term && !((c.case_id||'').toLowerCase().includes(term) ||
+    if (term && !((c.case_id||'').toString().toLowerCase().includes(term) ||
                   (c.patient_name||'').toLowerCase().includes(term) ||
                   (c.doctor||'').toLowerCase().includes(term) ||
                   (c.clinic||'').toLowerCase().includes(term))) return false;
     if (statusF && c.current_status !== statusF) return false;
     if (doctorF && c.doctor !== doctorF) return false;
+    if (dateFrom || dateTo) {
+      var d = c.creation_date ? new Date(c.creation_date.replace(/(\d{2})\.(\d{2})\.(\d{4})/,'$3-$2-$1')) : null;
+      if (d && isNaN(d.getTime())) d = null;
+      if (dateFrom && d && d < new Date(dateFrom)) return false;
+      if (dateTo   && d && d > new Date(dateTo + 'T23:59:59')) return false;
+    }
     return true;
   });
+
   var total = fl.length;
+  document.getElementById('tabCountCases').textContent = total;
   var start = casesPage * PAGE;
   var page  = fl.slice(start, start + PAGE);
+
   document.getElementById('tCases').innerHTML = page.length
     ? page.map(function(c) {
+        var ovd = c.overdue_for && c.overdue_for !== '0' ? c.overdue_for + 'd' : '';
+        var act = c.action_required_for && c.action_required_for !== '0' ? c.action_required_for + 'd' : '';
         return '<tr onclick="openCase(\''+c.case_id+'\')">' +
           '<td class="mono" style="font-weight:700">' + (c.case_id||'-') + '</td>' +
           '<td>' + (c.patient_name||'-') + '</td>' +
@@ -523,26 +628,44 @@ function renderCases() {
           '<td style="font-size:11px;color:var(--mu)">' + (c.clinic||'-') + '</td>' +
           '<td>' + statusBadge(c.current_status) + '</td>' +
           '<td class="mono">' + fdt(c.creation_date) + '</td>' +
-          '<td style="font-size:11px;color:var(--red)">' + (c.action_required_for||'-') + '</td>' +
-          '<td style="font-size:11px;font-weight:700;color:#f59e0b">' + (c.overdue_for||'-') + '</td>' +
+          '<td style="font-size:11px;color:var(--red);font-weight:600">' + (act||'-') + '</td>' +
+          '<td style="font-size:11px;font-weight:700;color:#f59e0b">' + (ovd||'-') + '</td>' +
           '</tr>';
       }).join('')
     : '<tr><td colspan="9" class="ec">No cases found.</td></tr>';
+
   var totalPages = Math.ceil(total / PAGE);
   document.getElementById('casesPagerInfo').textContent = total + ' cases (page ' + (casesPage+1) + '/' + (totalPages||1) + ')';
-  var tcEl = document.getElementById('tabCountCases');
-  if (tcEl) tcEl.textContent = total;
   document.getElementById('casesPrev').disabled = casesPage === 0;
   document.getElementById('casesNext').disabled = casesPage >= totalPages - 1;
 }
 
-// ── RENDER ALIGNERS ────────────────────────────────────────────────────────
+// ── RENDER ALIGNERS ───────────────────────────────────────────────────────
 function renderAligners() {
-  var term = (document.getElementById('alSearch').value || '').toLowerCase();
-  var fl = term ? allAligners.filter(function(a){ return (a.case_number||'').toLowerCase().includes(term); }) : allAligners;
+  var term  = (document.getElementById('alSearch').value || '').toLowerCase();
+  var typeF = document.getElementById('alOrderType').value;
+  var dateFrom = document.getElementById('alDateFrom').value;
+  var dateTo   = document.getElementById('alDateTo').value;
+
+  var fl = allAligners.filter(function(a) {
+    if (term && !(a.case_number||'').toLowerCase().includes(term)) return false;
+    if (typeF && a.order_type !== typeF) return false;
+    if (dateFrom || dateTo) {
+      var ships = allShipping.filter(function(s){ return s.case_number === a.case_number; });
+      if (ships.length) {
+        var d = new Date(ships[ships.length-1].date_of_shipment);
+        if (dateFrom && d < new Date(dateFrom)) return false;
+        if (dateTo   && d > new Date(dateTo + 'T23:59:59')) return false;
+      }
+    }
+    return true;
+  });
+
   var total = fl.length;
+  document.getElementById('tabCountAligners').textContent = total;
   var start = alPage * PAGE;
   var page  = fl.slice(start, start + PAGE);
+
   document.getElementById('tAligners').innerHTML = page.length
     ? page.map(function(a) {
         return '<tr>' +
@@ -556,14 +679,76 @@ function renderAligners() {
           '</tr>';
       }).join('')
     : '<tr><td colspan="7" class="ec">No aligners found.</td></tr>';
-  document.getElementById('alPagerInfo').textContent = total + ' aligners (page ' + (alPage+1) + '/' + (Math.ceil(total/PAGE)||1) + ')';
+
+  var totalPages = Math.ceil(total / PAGE);
+  document.getElementById('alPagerInfo').textContent = total + ' aligners (page ' + (alPage+1) + '/' + (totalPages||1) + ')';
   document.getElementById('alPrev').disabled = alPage === 0;
-  document.getElementById('alNext').disabled = alPage >= Math.ceil(total/PAGE) - 1;
+  document.getElementById('alNext').disabled = alPage >= totalPages - 1;
 }
 
-// ── RENDER CHANGES/IMPORTS ─────────────────────────────────────────────────
+// ── ANALYTICS ─────────────────────────────────────────────────────────────
+function renderAnalytics() {
+  // Status breakdown
+  var statusCount = {};
+  allCases.forEach(function(c) {
+    var s = c.current_status || 'UNKNOWN';
+    statusCount[s] = (statusCount[s] || 0) + 1;
+  });
+  var sorted = Object.entries(statusCount).sort(function(a,b){ return b[1]-a[1]; });
+  var total = allCases.length;
+
+  var html = sorted.map(function(entry) {
+    var s = entry[0], n = entry[1];
+    var pct = total ? Math.round(n/total*100) : 0;
+    var color = s.includes('RECEIVED') ? 'var(--green)'
+      : s.includes('MADE')||s.includes('PRINTED') ? 'var(--blue)'
+      : s.includes('DECLINED') ? 'var(--red)'
+      : s.includes('REFINEMENT') ? 'var(--amber)'
+      : 'var(--dim)';
+    return '<div style="margin-bottom:10px">' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:3px">' +
+        '<span style="font-size:11px;font-weight:600;color:var(--txt)">' + s.replace(/_/g,' ') + '</span>' +
+        '<span style="font-size:11px;font-weight:700;color:var(--mu)">' + n + ' <span style="color:var(--dim)">(' + pct + '%)</span></span>' +
+      '</div>' +
+      '<div style="background:var(--bdr);border-radius:999px;height:6px">' +
+        '<div style="width:' + pct + '%;height:6px;border-radius:999px;background:' + color + ';transition:width .4s"></div>' +
+      '</div></div>';
+  }).join('');
+  document.getElementById('analyticsBody').innerHTML = html || '<p style="color:var(--dim);font-size:12px">No data</p>';
+
+  // Aligner type breakdown
+  var typeCount = {};
+  allAligners.forEach(function(a) {
+    var t = a.order_type || 'Unknown';
+    if (!typeCount[t]) typeCount[t] = { count:0, upper:0, lower:0 };
+    typeCount[t].count++;
+    typeCount[t].upper += Number(a.aligner_upper)||0;
+    typeCount[t].lower += Number(a.aligner_lower)||0;
+  });
+  var typeHtml = Object.entries(typeCount).sort(function(a,b){ return b[1].count-a[1].count; }).map(function(e) {
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bdr)">' +
+      '<div><div style="font-size:12px;font-weight:700">' + e[0] + '</div>' +
+        '<div style="font-size:10px;color:var(--mu)">↑' + e[1].upper + ' upper · ↓' + e[1].lower + ' lower</div></div>' +
+      '<span class="badge b-b">' + e[1].count + '</span>' +
+    '</div>';
+  }).join('');
+  document.getElementById('alignerTypeBody').innerHTML = typeHtml || '<p style="color:var(--dim);font-size:12px">No data</p>';
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  ['cases','changes','aligners','imports','analytics'].forEach(function(t) {
+    var el = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (el) el.style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach(function(b) {
+    b.className = 'tab' + (b.dataset.tab === tab ? ' on' : '');
+  });
+  if (tab === 'changes') renderChanges();
+  if (tab === 'imports') renderImports();
+}
+
 function renderChanges() {
-  // Reads from bloom_case_history already loaded during import
   sb.from('bloom_case_history').select('*').order('changed_at', { ascending: false }).range(0, 199).then(function(r) {
     var rows = r.data || [];
     document.getElementById('tChanges').innerHTML = rows.length
@@ -574,14 +759,14 @@ function renderChanges() {
             '<td>' + statusBadge(h.new_status) + '</td>' +
             '<td class="mono">' + fdt(h.changed_at) + '</td></tr>';
         }).join('')
-      : '<tr><td colspan="5" class="ec">No changes recorded.</td></tr>';
+      : '<tr><td colspan="5" class="ec">No history yet.</td></tr>';
   });
 }
+
 async function renderImports() {
   var r = await sb.from('bloom_imports').select('*').order('imported_at', { ascending: false }).range(0, 50);
-  var rows = r.data || [];
-  document.getElementById('tImports').innerHTML = rows.length
-    ? rows.map(function(i) {
+  document.getElementById('tImports').innerHTML = (r.data||[]).length
+    ? (r.data||[]).map(function(i) {
         return '<tr><td class="mono">' + (i.id||'-') + '</td>' +
           '<td>' + (i.filename||'-') + '</td>' +
           '<td><span class="badge b-b">' + (i.import_type||'-') + '</span></td>' +
@@ -592,29 +777,19 @@ async function renderImports() {
     : '<tr><td colspan="6" class="ec">No imports yet.</td></tr>';
 }
 
-// ── TABS ───────────────────────────────────────────────────────────────────
-function switchTab(tab) {
-  ['cases','changes','aligners','imports'].forEach(function(t) {
-    document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).style.display = t===tab ? 'block' : 'none';
-  });
-  document.querySelectorAll('.tab').forEach(function(b) {
-    b.className = 'tab' + (b.dataset.tab === tab ? ' on' : '');
-  });
-  if (tab === 'changes') renderChanges();
-  if (tab === 'imports') renderImports();
-}
-
-// ── OPEN CASE MODAL ────────────────────────────────────────────────────────
+// ── OPEN CASE MODAL ───────────────────────────────────────────────────────
 function openCase(id) {
   var c = allCases.find(function(x){ return String(x.case_id) === String(id); });
   if (!c) return;
   document.getElementById('modalTitle').textContent = 'Case #' + c.case_id;
   document.getElementById('modalBody').innerHTML =
     '<table style="width:100%;font-size:13px;border-collapse:collapse">' +
-    [['Patient', c.patient_name], ['Doctor', c.doctor], ['Distributor', c.distributor],
-     ['Clinic', c.clinic], ['Status', c.current_status], ['Created', fdt(c.creation_date)],
-     ['Status Changed', fdt(c.status_change_date)], ['Action Required', c.action_required_for],
-     ['Overdue For', c.overdue_for], ['Extra Refinements', c.number_of_extra_refinements]]
+    [['Patient',c.patient_name],['Doctor',c.doctor],['Distributor',c.distributor],
+     ['Clinic',c.clinic],['Status',c.current_status],['Created',fdt(c.creation_date)],
+     ['Status Changed',fdt(c.status_change_date)],
+     ['Action Required',c.action_required_for ? c.action_required_for+'d' : '—'],
+     ['Overdue For',c.overdue_for && c.overdue_for!=='0' ? c.overdue_for+'d' : '—'],
+     ['Extra Refinements',c.number_of_extra_refinements]]
     .map(function(row) {
       return '<tr><td style="padding:7px 10px;color:var(--mu);font-weight:600;width:40%;border-bottom:1px solid var(--bdr)">' + row[0] + '</td>' +
         '<td style="padding:7px 10px;border-bottom:1px solid var(--bdr)">' + (row[1]||'—') + '</td></tr>';
@@ -630,30 +805,29 @@ function parseCSV(text, filename) {
   var hdrs = lines[0].split(sep).map(function(h){ return h.trim().replace(/"/g,''); });
   function G(n){ return hdrs.findIndex(function(h){ return h.toLowerCase()===n.toLowerCase(); }); }
   var idx = {
-    id: G('id'), patient: G('patient'), doctor: G('doctor'),
-    distributor: G('distributor'), clinic: G('clinic'), status: G('status'),
-    date: G('creation_date'), status_change: G('status_change_date'),
-    action: G('action_required_for'), overdue: G('overdue_for'), extra: G('number_of_extra_refinements')
+    id:G('id'), patient:G('patient'), doctor:G('doctor'),
+    distributor:G('distributor'), clinic:G('clinic'), status:G('status'),
+    date:G('creation_date'), status_change:G('status_change_date'),
+    action:G('action_required_for'), overdue:G('overdue_for'), extra:G('number_of_extra_refinements')
   };
-  var cases = [];
-  for (var i = 1; i < lines.length; i++) {
-    var p = lines[i].split(sep).map(function(v){ return v.trim().replace(/^"|"$/g,''); });
-    var cid = idx.id >= 0 ? p[idx.id] : '';
-    if (!cid || !cid.trim()) continue;
-    var cidTrimmed = cid.trim();
-    if (!cidTrimmed || isNaN(Number(cidTrimmed))) continue; // skip empty/non-numeric
+  function V(i) { var v=i>=0?p[i]:''; return (v===''||v===null||v===undefined)?null:v; }
+  var cases=[], p;
+  for (var i=1; i<lines.length; i++) {
+    p = lines[i].split(sep).map(function(v){ return v.trim().replace(/^"|"$/g,''); });
+    var cid = idx.id>=0 ? p[idx.id] : '';
+    if (!cid || !cid.trim() || isNaN(Number(cid.trim()))) continue;
     cases.push({
-      case_id: cidTrimmed,
-      patient_name:                idx.patient>=0&&p[idx.patient]!==''?p[idx.patient]:null,
-      doctor:                      idx.doctor>=0&&p[idx.doctor]!==''?p[idx.doctor]:null,
-      distributor:                 idx.distributor>=0&&p[idx.distributor]!==''?p[idx.distributor]:null,
-      clinic:                      idx.clinic>=0&&p[idx.clinic]!==''?p[idx.clinic]:null,
-      current_status:              idx.status>=0&&p[idx.status]!==''?p[idx.status]:null,
-      creation_date:               idx.date>=0&&p[idx.date]!==''?p[idx.date]:null,
-      status_change_date:          idx.status_change>=0&&p[idx.status_change]!==''?p[idx.status_change]:null,
-      action_required_for:         idx.action>=0&&p[idx.action]!==''?p[idx.action]:null,
-      overdue_for:                 idx.overdue>=0&&p[idx.overdue]!==''?p[idx.overdue]:null,
-      number_of_extra_refinements: idx.extra>=0&&p[idx.extra]!==''?p[idx.extra]:null
+      case_id:              cid.trim(),
+      patient_name:         V(idx.patient),
+      doctor:               V(idx.doctor),
+      distributor:          V(idx.distributor),
+      clinic:               V(idx.clinic),
+      current_status:       V(idx.status),
+      creation_date:        V(idx.date),
+      status_change_date:   V(idx.status_change),
+      action_required_for:  V(idx.action),
+      overdue_for:          V(idx.overdue),
+      number_of_extra_refinements: V(idx.extra)
     });
   }
   if (!cases.length) { msg('No valid cases found. Check column names.','var(--red)'); return; }
@@ -663,46 +837,31 @@ function parseCSV(text, filename) {
   document.getElementById('prevSub').textContent = cases.length + ' cases will be imported';
   document.getElementById('prevRows').innerHTML = cases.slice(0,20).map(function(c){
     return '<tr><td><span class="badge b-b">CSV</span></td>' +
-      '<td class="mono">'+c.case_id+'</td><td>'+c.patient_name+'</td>' +
-      '<td style="color:var(--mu)">'+c.doctor+'</td>' +
+      '<td class="mono">'+c.case_id+'</td><td>'+(c.patient_name||'')+'</td>' +
+      '<td style="color:var(--mu)">'+(c.doctor||'')+'</td>' +
       '<td>'+statusBadge(c.current_status)+'</td>' +
       '<td class="mono">'+fdt(c.creation_date)+'</td></tr>';
   }).join('');
   document.getElementById('previewCard').style.display = 'block';
 }
 
-// ── SAVE CASES ─────────────────────────────────────────────────────────────
+// ── SAVE CASES ────────────────────────────────────────────────────────────
 async function saveCasesData(cases, filename) {
   document.getElementById('progTitle').textContent = 'Saving ' + cases.length + ' cases...';
-  var newCount = 0, updCount = 0;
-  var batchSize = 100;
-  for (var i = 0; i < cases.length; i += batchSize) {
-    // Normalise every row — cast case_id to INT, drop rows with invalid ID
-    var batch = cases.slice(i, i + batchSize).map(function(c) {
-      return Object.assign({}, c);
-    }).filter(function(c){ return c.case_id && c.case_id.toString().trim() !== ''; });
+  var newCount=0, updCount=0, batchSize=100;
+  for (var i=0; i<cases.length; i+=batchSize) {
+    var batch = cases.slice(i,i+batchSize).filter(function(c){
+      return c.case_id && c.case_id.toString().trim() !== '';
+    });
     if (!batch.length) continue;
-
     document.getElementById('progFill').style.width = Math.round(i/cases.length*100) + '%';
     document.getElementById('progSub').textContent = (i+batch.length) + ' / ' + cases.length;
 
-    // Check existing for history tracking
-    var ids = batch.map(function(c){ return c.case_id; }).filter(function(n){ return n && n.toString().trim() !== ''; });
-    if (!ids.length) { continue; }
+    var ids = batch.map(function(c){ return c.case_id; });
     var ex = await sb.from('bloom_cases').select('case_id,current_status').in('case_id', ids);
-    if (ex.error) console.warn('[Bloom] Check query error:', ex.error.message);
     var existMap = {};
-    (ex.data||[]).forEach(function(e){ existMap[parseInt(e.case_id,10)] = e.current_status; });
+    (ex.data||[]).forEach(function(e){ existMap[String(e.case_id)] = e.current_status; });
 
-    // Pre-flight: verify all case_ids are valid integers
-    var badRows = batch.filter(function(c){ return !c.case_id || c.case_id.toString().trim() === '' || c.case_id === 'NaN'; });
-    if (badRows.length) {
-      console.error('[Bloom] Bad rows found:', JSON.stringify(badRows.slice(0,3)));
-      batch = batch.filter(function(c){ return typeof c.case_id === 'number' && !isNaN(c.case_id) && c.case_id > 0; });
-    }
-    if (!batch.length) continue;
-
-    // Upsert
     var ur = await sb.from('bloom_cases').upsert(batch, { onConflict:'case_id' });
     if (ur.error) {
       var em = ur.error.message||ur.error.hint||ur.error.details||JSON.stringify(ur.error);
@@ -710,79 +869,59 @@ async function saveCasesData(cases, filename) {
       document.getElementById('progTitle').textContent = '❌ '+em;
       return;
     }
-
-    // History
-    var hist = [];
+    var hist=[];
     batch.forEach(function(c){
-      if (existMap[c.case_id] === undefined) newCount++;
-      else if (existMap[c.case_id] !== c.current_status) {
+      if (existMap[String(c.case_id)]===undefined) newCount++;
+      else if (existMap[String(c.case_id)] !== c.current_status) {
         updCount++;
-        hist.push({case_id:String(c.case_id), patient_name:c.patient_name,
-                   old_status:existMap[c.case_id], new_status:c.current_status,
-                   changed_at:new Date().toISOString()});
+        hist.push({case_id:String(c.case_id),patient_name:c.patient_name,
+          old_status:existMap[String(c.case_id)],new_status:c.current_status,
+          changed_at:new Date().toISOString()});
       }
     });
     if (hist.length) await sb.from('bloom_case_history').insert(hist);
   }
   document.getElementById('progFill').style.width = '100%';
-  await sb.from('bloom_imports').insert([{filename:filename,import_type:'csv',new_cases:newCount,updated_cases:updCount,imported_at:new Date().toISOString()}]);
+  await sb.from('bloom_imports').insert([{filename:filename,import_type:'csv',
+    new_cases:newCount,updated_cases:updCount,imported_at:new Date().toISOString()}]);
   document.getElementById('kNew').textContent = newCount;
   document.getElementById('kChanged').textContent = updCount;
-  ntf(newCount+' new, '+updCount+' updated cases!','ok');
+  ntf(newCount+' new, '+updCount+' updated!','ok');
   document.getElementById('previewCard').style.display='none';
   pendingImport=null; msg('','');
   await loadAll();
 }
 
-// ── SAVE EXCEL ─────────────────────────────────────────────────────────────
+// ── SAVE EXCEL ────────────────────────────────────────────────────────────
 async function saveExcelData(shipRows, alRows, filename) {
   document.getElementById('progTitle').textContent = 'Saving Excel...';
-  document.getElementById('progFill').style.width = '20%';
   document.getElementById('uploadProg').style.display = 'block';
+  document.getElementById('progFill').style.width = '20%';
 
-  // Deduplicate alRows by case_number (keep last occurrence)
-  var alMap = {};
-  alRows.forEach(function(r){ alMap[r.case_number] = r; });
-  var alDeduped = Object.values(alMap);
-  console.log('[Bloom] aligner_details: '+alRows.length+' rows → '+alDeduped.length+' after dedup');
-
-  // Save aligner details (upsert by case_number)
-  if (alDeduped.length) {
-    for (var i = 0; i < alDeduped.length; i += 100) {
-      var ar = await sb.from('bloom_aligner_details').upsert(alDeduped.slice(i,i+100), { onConflict:'case_number' });
-      if (ar.error) {
-        var em = ar.error.message||ar.error.hint||ar.error.details||JSON.stringify(ar.error);
-        ntf('Aligner details error: '+em,'err');
-        document.getElementById('progTitle').textContent = '❌ '+em;
-        console.error('[Bloom] aligner_details error:', ar.error);
-        return;
-      }
+  if (alRows.length) {
+    var alMap={};
+    alRows.forEach(function(r){ alMap[r.case_number]=r; });
+    var alDeduped = Object.values(alMap);
+    for (var i=0; i<alDeduped.length; i+=100) {
+      var ar = await sb.from('bloom_aligner_details').upsert(alDeduped.slice(i,i+100),{onConflict:'case_number'});
+      if (ar.error) { ntf('Aligner error: '+(ar.error.message||JSON.stringify(ar.error)),'err'); return; }
     }
   }
   document.getElementById('progFill').style.width = '60%';
 
-  // Save shipping rows — delete old then insert fresh (avoids unique constraint issues)
   if (shipRows.length) {
-    // Get unique case numbers in this batch
-    var caseNums = [...new Set(shipRows.map(function(r){ return r.case_number; }))];
-    // Delete existing shipping for these cases
-    for (var j = 0; j < caseNums.length; j += 50) {
-      await sb.from('bloom_aligners').delete().in('case_number', caseNums.slice(j,j+50));
+    var caseNums=[...new Set(shipRows.map(function(r){return r.case_number;}))];
+    for (var j=0; j<caseNums.length; j+=50) {
+      await sb.from('bloom_aligners').delete().in('case_number',caseNums.slice(j,j+50));
     }
-    // Insert fresh
-    for (var k = 0; k < shipRows.length; k += 100) {
+    for (var k=0; k<shipRows.length; k+=100) {
       var sr = await sb.from('bloom_aligners').insert(shipRows.slice(k,k+100));
-      if (sr.error) {
-        var em2 = sr.error.message||sr.error.hint||sr.error.details||JSON.stringify(sr.error);
-        ntf('Shipping error: '+em2,'err');
-        document.getElementById('progTitle').textContent = '❌ '+em2;
-        console.error('[Bloom] aligners error:', sr.error);
-        return;
-      }
+      if (sr.error) { ntf('Shipping error: '+(sr.error.message||JSON.stringify(sr.error)),'err'); return; }
     }
   }
   document.getElementById('progFill').style.width = '90%';
-  await sb.from('bloom_imports').insert([{filename:filename,import_type:'excel',new_cases:alRows.length,updated_cases:0,imported_at:new Date().toISOString()}]);
+  await sb.from('bloom_imports').insert([{filename:filename,import_type:'excel',
+    new_cases:alRows.length,updated_cases:0,imported_at:new Date().toISOString()}]);
   document.getElementById('progFill').style.width='100%';
   ntf('Excel saved: '+alRows.length+' aligner records!','ok');
   document.getElementById('previewCard').style.display='none';
@@ -790,35 +929,29 @@ async function saveExcelData(shipRows, alRows, filename) {
   await loadAll();
 }
 
-// ── CONFIRM IMPORT ─────────────────────────────────────────────────────────
+// ── CONFIRM IMPORT ────────────────────────────────────────────────────────
 async function confirmImport() {
   if (!pendingImport) return;
   var btn = document.getElementById('btnConfirmImport');
-  btn.disabled = true; btn.textContent = '⏳ Importing...';
-  document.getElementById('uploadProg').style.display = 'block';
+  btn.disabled=true; btn.textContent='⏳ Importing...';
+  document.getElementById('uploadProg').style.display='block';
   try {
     if (pendingImport.type==='csv') await saveCasesData(pendingImport.data, pendingImport.filename);
     else await saveExcelData(pendingImport.shipping, pendingImport.aligners, pendingImport.filename);
-  } catch(err) {
-    msg('Import error: '+err.message,'var(--red)');
-    ntf('Error: '+err.message,'err');
-  }
+  } catch(err) { msg('Error: '+err.message,'var(--red)'); ntf('Error: '+err.message,'err'); }
   btn.disabled=false; btn.textContent='⚡ Confirm Import';
   document.getElementById('uploadProg').style.display='none';
 }
 
-// ── LOAD XLSX LAZY ─────────────────────────────────────────────────────────
+// ── LOAD XLSX ─────────────────────────────────────────────────────────────
 function loadXLSX(cb) {
   if (XLSX||window.XLSX) { XLSX=window.XLSX||XLSX; cb(); return; }
-  var cdns = [
-    'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
-    'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js',
-    'https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js'
-  ];
+  var cdns=['https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+            'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js'];
   var i=0;
   function tryNext() {
     if (i>=cdns.length) { msg('❌ Cannot load Excel library','var(--red)'); return; }
-    msg('Loading Excel ('+(i+1)+'/3)...','var(--blue)');
+    msg('Loading Excel ('+(i+1)+'/2)...','var(--blue)');
     var s=document.createElement('script'); s.src=cdns[i++];
     s.onload=function(){ XLSX=window.XLSX; cb(); };
     s.onerror=tryNext;
@@ -827,98 +960,85 @@ function loadXLSX(cb) {
   tryNext();
 }
 
-// ── EXCEL PARSER ───────────────────────────────────────────────────────────
 function parseExcelFile(file) {
-  msg('Reading '+file.name+'...','var(--blue)');
-  var reader = new FileReader();
-  reader.onload = function(e) {
+  var reader=new FileReader();
+  reader.onload=function(e){
     try {
-      var wb = XLSX.read(e.target.result, {type:'array'});
-      var shipRows=[], alRows=[];
-      var ss = wb.Sheets['SHIPPING']||wb.Sheets[wb.SheetNames[0]];
-      if (ss) {
-        XLSX.utils.sheet_to_json(ss).forEach(function(r) {
-          var cn = String(r['Case number']||r['case_number']||'').trim();
-          if (cn) shipRows.push({
-            case_number: cn,
-            box_number: r['Box number']||r['box_number']||null,
-            aligners_per_box: r['Aligners per box']||r['aligners_per_box']||null,
-            date_of_shipment: r['Date of shipment']||r['date_of_shipment']||null,
-            shipping_number: r['Shipping number']||r['shipping_number']||null
-          });
-        });
-      }
-      var as = wb.Sheets['ALIGNER']||wb.Sheets['Aligners']||wb.Sheets[wb.SheetNames[1]];
-      if (as) {
-        XLSX.utils.sheet_to_json(as).forEach(function(r) {
-          var cn = String(r['Case number']||r['case_number']||'').trim();
-          if (cn) alRows.push({
-            case_number: cn,
-            aligner_upper: Number(r['Upper']||r['aligner_upper']||0),
-            aligner_lower: Number(r['Lower']||r['aligner_lower']||0),
-            number_of_aligners: r['Number of aligners']||r['number_of_aligners']||null,
-            order_type: r['Order type']||r['order_type']||null
-          });
-        });
-      }
+      var wb=XLSX.read(e.target.result,{type:'array'});
+      var shipRows=[],alRows=[];
+      var ss=wb.Sheets['SHIPPING']||wb.Sheets[wb.SheetNames[0]];
+      if(ss) XLSX.utils.sheet_to_json(ss).forEach(function(r){
+        var cn=String(r['Case number']||r['case_number']||'').trim();
+        if(cn) shipRows.push({case_number:cn,
+          box_number:r['Box number']||null,
+          aligners_per_box:r['Aligners per box']||null,
+          date_of_shipment:r['Date of shipment']||null,
+          shipping_number:r['Shipping number']||null});
+      });
+      var as=wb.Sheets['ALIGNER']||wb.Sheets['Aligners']||wb.Sheets[wb.SheetNames[1]];
+      if(as) XLSX.utils.sheet_to_json(as).forEach(function(r){
+        var cn=String(r['Case number']||r['case_number']||'').trim();
+        if(cn) alRows.push({case_number:cn,
+          aligner_upper:Number(r['Upper']||0),
+          aligner_lower:Number(r['Lower']||0),
+          number_of_aligners:r['Number of aligners']||null,
+          order_type:r['Order type']||null});
+      });
       msg((shipRows.length+alRows.length)+' rows from Excel.','var(--green)');
-      pendingImport = {type:'excel', shipping:shipRows, aligners:alRows, filename:file.name};
-      document.getElementById('prevTitle').textContent = 'Preview: '+file.name;
-      document.getElementById('prevSub').textContent = alRows.length+' aligner records, '+shipRows.length+' shipping rows';
-      document.getElementById('prevRows').innerHTML = alRows.slice(0,20).map(function(a){
-        return '<tr><td><span class="badge b-g">EXCEL</span></td>' +
-          '<td class="mono">'+a.case_number+'</td><td>'+a.aligner_upper+' / '+a.aligner_lower+'</td>' +
+      pendingImport={type:'excel',shipping:shipRows,aligners:alRows,filename:file.name};
+      document.getElementById('prevTitle').textContent='Preview: '+file.name;
+      document.getElementById('prevSub').textContent=alRows.length+' aligner records, '+shipRows.length+' shipping rows';
+      document.getElementById('prevRows').innerHTML=alRows.slice(0,20).map(function(a){
+        return '<tr><td><span class="badge b-g">EXCEL</span></td>'+
+          '<td class="mono">'+a.case_number+'</td><td>'+a.aligner_upper+' / '+a.aligner_lower+'</td>'+
           '<td>'+a.number_of_aligners+'</td><td>'+a.order_type+'</td><td>—</td></tr>';
       }).join('');
       document.getElementById('previewCard').style.display='block';
-    } catch(err) { msg('❌ Error: '+err.message,'var(--red)'); }
+    } catch(err){ msg('❌ Error: '+err.message,'var(--red)'); }
   };
   reader.readAsArrayBuffer(file);
 }
 
-// ── EVENT LISTENERS ────────────────────────────────────────────────────────
-document.getElementById('csvInput').addEventListener('change', function() {
-  var f = this.files[0]; if (!f) return;
-  csvFilename = f.name;
-  msg('Reading '+f.name+'...','var(--blue)');
-  var r = new FileReader();
-  r.onload = function(e){ parseCSV(e.target.result, f.name); };
-  r.readAsText(f,'UTF-8');
-  this.value='';
+// ── EVENTS ────────────────────────────────────────────────────────────────
+document.getElementById('csvInput').addEventListener('change',function(){
+  var f=this.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(e){ parseCSV(e.target.result,f.name); };
+  r.readAsText(f,'UTF-8'); this.value='';
 });
-document.getElementById('xlsxInput').addEventListener('change', function() {
-  var f = this.files[0]; if (!f) return;
-  var self=this;
-  loadXLSX(function(){ parseExcelFile(f); });
-  this.value='';
+document.getElementById('xlsxInput').addEventListener('change',function(){
+  var f=this.files[0]; if(!f) return;
+  loadXLSX(function(){ parseExcelFile(f); }); this.value='';
 });
-document.getElementById('btnChooseCSV').addEventListener('click', function(){ document.getElementById('csvInput').click(); });
-document.getElementById('btnChooseXLSX').addEventListener('click', function(){ document.getElementById('xlsxInput').click(); });
-document.getElementById('btnConfirmImport').addEventListener('click', confirmImport);
-document.getElementById('btnCancelPreview').addEventListener('click', function(){ pendingImport=null; document.getElementById('previewCard').style.display='none'; msg('',''); });
-document.getElementById('caseSearch').addEventListener('input', function(){ casesPage=0; renderCases(); });
-document.getElementById('caseStatus').addEventListener('change', function(){ casesPage=0; renderCases(); });
-document.getElementById('caseDoctor').addEventListener('change', function(){ casesPage=0; renderCases(); });
-document.getElementById('casesPrev').addEventListener('click', function(){ if(casesPage>0){casesPage--;renderCases();} });
-document.getElementById('casesNext').addEventListener('click', function(){ casesPage++;renderCases(); });
-document.getElementById('alSearch').addEventListener('input', function(){ alPage=0; renderAligners(); });
-document.getElementById('alPrev').addEventListener('click', function(){ if(alPage>0){alPage--;renderAligners();} });
-document.getElementById('alNext').addEventListener('click', function(){ alPage++;renderAligners(); });
-document.getElementById('btnRefresh').addEventListener('click', loadAll);
-document.getElementById('btnCloseModal').addEventListener('click', function(){ document.getElementById('caseModal').classList.remove('on'); });
-document.getElementById('tabBtnCases').addEventListener('click',    function(){ switchTab('cases'); });
-document.getElementById('tabBtnChanges').addEventListener('click',  function(){ switchTab('changes'); });
-document.getElementById('tabBtnAligners').addEventListener('click', function(){ switchTab('aligners'); });
-document.getElementById('tabBtnImports').addEventListener('click',  function(){ switchTab('imports'); });
+document.getElementById('btnChooseCSV').addEventListener('click',function(){ document.getElementById('csvInput').click(); });
+document.getElementById('btnChooseXLSX').addEventListener('click',function(){ document.getElementById('xlsxInput').click(); });
+document.getElementById('btnConfirmImport').addEventListener('click',confirmImport);
+document.getElementById('btnCancelPreview').addEventListener('click',function(){ pendingImport=null; document.getElementById('previewCard').style.display='none'; msg('',''); });
+document.getElementById('caseSearch').addEventListener('input',function(){ casesPage=0; renderCases(); });
+document.getElementById('caseStatus').addEventListener('change',function(){ casesPage=0; renderCases(); });
+document.getElementById('caseDoctor').addEventListener('change',function(){ casesPage=0; renderCases(); });
+document.getElementById('caseDateFrom').addEventListener('change',function(){ casesPage=0; renderCases(); });
+document.getElementById('caseDateTo').addEventListener('change',function(){ casesPage=0; renderCases(); });
+document.getElementById('casesPrev').addEventListener('click',function(){ if(casesPage>0){casesPage--;renderCases();} });
+document.getElementById('casesNext').addEventListener('click',function(){ casesPage++;renderCases(); });
+document.getElementById('alSearch').addEventListener('input',function(){ alPage=0; renderAligners(); });
+document.getElementById('alOrderType').addEventListener('change',function(){ alPage=0; renderAligners(); });
+document.getElementById('alDateFrom').addEventListener('change',function(){ alPage=0; renderAligners(); });
+document.getElementById('alDateTo').addEventListener('change',function(){ alPage=0; renderAligners(); });
+document.getElementById('alPrev').addEventListener('click',function(){ if(alPage>0){alPage--;renderAligners();} });
+document.getElementById('alNext').addEventListener('click',function(){ alPage++;renderAligners(); });
+document.getElementById('btnRefresh').addEventListener('click',loadAll);
+document.getElementById('btnCloseModal').addEventListener('click',function(){ document.getElementById('caseModal').classList.remove('on'); });
+document.getElementById('tabBtnCases').addEventListener('click',function(){ switchTab('cases'); });
+document.getElementById('tabBtnChanges').addEventListener('click',function(){ switchTab('changes'); });
+document.getElementById('tabBtnAligners').addEventListener('click',function(){ switchTab('aligners'); });
+document.getElementById('tabBtnImports').addEventListener('click',function(){ switchTab('imports'); });
+document.getElementById('tabBtnAnalytics').addEventListener('click',function(){ switchTab('analytics'); });
 
-// Expose to window for HTML onclick
-window.sortBy       = sortBy;
-window.sortAligners = sortAligners;
-window.openCase     = openCase;
-window.confirmImport= confirmImport;
-window.switchTab    = switchTab;
+window.sortBy=sortBy; window.sortAligners=sortAligners;
+window.openCase=openCase; window.confirmImport=confirmImport; window.switchTab=switchTab;
 
-// ── INIT ───────────────────────────────────────────────────────────────────
+// ── INIT ──────────────────────────────────────────────────────────────────
 dbg('Connecting...');
 loadAll();
 
