@@ -639,9 +639,11 @@ function parseCSV(text, filename) {
   for (var i = 1; i < lines.length; i++) {
     var p = lines[i].split(sep).map(function(v){ return v.trim().replace(/^"|"$/g,''); });
     var cid = idx.id >= 0 ? p[idx.id] : '';
-    if (!cid) continue;
+    if (!cid || !cid.trim()) continue;
+    var cidInt = parseInt(cid.trim(), 10);
+    if (isNaN(cidInt)) continue; // skip non-numeric IDs
     cases.push({
-      case_id: cid,
+      case_id: cidInt,
       patient_name: idx.patient>=0 ? p[idx.patient] : '',
       doctor: idx.doctor>=0 ? p[idx.doctor] : '',
       distributor: idx.distributor>=0 ? p[idx.distributor] : '',
@@ -679,12 +681,16 @@ async function saveCasesData(cases, filename) {
     document.getElementById('progFill').style.width = Math.round(i/cases.length*100) + '%';
     document.getElementById('progSub').textContent = (i+batch.length) + ' / ' + cases.length;
     // Check existing for history
-    var ids = batch.map(function(c){ return c.case_id; });
+    var ids = batch.map(function(c){ return parseInt(c.case_id,10); }).filter(function(n){ return !isNaN(n); });
     var ex = await sb.from('bloom_cases').select('case_id,current_status').in('case_id', ids);
     var existMap = {};
     (ex.data||[]).forEach(function(e){ existMap[e.case_id]=e.current_status; });
     // Upsert
-    var ur = await sb.from('bloom_cases').upsert(batch, { onConflict:'case_id' });
+    // Ensure case_id is integer for all rows
+    var cleanBatch = batch.map(function(c) {
+      return Object.assign({}, c, { case_id: parseInt(c.case_id, 10) });
+    }).filter(function(c){ return !isNaN(c.case_id); });
+    var ur = await sb.from('bloom_cases').upsert(cleanBatch, { onConflict:'case_id' });
     if (ur.error) {
       var e = ur.error;
       var em = e.message||e.hint||e.details||JSON.stringify(e);
