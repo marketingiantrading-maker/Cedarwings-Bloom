@@ -427,6 +427,20 @@ async function loadAll() {
   var ri = await sb.from('bloom_imports').select('id', { count: 'exact', head: true });
   document.getElementById('kImports').textContent = ri.count || 0;
 
+  // Check if new columns exist in data
+  if (allCases.length > 0) {
+    var s = allCases[0];
+    var hasAction = s.action_required_for !== undefined;
+    var hasOverdue = s.overdue_for !== undefined;
+    if (!hasAction || !hasOverdue) {
+      console.warn('[Bloom] Missing columns! action_required_for:', hasAction, 'overdue_for:', hasOverdue);
+      console.warn('[Bloom] Run SQL: ALTER TABLE bloom_cases ADD COLUMN IF NOT EXISTS action_required_for TEXT; ALTER TABLE bloom_cases ADD COLUMN IF NOT EXISTS overdue_for TEXT;');
+    } else {
+      var nonNullAction = allCases.filter(function(c){ return c.action_required_for && c.action_required_for.trim(); }).length;
+      var nonNullOverdue = allCases.filter(function(c){ return c.overdue_for && c.overdue_for.trim(); }).length;
+      console.log('[Bloom] action_required_for non-null:', nonNullAction, '/ overdue_for non-null:', nonNullOverdue);
+    }
+  }
   dbg('All data loaded! ' + allCases.length + ' cases, ' + allAligners.length + ' aligner records.');
   applySort('cases');
   casesPage = 0;
