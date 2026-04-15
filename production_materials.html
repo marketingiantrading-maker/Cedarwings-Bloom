@@ -187,7 +187,7 @@ tbody tr:hover{background:#f8fafc}
       <div class="card">
         <div class="card-t">📦 Loaded Material Lots</div>
         <div class="card-s">Materials currently loaded in machines — remaining capacity and estimated aligners left</div>
-        <div class="lot-grid" id="lotsOverview"><div style="color:var(--dim);font-size:13px">Loading…</div></div>
+        <div class="lot-grid" id="lotsOverview"><div style="color:var(--dim);font-size:13px">—</div></div>
       </div>
 
       <!-- ALIGNER COUNTER TODAY -->
@@ -203,7 +203,7 @@ tbody tr:hover{background:#f8fafc}
       <div class="card">
         <div class="card-t">📦 All Active Material Lots</div>
         <div class="card-s">Lots currently loaded in machines. When a lot is consumed, unload it and load the next one.</div>
-        <div class="lot-grid" id="lotsAll"><div style="color:var(--dim)">Loading…</div></div>
+        <div class="lot-grid" id="lotsAll"><div style="color:var(--dim)">—</div></div>
       </div>
     </div>
 
@@ -325,24 +325,25 @@ window.showTab=(t)=>{
 }
 
 /* ─── LOAD ─── */
+// Helper: query with 6s timeout so page never hangs
+async function qry(fn){
+  try{
+    const r=await Promise.race([fn(),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),6000))])
+    return r.data||[]
+  }catch(e){console.warn('Query failed:',e.message);return[]}
+}
+
 async function load(){
-  // Load all data - use try/catch per query to avoid one bad table crashing everything
-  const results = await Promise.allSettled([
-    sb.from('machines').select('id,machine_name,machine_type').order('machine_name'),
-    sb.from('yield_rules').select('*').order('step'),
-    sb.from('machine_lot_assignments').select('*').eq('is_active',true).order('assigned_at',{ascending:false}).limit(50),
-    sb.from('production_entries').select('*').order('entered_at',{ascending:false}).limit(200),
-    sb.from('material_consumption_log').select('*').order('recorded_at',{ascending:false}).limit(100)
-  ])
-  machines = results[0].status==='fulfilled' ? results[0].value.data||[] : []
-  yieldRules = results[1].status==='fulfilled' ? results[1].value.data||[] : []
-  activeLots = results[2].status==='fulfilled' ? results[2].value.data||[] : []
-  entries = results[3].status==='fulfilled' ? results[3].value.data||[] : []
-  consumption = results[4].status==='fulfilled' ? results[4].value.data||[] : []
-  // Fallback: if yield_rules empty try material_yield_rules
-  if(!yieldRules.length){
-    try{const{data}=await sb.from('material_yield_rules').select('*');yieldRules=data||[]}catch(e){}
-  }
+  // Render immediately with empty state — no more frozen "Loading..."
+  renderAll()
+  // Load each table independently — one failure never blocks others
+  machines = await qry(()=>sb.from('machines').select('id,machine_name,machine_type').order('machine_name'))
+  activeLots = await qry(()=>sb.from('machine_lot_assignments').select('*').eq('is_active',true).order('assigned_at',{ascending:false}).limit(50))
+  consumption = await qry(()=>sb.from('material_consumption_log').select('*').order('recorded_at',{ascending:false}).limit(50))
+  entries = await qry(()=>sb.from('production_entries').select('*').order('entered_at',{ascending:false}).limit(100))
+  // Try yield_rules, fallback to material_yield_rules
+  yieldRules = await qry(()=>sb.from('yield_rules').select('*').order('step'))
+  if(!yieldRules.length) yieldRules = await qry(()=>sb.from('material_yield_rules').select('*'))
   renderAll()
 }
 
