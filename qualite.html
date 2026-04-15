@@ -71,7 +71,24 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc}
 .sb,.topbar,.no-print{display:none!important}.content{margin-left:0!important}.body{padding:0!important}.qc-card{box-shadow:none!important;border:1px solid #000!important}.ci-btn{border:1px solid #999!important}}
 @media(max-width:768px){.sb{display:none}.content{margin-left:0}.check-grid{grid-template-columns:1fr}}
 </style>
-<script>const PAGE_KEY='qualite'</script>
+<script>const PAGE_KEY='qualite'
+window.applyManualLot=()=>{
+  const v=document.getElementById('manualLotInput').value.trim()
+  if(!v)return
+  const sel=document.getElementById('qcLot')
+  // Add option if not exists
+  if(![...sel.options].find(o=>o.value===v)){
+    const opt=document.createElement('option')
+    opt.value=v; opt.textContent='✏️ '+v+' (manuel)'; opt.setAttribute('data-manual','true')
+    sel.appendChild(opt)
+  }
+  sel.value=v
+  document.getElementById('manualLotBox').style.display='none'
+  // Also set lot info
+  document.getElementById('orderNo').value=v
+}
+
+</script>
 <script src="access.js"></script>
 <script src="lang.js"></script>
 </head>
@@ -111,12 +128,23 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc}
     <div class="sb-s">Terminal</div>
     <a href="clocking.html" class="nl"><span class="ic">⏱</span>Terminal Pointage</a>
   </nav>
-  <div class="sb-foot"><a href="index.html" class="nl"><span class="ic">←</span>Changer de rôle</a></div>
+  <div class="sb-foot">
+<button id="sbLangBtn" title="Changer la langue / Switch Language"
+  onclick="(function(){const l=localStorage.getItem('cw_lang')||'fr';const n=l==='fr'?'en':'fr';localStorage.setItem('cw_lang',n);document.getElementById('sbLangBtn').innerHTML=n==='fr'?'🇬🇧 EN':'🇫🇷 FR';if(typeof CW_LANG!=='undefined')CW_LANG.apply();})()"
+  style="display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:8px;
+         font-size:12px;font-weight:600;color:var(--mu);background:none;border:none;
+         cursor:pointer;width:100%;text-align:left;font-family:var(--f);
+         transition:background .12s,color .12s"
+  onmouseover="this.style.background='var(--bg)';this.style.color='var(--txt)'"
+  onmouseout="this.style.background='none';this.style.color='var(--mu)'">
+  🇫🇷 FR
+</button>
+<script>(function(){const l=localStorage.getItem('cw_lang')||'fr';const b=document.getElementById('sbLangBtn');if(b)b.innerHTML=l==='fr'?'🇬🇧 EN':'🇫🇷 FR';})()</script><a href="index.html" class="nl"><span class="ic">←</span>Changer de rôle</a></div>
 </aside>
 
 <div class="content">
-  <div class="topbar" style="justify-content:space-between">
-  <div style="display:flex;align-items:center;gap:8px;margin-left:auto"><button id="langToggle" onclick="if(typeof CW_LANG!=='undefined'){CW_LANG.toggle()}else{const l=localStorage.getItem('cw_lang')||'fr';localStorage.setItem('cw_lang',l==='fr'?'en':'fr');location.reload()}" style="display:inline-flex;align-items:center;gap:5px;padding:5px 11px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-family:var(--f);font-size:12px;font-weight:600;color:var(--txt);cursor:pointer;white-space:nowrap">🌐 FR/EN</button></div>
+  <div class="topbar">
+  
   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:1">
     <div><div class="tb-t">✅ Contrôle Qualité</div><div class="tb-s">Fiche de contrôle — Aligneurs dentaires — ISO 13485 · EN ISO 20795-1</div></div>
     <div style="display:flex;gap:8px" class="no-print">
@@ -124,8 +152,9 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc}
       <button class="btn bb" id="btnNewQC">+ Nouveau Contrôle</button>
     </div>
   </div>
+</div>
 
-  <div class="body">
+<div class="body">
     <!-- NEW QC FORM (shown when creating) -->
     <div id="newQCForm" style="display:none">
       <div class="qc-card">
@@ -138,7 +167,11 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc}
           <div class="section-title">Identification du Lot</div>
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:4px">
             <div><label style="font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">N° Lot *</label>
-              <select class="fi" id="qcLot"><option value="">— Sélectionner le lot —</option></select></div>
+              <select class="fi" id="qcLot"><option value="">— Sélectionner le lot —</option></select>
+              <div id="manualLotBox" style="display:none;margin-top:6px;gap:6px;align-items:center">
+                <input type="text" class="fi" id="manualLotInput" placeholder="Saisir n° lot manuellement..." style="flex:1"/>
+                <button class="btn bgh" style="padding:6px 12px;font-size:11px;white-space:nowrap" onclick="applyManualLot()">✓ Appliquer</button>
+              </div></div>
             <div><label style="font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Contrôleur *</label>
               <select class="fi" id="qcController"><option value="">— Sélectionner —</option></select></div>
             <div><label style="font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Type de contrôle</label>
@@ -527,14 +560,6 @@ load()
 })();
 </script>
 
-<script>
-(function(){
-  const l=localStorage.getItem('cw_lang')||'fr';
-  document.addEventListener('DOMContentLoaded',function(){
-    const b=document.getElementById('langToggle');
-    if(b){b.innerHTML=l==='fr'?'🇬🇧 English':'🇫🇷 Français';}
-  });
-})();
-</script>
+
 </body>
 </html>

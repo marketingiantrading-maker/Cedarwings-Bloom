@@ -176,11 +176,17 @@ const CW_LANG = {
 
   // ─── Toggle language ────────────────────────────────────────
   toggle() {
-    this.set(this.isFR() ? 'en' : 'fr');
+    const newLang = this.isFR() ? 'en' : 'fr';
+    this.set(newLang);
+    // Update toggle button text immediately
+    const btn = document.getElementById('langToggle');
+    if (btn) btn.textContent = newLang === 'fr' ? '🇬🇧 English' : '🇫🇷 Français';
+    // Apply all data-i18n translations
     this.apply();
-    // Re-render dynamic content if page has a render function
+    // Re-render dynamic content if page has functions
     if (typeof window.renderPage === 'function') window.renderPage();
     if (typeof window.applyFilter === 'function') window.applyFilter();
+    if (typeof window.render === 'function') window.render();
   },
 
   // ─── Render the language toggle button ──────────────────────
@@ -200,27 +206,29 @@ const CW_LANG = {
 
   // ─── Inject toggle into topbar ──────────────────────────────
   injectToggle() {
-    // Find the top-right area of the topbar
-    const topRight = document.querySelector('.top-right, [class*="top-right"]');
-    if (topRight && !document.getElementById('langToggle')) {
-      topRight.insertAdjacentHTML('afterbegin', this.renderToggle());
+    // Only inject if no langToggle exists yet
+    if (document.getElementById('langToggle')) {
+      this.apply(); // Just update the label
+      return;
     }
-    // Also try inserting next to refresh button
-    if (!document.getElementById('langToggle')) {
-      const refreshBtn = document.getElementById('refreshBtn');
-      if (refreshBtn) {
-        refreshBtn.insertAdjacentHTML('beforebegin', this.renderToggle() + ' ');
-      }
-    }
-    // Fallback: add to topbar
-    if (!document.getElementById('langToggle')) {
-      const topbar = document.querySelector('.topbar');
-      if (topbar) {
-        const div = document.createElement('div');
-        div.innerHTML = this.renderToggle();
-        topbar.appendChild(div.firstChild);
-      }
-    }
+    const lang = this.get();
+    const btn = document.createElement('button');
+    btn.id = 'langToggle';
+    btn.textContent = lang === 'fr' ? '🇬🇧 English' : '🇫🇷 Français';
+    btn.title = lang === 'fr' ? 'Switch to English' : 'Passer en Français';
+    btn.onclick = () => this.toggle();
+    Object.assign(btn.style, {
+      display:'inline-flex', alignItems:'center', gap:'5px',
+      padding:'5px 11px', background:'var(--card)',
+      border:'1.5px solid var(--bdr)', borderRadius:'8px',
+      fontFamily:'var(--f)', fontSize:'12px', fontWeight:'600',
+      color:'var(--txt)', cursor:'pointer', whiteSpace:'nowrap'
+    });
+    // Insert into topbar top-right
+    const topRight = document.querySelector('.top-right');
+    if (topRight) { topRight.prepend(btn); return; }
+    const topbar = document.querySelector('.topbar');
+    if (topbar) { topbar.appendChild(btn); }
   }
 };
 

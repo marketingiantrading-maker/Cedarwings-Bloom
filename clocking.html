@@ -169,7 +169,7 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
 
 <!-- TOPBAR -->
 <header class="topbar">
-  <div style="display:flex;align-items:center;gap:8px;margin-left:auto"><button id="langToggle" onclick="if(typeof CW_LANG!=='undefined'){CW_LANG.toggle()}else{const l=localStorage.getItem('cw_lang')||'fr';localStorage.setItem('cw_lang',l==='fr'?'en':'fr');location.reload()}" style="display:inline-flex;align-items:center;gap:5px;padding:5px 11px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-family:var(--f);font-size:12px;font-weight:600;color:var(--txt);cursor:pointer;white-space:nowrap">🌐 FR/EN</button></div>
+  
   <div class="tbl">
     <div class="tlogo">&#9881;</div>
     <div class="tnm">Cedarwings SAS</div>
@@ -1399,14 +1399,6 @@ cleanOrphans()
 })();
 </script>
 
-<script>
-(function(){
-  const l=localStorage.getItem('cw_lang')||'fr';
-  document.addEventListener('DOMContentLoaded',function(){
-    const b=document.getElementById('langToggle');
-    if(b){b.innerHTML=l==='fr'?'🇬🇧 English':'🇫🇷 Français';}
-  });
-})();
-</script>
+
 </body>
 </html>

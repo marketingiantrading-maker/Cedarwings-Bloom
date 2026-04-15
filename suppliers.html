@@ -203,12 +203,23 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc}
     <a href="clocking.html" class="nl"><span class="ic">⏱</span>Clocking Terminal</a>
   </nav>
   <div class="sb-foot">
+<button id="sbLangBtn" title="Changer la langue / Switch Language"
+  onclick="(function(){const l=localStorage.getItem('cw_lang')||'fr';const n=l==='fr'?'en':'fr';localStorage.setItem('cw_lang',n);document.getElementById('sbLangBtn').innerHTML=n==='fr'?'🇬🇧 EN':'🇫🇷 FR';if(typeof CW_LANG!=='undefined')CW_LANG.apply();})()"
+  style="display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:8px;
+         font-size:12px;font-weight:600;color:var(--mu);background:none;border:none;
+         cursor:pointer;width:100%;text-align:left;font-family:var(--f);
+         transition:background .12s,color .12s"
+  onmouseover="this.style.background='var(--bg)';this.style.color='var(--txt)'"
+  onmouseout="this.style.background='none';this.style.color='var(--mu)'">
+  🇫🇷 FR
+</button>
+<script>(function(){const l=localStorage.getItem('cw_lang')||'fr';const b=document.getElementById('sbLangBtn');if(b)b.innerHTML=l==='fr'?'🇬🇧 EN':'🇫🇷 FR';})()</script>
     <a href="index.html" class="nl"><span class="ic">←</span>Switch Role</a>
   </div>
 </aside>
 <div class="main">
   <div class="topbar">
-  <div style="display:flex;align-items:center;gap:8px;margin-left:auto"><button id="langToggle" onclick="if(typeof CW_LANG!=='undefined'){CW_LANG.toggle()}else{const l=localStorage.getItem('cw_lang')||'fr';localStorage.setItem('cw_lang',l==='fr'?'en':'fr');location.reload()}" style="display:inline-flex;align-items:center;gap:5px;padding:5px 11px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-family:var(--f);font-size:12px;font-weight:600;color:var(--txt);cursor:pointer;white-space:nowrap">🌐 FR/EN</button></div>
+  
     <div>
       <div style="font-size:16px;font-weight:800">🏭 Supplier Management</div>
       <div style="font-size:11px;color:var(--mu)">ISO 13485 Clause 7.4 — Purchasing & Supplier Evaluation</div>
@@ -460,13 +471,5 @@ load();
 })();
 </script>
 
-<script>
-(function(){
-  const l=localStorage.getItem('cw_lang')||'fr';
-  document.addEventListener('DOMContentLoaded',function(){
-    const b=document.getElementById('langToggle');
-    if(b){b.innerHTML=l==='fr'?'🇬🇧 English':'🇫🇷 Français';}
-  });
-})();
-</script>
+
 </body></html>

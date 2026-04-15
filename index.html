@@ -39,23 +39,26 @@ lbl{display:block;font-size:11px;font-weight:700;color:var(--mu);text-transform:
 <script src="lang.js"></script>
 </head>
 <body>
-<div style="position:fixed;top:16px;right:16px;z-index:100">
-  <button onclick="CW_LANG.toggle()" id="langToggle"
-    style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;
-           background:#fff;border:1.5px solid #e2e8f0;border-radius:8px;
-           font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;
-           color:#0f172a;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08)">
-    🇬🇧 English
-  </button>
-</div>
+<!-- Language Toggle — Login Page Only -->
+<button id="langToggle" title="Changer la langue / Switch Language"
+  onclick="(function(){const l=localStorage.getItem('cw_lang')||'fr';const n=l==='fr'?'en':'fr';localStorage.setItem('cw_lang',n);document.getElementById('langToggle').innerHTML=n==='fr'?'🇬🇧':'🇫🇷';if(typeof CW_LANG!=='undefined')CW_LANG.apply();})()"
+  style="position:fixed;top:16px;right:16px;z-index:200;
+         width:36px;height:36px;border-radius:50%;
+         background:#fff;border:1.5px solid #e2e8f0;
+         font-size:18px;cursor:pointer;
+         box-shadow:0 2px 8px rgba(0,0,0,.12);
+         display:flex;align-items:center;justify-content:center;
+         transition:box-shadow .15s"
+  onmouseover="this.style.boxShadow='0 4px 14px rgba(0,0,0,.18)'"
+  onmouseout="this.style.boxShadow='0 2px 8px rgba(0,0,0,.12)'">
+  🇫🇷
+</button>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const btn = document.getElementById('langToggle');
-  if (btn) {
-    const lang = localStorage.getItem('cw_lang') || 'fr';
-    btn.textContent = lang === 'fr' ? '🇬🇧 English' : '🇫🇷 Français';
-  }
-});
+(function(){
+  const l=localStorage.getItem('cw_lang')||'fr';
+  const b=document.getElementById('langToggle');
+  if(b) b.innerHTML=l==='fr'?'🇬🇧':'🇫🇷';
+})();
 </script>
 <div class="wrap">
   <div class="brand">
