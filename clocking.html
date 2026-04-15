@@ -946,7 +946,7 @@ window.pkgSavePartial=async()=>{
   const total=parseInt(document.getElementById('pkgInTotal').value)||0
   const upper=parseInt(document.getElementById('pkgInUpper').value)||0
   const lower=parseInt(document.getElementById('pkgInLower').value)||0
-  if(total<=0){document.getElementById('pkgErr').textContent='Entrez le nombre d'aligneurs produits';return}
+  if(total<=0){document.getElementById('pkgErr').textContent='Entrez le nombre aligneurs produits';return}
   document.getElementById('pkgModal').style.display='none'
   await _finalizeSession(total,upper,lower,true)
 }
@@ -1602,7 +1602,7 @@ cleanOrphans()
     <!-- Partial input (hidden until NO is clicked) -->
     <div id="pkgPartialBox" style="display:none;background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:16px;margin-bottom:14px">
       <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:12px">
-        📊 Combien d'aligneurs produits cette session ?
+ Entrez le nombre aligneurs produits cette session ?
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
         <div>
