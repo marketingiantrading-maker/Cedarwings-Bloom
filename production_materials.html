@@ -30,6 +30,9 @@ body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh
 .body{padding:20px 28px 80px}
 /* TABS */
 .tabs{display:flex;gap:2px;background:#f1f5f9;border-radius:12px;padding:3px;margin-bottom:22px;width:fit-content}
+.prod-tab{padding:5px 11px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;color:var(--mu);border:1px solid transparent;background:none;font-family:var(--f);white-space:nowrap;transition:all .12s}
+.prod-tab:hover{background:var(--bg);color:var(--txt)}
+.prod-tab.tab-on{background:var(--b50);color:var(--blue);border-color:var(--b100);font-weight:700}
 .tab{padding:8px 18px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;color:var(--mu);transition:all .15s;border:none;background:none;font-family:var(--f)}
 .tab.on{background:var(--card);color:var(--txt);box-shadow:var(--sh)}
 /* KPI */
@@ -150,29 +153,26 @@ tbody tr:hover{background:#f8fafc}
 </aside>
 
 <div class="content">
-  <div class="topbar">
-  
-  <div style="display:flex;align-items:center;justify-content:space-between;width:100%;flex-wrap:wrap;gap:10px">
-    <div>
-      <div class="tb-t">🏭 Production & Matières</div>
-      <div class="tb-s">Lots actifs, consommation matière et traçabilité production</div>
+  <div class="topbar" style="padding:10px 28px">
+  <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px">
+    <div style="flex-shrink:0">
+      <div class="tb-t" style="font-size:17px">🏭 Production & Matières</div>
+      <div class="tb-s">Lots actifs · consommation · traçabilité</div>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-      <!-- TABS in header -->
-      <div class="tabs" style="margin:0;border:none;background:transparent;padding:0;gap:4px">
-        <button class="tab on" onclick="showTab('overview')">📊 Overview</button>
-        <button class="tab" onclick="showTab('lots')">📦 Lots actifs</button>
-        <button class="tab" onclick="showTab('entries')">📋 Journal</button>
-        <button class="tab" onclick="showTab('consumption')">🔬 Consommation</button>
-      </div>
-      <div style="width:1px;height:28px;background:var(--bdr)"></div>
-      <a href="production.html" class="btn bgh" style="padding:7px 12px;font-size:12px">← Production</a>
-      <button class="btn bgh" id="btnYield" style="padding:7px 12px;font-size:12px">⚙ Règles</button>
-      <button class="btn bgh" id="btnLoadLot" style="padding:7px 12px;font-size:12px">📦 Charger Lot</button>
+    <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
+      <button class="prod-tab tab-on" id="tab-btn-overview" onclick="showTab('overview')">📊 Overview</button>
+      <button class="prod-tab" id="tab-btn-lots" onclick="showTab('lots')">📦 Lots</button>
+      <button class="prod-tab" id="tab-btn-entries" onclick="showTab('entries')">📋 Journal</button>
+      <button class="prod-tab" id="tab-btn-consumption" onclick="showTab('consumption')">🔬 Conso</button>
+      <span style="width:1px;height:20px;background:var(--bdr);display:inline-block;margin:0 3px"></span>
+      <a href="production.html" class="btn bgh" style="padding:5px 10px;font-size:11px">← Prod</a>
+      <button class="btn bgh" id="btnYield" style="padding:5px 10px;font-size:11px">⚙ Règles</button>
+      <button class="btn bgh" id="btnLoadLot" style="padding:5px 10px;font-size:11px">📦 Charger Lot</button>
     </div>
   </div>
+</div>
 
-  <div class="body">
+<div class="body">
     <!-- tabs moved to topbar -->
 
     <!-- OVERVIEW TAB -->
@@ -348,10 +348,13 @@ let machines=[],inventory=[],yieldRules=[],activeLots=[],entries=[],consumption=
 
 /* ─── TABS ─── */
 window.showTab=(t)=>{
-  document.querySelectorAll('[id^="tab-"]').forEach(el=>el.style.display='none')
+  document.querySelectorAll('[id^="tab-"]').forEach(el=>{if(el.tagName!=='BUTTON')el.style.display='none'})
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'))
-  document.getElementById('tab-'+t).style.display='block'
-  event.target.classList.add('on')
+  document.querySelectorAll('.prod-tab').forEach(b=>b.classList.remove('tab-on'))
+  const tabEl=document.getElementById('tab-'+t)
+  if(tabEl)tabEl.style.display='block'
+  const btnEl=document.getElementById('tab-btn-'+t)
+  if(btnEl)btnEl.classList.add('tab-on')
 }
 
 /* ─── LOAD ─── */
@@ -447,7 +450,7 @@ function renderCounterGrid(){
   const todayStr=new Date().toISOString().slice(0,10)
   const todayEntries=entries.filter(e=>e.session_date===todayStr)
   if(!todayEntries.length){
-    document.getElementById('counterGrid').innerHTML='<div style="color:var(--dim);font-size:13px;padding:10px">No production logged today. Click "Aucune production aujourd'hui. Créée auto lors du pointage Emballage.</div>'
+    document.getElementById('counterGrid').innerHTML='<div style="color:var(--dim);font-size:13px;padding:10px">Aucune production ce jour. Les entrees sont creees automatiquement lors du pointage Emballage.</div>'
     return
   }
   document.getElementById('counterGrid').innerHTML=todayEntries.map(e=>`
