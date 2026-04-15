@@ -151,13 +151,45 @@ window.applyManualLot=()=>{
     <div><div class="tb-t">✅ Contrôle Qualité</div><div class="tb-s">Fiche de contrôle — Aligneurs dentaires — ISO 13485 · EN ISO 20795-1</div></div>
     <div style="display:flex;gap:8px" class="no-print">
       <button class="btn bgh" onclick="window.print()">🖨 Imprimer</button>
-      <button class="btn bb" id="btnNewQC">+ Nouveau Contrôle</button>
+      <button class="btn bb" id="btnNewQC" style="font-size:13px;padding:9px 18px">✅ + Nouveau Contrôle</button>
     </div>
   </div>
 </div>
 
 <div class="body">
+    <!-- KPI SUMMARY ROW -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+      <div style="background:var(--card);border-radius:12px;box-shadow:var(--sh);padding:14px 16px;border-top:3px solid var(--green)">
+        <div style="font-size:22px;font-weight:800;font-family:var(--mono);color:var(--green)" id="kqcApproved">—</div>
+        <div style="font-size:11px;color:var(--mu);font-weight:600;margin-top:2px">✅ Approuvés</div>
+      </div>
+      <div style="background:var(--card);border-radius:12px;box-shadow:var(--sh);padding:14px 16px;border-top:3px solid var(--red)">
+        <div style="font-size:22px;font-weight:800;font-family:var(--mono);color:var(--red)" id="kqcRejected">—</div>
+        <div style="font-size:11px;color:var(--mu);font-weight:600;margin-top:2px">❌ Rejetés</div>
+      </div>
+      <div style="background:var(--card);border-radius:12px;box-shadow:var(--sh);padding:14px 16px;border-top:3px solid var(--amber)">
+        <div style="font-size:22px;font-weight:800;font-family:var(--mono);color:var(--amber)" id="kqcPending">—</div>
+        <div style="font-size:11px;color:var(--mu);font-weight:600;margin-top:2px">⏳ En attente QC</div>
+      </div>
+      <div style="background:var(--card);border-radius:12px;box-shadow:var(--sh);padding:14px 16px;border-top:3px solid var(--blue)">
+        <div style="font-size:22px;font-weight:800;font-family:var(--mono);color:var(--blue)" id="kqcTotal">—</div>
+        <div style="font-size:11px;color:var(--mu);font-weight:600;margin-top:2px">📋 Total QC</div>
+      </div>
+    </div>
+
     <!-- NEW QC FORM (shown when creating) -->
+    <!-- PENDING QC ALERT — shown when there are orders waiting for QC -->
+    <div id="pendingQCBanner" style="display:none;background:linear-gradient(135deg,var(--b50),#fff);border:1.5px solid var(--b100);border-radius:14px;padding:18px 22px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:28px">⏳</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:800;color:var(--blue)">Commandes en attente de contrôle qualité</div>
+          <div id="pendingQCList" style="font-size:12px;color:var(--mu);margin-top:4px"></div>
+        </div>
+        <button class="btn bb" onclick="document.getElementById('newQCForm').style.display='block';document.getElementById('newQCForm').scrollIntoView({behavior:'smooth'})">✅ Démarrer le contrôle →</button>
+      </div>
+    </div>
+
     <div id="newQCForm" style="display:none">
       <div class="qc-card">
         <div class="qc-header" id="qcFormHeader">
@@ -392,13 +424,13 @@ window.applyManualLot=()=>{
     </div>
 
     <!-- QC HISTORY TABLE -->
-    <div class="no-print">
+    <div class="no-print" id="qcHistorySection">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <div style="font-size:15px;font-weight:700">Historique des Contrôles</div>
+        <div style="font-size:15px;font-weight:700">📋 Historique des Contrôles</div>
       </div>
       <div class="tw">
         <table>
-          <thead><tr><th>N° Lot</th><th>Commande</th><th>Type</th><th>Contrôleur</th><th>Date</th><th>Résultat</th><th>NC</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Lot / Commande</th><th>Type</th><th>Contrôleur</th><th>Date</th><th>Points</th><th>Résultat</th><th>Non-Conformités</th><th>Actions</th></tr></thead>
           <tbody id="qcHistory"><tr><td colspan="8" class="ec">Chargement…</td></tr></tbody>
         </table>
       </div>
@@ -418,7 +450,7 @@ async function load(){
   const[lr,er,qr,stRes,ssRes]=await Promise.all([
     sb.from("production_lots").select("*").order("produced_at",{ascending:false}).limit(200),
     sb.from("employees").select("name").eq("is_active",true).order("name"),
-    sb.from("quality_controls").select("*,production_lots(lot_number,order_no)").order("performed_at",{ascending:false}).limit(200),
+    sb.from("quality_controls").select("*").order("performed_at",{ascending:false}).limit(200),
     sb.from("order_step_tracking").select("order_no,step,status,completed_at").eq("step","Packaging").eq("status","complete"),
     sb.from("system_settings").select("key,value")
   ])
@@ -485,19 +517,48 @@ async function load(){
   }
   // History
   const qcs=qr.data||[]
+  // Update KPIs
+  const kApproved=document.getElementById("kqcApproved")
+  const kRejected=document.getElementById("kqcRejected")
+  const kPending=document.getElementById("kqcPending")
+  const kTotal=document.getElementById("kqcTotal")
+  if(kApproved)kApproved.textContent=qcs.filter(q=>q.overall_result==="approved").length
+  if(kRejected)kRejected.textContent=qcs.filter(q=>q.overall_result==="rejected").length
+  if(kPending)kPending.textContent=pendingQCOrders.length
+  if(kTotal)kTotal.textContent=qcs.length
+  // Show/hide pending banner
+  const banner=document.getElementById("pendingQCBanner")
+  const pendList=document.getElementById("pendingQCList")
+  if(banner){
+    if(pendingQCOrders.length>0){
+      banner.style.display="block"
+      if(pendList)pendList.innerHTML=pendingQCOrders.map(o=>`<span style="display:inline-block;background:var(--b50);border:1px solid var(--b100);border-radius:6px;padding:2px 8px;margin:2px;font-family:var(--mono);font-weight:700">${o}</span>`).join("")
+    } else {
+      banner.style.display="none"
+    }
+  }
   document.getElementById("qcHistory").innerHTML=qcs.length?qcs.map(q=>{
     const rl=q.overall_result==="approved"?"b-g":q.overall_result==="rejected"?"b-r":"b-a"
-    const rlabel=q.overall_result==="approved"?"✓ Approuvé":q.overall_result==="rejected"?"✗ Rejeté":"⏸ En attente"
+    const rlabel=q.overall_result==="approved"?"✅ Approuvé":q.overall_result==="rejected"?"❌ Rejeté":"⏸ En attente"
+    // Use direct fields (lot_number, order_no are stored directly)
+    const lotNum=q.lot_number||"—"
+    const orderNo=q.order_no||"—"
+    const passCount=["visual_ok","surface_finish_ok","marking_ok","fit_check","trimline_ok","thickness_ok","dimensional_ok","material_ok","lot_material_ok","expiry_ok","cleanliness_ok","packaging_ok","label_ok","documentation_ok","qty_ok"].filter(k=>q[k]===true).length
+    const failCount=["visual_ok","surface_finish_ok","marking_ok","fit_check","trimline_ok","thickness_ok","dimensional_ok","material_ok","lot_material_ok","expiry_ok","cleanliness_ok","packaging_ok","label_ok","documentation_ok","qty_ok"].filter(k=>q[k]===false).length
     return`<tr>
-      <td class="mono">${q.production_lots?.lot_number||q.lot_number||"—"}</td>
-      <td class="mono">${q.production_lots?.order_no||q.order_no||"—"}</td>
+      <td style="font-weight:700"><div class="mono" style="font-size:12px">${lotNum}</div><div style="font-size:10px;color:var(--mu)">Cmd: ${orderNo}</div></td>
       <td><span class="badge b-gray">${q.check_type==="final"?"Final":q.check_type==="in_process"?"En cours":"Réception"}</span></td>
       <td>${q.performed_by||"—"}</td>
       <td class="mono" style="font-size:11px">${fdt(q.performed_at)}</td>
+      <td><div style="display:flex;gap:4px;align-items:center"><span style="color:var(--green);font-size:11px;font-weight:700">✓${passCount}</span><span style="color:var(--red);font-size:11px;font-weight:700">✗${failCount}</span></div></td>
       <td><span class="badge ${rl}">${rlabel}</span></td>
-      <td style="font-size:12px;color:var(--mu);max-width:200px;overflow:hidden;text-overflow:ellipsis">${q.non_conformities||"—"}</td>
+      <td style="font-size:11px;color:var(--mu);max-width:160px;overflow:hidden;text-overflow:ellipsis">${q.non_conformities||"—"}</td>
       <td><button class="btn bgh" style="padding:4px 10px;font-size:11px" onclick="printQC('${q.id}')">🖨</button></td>
-    </tr>`}).join(""):`<tr><td colspan="8" class="ec">Aucun contrôle enregistré</td></tr>`
+    </tr>`}).join(""):`<tr><td colspan="8" style="text-align:center;padding:44px 20px;color:var(--mu)">
+      <div style="font-size:36px;margin-bottom:10px">📋</div>
+      <div style="font-size:14px;font-weight:700;margin-bottom:6px">Aucun contrôle qualité enregistré</div>
+      <div style="font-size:12px">Cliquez sur <strong>+ Nouveau Contrôle</strong> pour créer votre premier QC</div>
+    </td></tr>`
   
   // Check URL param for pre-selected lot
   const params=new URLSearchParams(location.search)
@@ -607,7 +668,9 @@ window.submitQC=async(result)=>{
   ntf(msgs[result]||"QC enregistré","ok")
   document.getElementById("newQCForm").style.display="none"
   Object.keys(checks).forEach(k=>delete checks[k])
-  load()
+  await load()
+  const hs=document.getElementById("qcHistorySection")
+  if(hs) setTimeout(()=>hs.scrollIntoView({behavior:"smooth",block:"start"}),200)
 }
 
 window.printQC=(id)=>{window.print()}
