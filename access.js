@@ -39,6 +39,16 @@ const CW_ACCESS = {
 
   // Section order for sidebar
   SECTIONS: ['Operations','Team','Quality','Resources','Orders','System'],
+  
+  // Translated section labels
+  sectionLabel(sec) {
+    const lang = (typeof CW_LANG !== 'undefined') ? CW_LANG.get() : 'fr';
+    const labels = {
+      fr: { Operations:'Opérations', Team:'Équipe', Quality:'Qualité', Resources:'Ressources', Orders:'Commandes', System:'Système' },
+      en: { Operations:'Operations', Team:'Team', Quality:'Quality', Resources:'Resources', Orders:'Orders', System:'System' }
+    };
+    return (labels[lang] || labels.fr)[sec] || sec;
+  },
 
   // ─── Getters ───────────────────────────────────────────────
   getPages()  { try { return JSON.parse(sessionStorage.getItem(this.PK)||'["clocking","employee_profile"]') } catch { return ['clocking','employee_profile'] } },
@@ -88,14 +98,17 @@ const CW_ACCESS = {
     for (const section of this.SECTIONS) {
       const items = bySection[section];
       if (!items || !items.length) continue;
-      nav += `<div class="sb-s">${section}</div>`;
+      nav += `<div class="sb-s">${this.sectionLabel(section)}</div>`;
       for (const item of items) {
         const isActive = item.key === activeKey;
-        nav += `<a href="${item.key === 'employee_profile' ? 'employee_profile.html' : item.key + '.html'}" class="nl${isActive ? ' on' : ''}"><span class="ic">${item.icon}</span>${item.label}</a>`;
+        const itemLabel = (typeof CW_LANG !== 'undefined') ? (item['label_' + CW_LANG.get()] || item.label) : item.label;
+      nav += `<a href="${item.key === 'employee_profile' ? 'employee_profile.html' : item.key + '.html'}" class="nl${isActive ? ' on' : ''}"><span class="ic">${item.icon}</span>${itemLabel}</a>`;
       }
     }
 
     // Sidebar footer: user info + logout
+    const signOutText = (typeof CW_LANG !== 'undefined' && CW_LANG.isFR()) ? 'Déconnexion' : 'Sign Out';
+    const roleText = (typeof CW_LANG !== 'undefined' && CW_LANG.isFR()) ? role.replace(/_/g,' ') : role.replace(/_/g,' ');
     const footer = `
       <div class="sb-foot">
         <div style="display:flex;align-items:center;gap:10px;padding:8px 8px 10px;border-top:1px solid var(--bdr);margin-bottom:6px">
@@ -105,7 +118,7 @@ const CW_ACCESS = {
             <div style="font-size:10px;color:var(--mu);text-transform:capitalize">${role.replace(/_/g,' ')}</div>
           </div>
         </div>
-        <a href="index.html" onclick="sessionStorage.clear()" class="nl" style="color:var(--red);font-size:12px"><span class="ic">🚪</span>Sign Out</a>
+        <a href="index.html" onclick="sessionStorage.clear()" class="nl" style="color:var(--red);font-size:12px"><span class="ic">🚪</span>${signOutText}</a>
       </div>`;
 
     // Return full sidebar injection target content

@@ -5,6 +5,7 @@
 <title>Cedarwings SAS — Roles & Permissions</title>
 <script>const PAGE_KEY='roles'</script>
 <script src="access.js"></script>
+<script src="lang.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
 <style>
 
@@ -204,6 +205,7 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc}
 </aside>
 <div class="main">
   <div class="topbar">
+  <div style="display:flex;align-items:center;gap:8px;margin-left:auto"><button id="langToggle" onclick="if(typeof CW_LANG!=='undefined'){CW_LANG.toggle()}else{const l=localStorage.getItem('cw_lang')||'fr';localStorage.setItem('cw_lang',l==='fr'?'en':'fr');location.reload()}" style="display:inline-flex;align-items:center;gap:5px;padding:5px 11px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-family:var(--f);font-size:12px;font-weight:600;color:var(--txt);cursor:pointer;white-space:nowrap">🌐 FR/EN</button></div>
     <div>
       <div style="font-size:16px;font-weight:800">🔐 Roles & Permissions</div>
       <div style="font-size:11px;color:var(--mu)">Define roles and control which pages each role can access</div>
@@ -276,31 +278,6 @@ tbody tr:last-child td{border:none}tbody tr:hover{background:#f8fafc}
 <div style="position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--bdr);padding:6px 20px;display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--dim);z-index:999;font-family:var(--f)">
   <span>© 2026 <strong style="color:var(--mu)">Cedarwings SAS</strong> — Dental Aligner Manufacturing Platform</span>
   <span>v2.0 · ISO 13485 Compliant · All rights reserved</span>
-</div>
-
-<!-- HELP BUTTON + PANEL -->
-<button id="helpBtn" onclick="document.getElementById('helpPanel').style.display='flex'"
-  style="position:fixed;bottom:50px;right:20px;width:42px;height:42px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:20px;font-weight:800;cursor:pointer;box-shadow:0 4px 20px rgba(59,95,226,.5);z-index:9000;display:flex;align-items:center;justify-content:center;font-family:var(--f)">?</button>
-<div id="helpPanel" style="position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:9001;display:none;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--card);border-radius:18px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)">
-    <div style="padding:20px 22px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:12px">
-      <div style="width:40px;height:40px;background:var(--b50);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">🔐</div>
-      <div style="flex:1"><div style="font-size:15px;font-weight:800">Roles & Permissions</div><div style="font-size:11px;color:var(--mu)">Role: System Administrator</div></div>
-      <button onclick="document.getElementById('helpPanel').style.display='none'" style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:5px 12px;cursor:pointer;font-family:var(--f);font-size:12px;color:var(--mu)">✕</button>
-    </div>
-    <div style="padding:14px 22px 20px;font-size:13px;line-height:1.7">
-      <div style="background:var(--b50);border-left:3px solid var(--blue);border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;color:var(--blue);font-weight:500;margin-bottom:14px">
-        Define custom roles and assign specific page access to each. Every employee is assigned a role — they can only see pages their role allows.
-      </div>
-      <strong>How it works:</strong><br>
-      1. Create a role with a name, label, and select which pages it can access<br>
-      2. Go to Employees page and assign this role to team members<br>
-      3. When they log in, their sidebar shows ONLY their permitted pages<br>
-      4. Direct URL access to blocked pages redirects them to their home page<br><br>
-      <strong>Built-in roles:</strong> Manager (all pages), Employee (clocking only), Production Supervisor, Quality Control, HR Manager, Inventory Manager, Quality Manager, Order Manager<br><br>
-      <strong>Page Access Matrix:</strong> The table at the bottom shows all roles vs all pages — ✅ means access granted.
-    </div>
-  </div>
 </div>
 
 <script type="module">
@@ -490,5 +467,32 @@ window.saveRole=async()=>{
 };
 
 load();
+</script>
+
+<!-- HELP PANEL PLACEHOLDER - filled by lang.js CW_HELP -->
+<div id="helpPanelMount"></div>
+<script>
+(function() {
+  // Wait for lang.js to load then build the panel
+  function mountHelp() {
+    if (typeof CW_HELP === 'undefined' || typeof CW_HELP.buildPanel !== 'function') {
+      setTimeout(mountHelp, 50); return;
+    }
+    const html = CW_HELP.buildPanel('roles', '🔐', 'Rôles & Permissions', 'Roles & Permissions');
+    document.getElementById('helpPanelMount').innerHTML = html;
+    CW_HELP.init('roles', '🔐', 'Rôles & Permissions', 'Roles & Permissions');
+  }
+  document.addEventListener('DOMContentLoaded', mountHelp);
+})();
+</script>
+
+<script>
+(function(){
+  const l=localStorage.getItem('cw_lang')||'fr';
+  document.addEventListener('DOMContentLoaded',function(){
+    const b=document.getElementById('langToggle');
+    if(b){b.innerHTML=l==='fr'?'🇬🇧 English':'🇫🇷 Français';}
+  });
+})();
 </script>
 </body></html>

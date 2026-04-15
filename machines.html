@@ -96,6 +96,7 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
 </style>
 <script>const PAGE_KEY='machines'</script>
 <script src="access.js"></script>
+<script src="lang.js"></script>
 </head>
 <body>
 <aside class="sb">
@@ -126,7 +127,9 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
   <div class="sb-foot"><a href="index.html" class="nl"><span class="ic">&#8592;</span>Switch Role</a></div>
 </aside>
 <div class="content">
-  <div class="topbar">
+  <div class="topbar" style="justify-content:space-between">
+  <div style="display:flex;align-items:center;gap:8px;margin-left:auto"><button id="langToggle" onclick="if(typeof CW_LANG!=='undefined'){CW_LANG.toggle()}else{const l=localStorage.getItem('cw_lang')||'fr';localStorage.setItem('cw_lang',l==='fr'?'en':'fr');location.reload()}" style="display:inline-flex;align-items:center;gap:5px;padding:5px 11px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-family:var(--f);font-size:12px;font-weight:600;color:var(--txt);cursor:pointer;white-space:nowrap">🌐 FR/EN</button></div>
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:1">
     <div><div class="tb-t">Machine Dashboard</div><div class="tb-s">Status &middot; Maintenance &middot; Installed Materials &middot; Stock Linking</div></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn bb" id="btnAdd">+ Add Machine</button>
@@ -542,51 +545,32 @@ load();setInterval(load,20000)
 <button onclick="document.getElementById('helpModal').classList.add('on')" style="position:fixed;bottom:50px;right:20px;width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(59,95,226,.4);z-index:800;font-family:var(--f)">?</button>
 
 
-<!-- HELP BUTTON + PANEL: Machines -->
-<button id="helpBtn" onclick="document.getElementById('helpPanel').style.display='flex'" 
-  style="position:fixed;bottom:50px;right:20px;width:42px;height:42px;border-radius:50%;
-         background:var(--blue);color:#fff;border:none;font-size:20px;font-weight:800;
-         cursor:pointer;box-shadow:0 4px 20px rgba(59,95,226,.5);z-index:9000;
-         display:flex;align-items:center;justify-content:center;font-family:var(--f);
-         transition:transform .15s,box-shadow .15s"
-  onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 28px rgba(59,95,226,.7)'"
-  onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(59,95,226,.5)'">?</button>
 
-<div id="helpPanel" style="position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:9001;
-     display:none;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--card);border-radius:18px;width:100%;max-width:560px;
-              max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);
-              display:flex;flex-direction:column">
-    <!-- Header -->
-    <div style="padding:20px 22px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:12px;position:sticky;top:0;background:var(--card);border-radius:18px 18px 0 0;z-index:1">
-      <div style="width:40px;height:40px;background:var(--b50);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">⚙</div>
-      <div style="flex:1">
-        <div style="font-size:15px;font-weight:800;color:var(--txt)">Machines</div>
-        <div style="font-size:11px;color:var(--mu);margin-top:1px">Role: <strong>Production Manager / Maintenance Technician</strong></div>
-      </div>
-      <button onclick="document.getElementById('helpPanel').style.display='none'"
-        style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:5px 12px;
-               cursor:pointer;font-family:var(--f);font-size:12px;color:var(--mu)">✕ Close</button>
-    </div>
-    <!-- Purpose -->
-    <div style="padding:14px 22px 10px">
-      <div style="background:var(--b50);border-left:3px solid var(--blue);border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;color:var(--blue);font-weight:500;line-height:1.5">Register and manage all production equipment. Track which machine is assigned to which step, its current status, and link to full maintenance history.</div>
-    </div>
-    <!-- Process -->
-    <div style="padding:4px 22px 10px">
-      <div style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Process Flow</div>
-      <div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">1</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">1. Add machine</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Register machine with name, type, and assigned production step(s).</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">2</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">2. Set status</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Active = ready for production. Maintenance = under service. Out of Service = unavailable.</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">3</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">3. Monitor utilisation</div><div style="font-size:11px;color:var(--mu);margin-top:1px">See how many lots and sessions each machine has processed.</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">4</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">4. Log maintenance</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Click "Maintenance" to go to the maintenance log for this machine.</div></div></div>
-    </div>
-    <!-- Buttons -->
-    <div style="padding:4px 22px 20px">
-      <div style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Buttons & Controls</div>
-      <div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">+ Add Machine</span><span style="font-size:11px;color:var(--mu)">Register a new piece of equipment.</span></div><div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">✏️ Edit</span><span style="font-size:11px;color:var(--mu)">Update machine details or status.</span></div><div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">🔧 Maintenance</span><span style="font-size:11px;color:var(--mu)">View the full maintenance history for this machine.</span></div>
-    </div>
-    <!-- Footer -->
-    <div style="padding:12px 22px;border-top:1px solid var(--bdr);background:#f8fafc;border-radius:0 0 18px 18px">
-      <div style="font-size:10px;color:var(--dim);text-align:center">© 2026 Cedarwings SAS · ISO 13485 Platform v2.0 · Press ? anytime for this help</div>
-    </div>
-  </div>
-</div>
+<!-- HELP PANEL PLACEHOLDER - filled by lang.js CW_HELP -->
+<div id="helpPanelMount"></div>
+<script>
+(function() {
+  // Wait for lang.js to load then build the panel
+  function mountHelp() {
+    if (typeof CW_HELP === 'undefined' || typeof CW_HELP.buildPanel !== 'function') {
+      setTimeout(mountHelp, 50); return;
+    }
+    const html = CW_HELP.buildPanel('machines', '⚙', 'Machines', 'Machines');
+    document.getElementById('helpPanelMount').innerHTML = html;
+    CW_HELP.init('machines', '⚙', 'Machines', 'Machines');
+  }
+  document.addEventListener('DOMContentLoaded', mountHelp);
+})();
+</script>
+
+<script>
+(function(){
+  const l=localStorage.getItem('cw_lang')||'fr';
+  document.addEventListener('DOMContentLoaded',function(){
+    const b=document.getElementById('langToggle');
+    if(b){b.innerHTML=l==='fr'?'🇬🇧 English':'🇫🇷 Français';}
+  });
+})();
+</script>
 </body>
 </html>

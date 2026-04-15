@@ -128,6 +128,7 @@ tbody tr:hover{background:#f8fafc}
 </style>
 <script>const PAGE_KEY='manager'</script>
 <script src="access.js"></script>
+<script src="lang.js"></script>
 </head>
 <body>
 
@@ -184,6 +185,7 @@ tbody tr:hover{background:#f8fafc}
       <div class="page-date" id="pageDate">Loading…</div>
     </div>
     <div class="top-right">
+      <button id="langToggle" onclick="if(typeof CW_LANG!=='undefined'){CW_LANG.toggle();}else{const l=localStorage.getItem('cw_lang')||'fr';localStorage.setItem('cw_lang',l==='fr'?'en':'fr');location.reload();}" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-family:var(--f);font-size:12px;font-weight:600;color:var(--txt);cursor:pointer;transition:all .12s;white-space:nowrap" onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseout="this.style.borderColor='var(--bdr)';this.style.color='var(--txt)'">🌐 FR / EN</button>
       <div class="live-badge"><div class="live-dot"></div>Live</div>
       <div class="range-tabs">
         <button class="rt active" data-r="today">Today</button>
@@ -942,51 +944,32 @@ setTimeout(async()=>{
 <button onclick="document.getElementById('helpModal').classList.add('on')" style="position:fixed;bottom:50px;right:20px;width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(59,95,226,.4);z-index:800;font-family:var(--f)">?</button>
 
 
-<!-- HELP BUTTON + PANEL: Operations Dashboard -->
-<button id="helpBtn" onclick="document.getElementById('helpPanel').style.display='flex'" 
-  style="position:fixed;bottom:50px;right:20px;width:42px;height:42px;border-radius:50%;
-         background:var(--blue);color:#fff;border:none;font-size:20px;font-weight:800;
-         cursor:pointer;box-shadow:0 4px 20px rgba(59,95,226,.5);z-index:9000;
-         display:flex;align-items:center;justify-content:center;font-family:var(--f);
-         transition:transform .15s,box-shadow .15s"
-  onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 28px rgba(59,95,226,.7)'"
-  onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(59,95,226,.5)'">?</button>
 
-<div id="helpPanel" style="position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:9001;
-     display:none;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--card);border-radius:18px;width:100%;max-width:560px;
-              max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);
-              display:flex;flex-direction:column">
-    <!-- Header -->
-    <div style="padding:20px 22px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:12px;position:sticky;top:0;background:var(--card);border-radius:18px 18px 0 0;z-index:1">
-      <div style="width:40px;height:40px;background:var(--b50);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">📊</div>
-      <div style="flex:1">
-        <div style="font-size:15px;font-weight:800;color:var(--txt)">Operations Dashboard</div>
-        <div style="font-size:11px;color:var(--mu);margin-top:1px">Role: <strong>Manager / Director</strong></div>
-      </div>
-      <button onclick="document.getElementById('helpPanel').style.display='none'"
-        style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:5px 12px;
-               cursor:pointer;font-family:var(--f);font-size:12px;color:var(--mu)">✕ Close</button>
-    </div>
-    <!-- Purpose -->
-    <div style="padding:14px 22px 10px">
-      <div style="background:var(--b50);border-left:3px solid var(--blue);border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;color:var(--blue);font-weight:500;line-height:1.5">Your daily command centre. Shows real-time production performance, team activity, and ISO quality status. Refreshes every 30 seconds automatically.</div>
-    </div>
-    <!-- Process -->
-    <div style="padding:4px 22px 10px">
-      <div style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Process Flow</div>
-      <div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">1</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">1. Select period</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Use Today / This Week / This Month tabs — all 8 KPIs and charts update instantly.</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">2</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">2. Read KPIs</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Sessions = clock-ins. Efficiency = productive ÷ total. Aligners = from Bloom data. Cases = Packaging completions. Stock Alerts = items below minimum.</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">3</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">3. Check ISO panel</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Open NCs, Approved Suppliers, Planned Audits, ISO Score — click any card to go to that module.</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">4</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">4. Review charts</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Production trend (line), session types (doughnut), efficiency by employee (bar), materials consumed (bar).</div></div></div><div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start"><span style="background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px">5</span><div><div style="font-size:12px;font-weight:700;color:var(--txt)">5. Session log</div><div style="font-size:11px;color:var(--mu);margin-top:1px">Search or filter all clocked sessions. Click column headers to sort.</div></div></div>
-    </div>
-    <!-- Buttons -->
-    <div style="padding:4px 22px 20px">
-      <div style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Buttons & Controls</div>
-      <div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">🦷 + Log Production</span><span style="font-size:11px;color:var(--mu)">Quick-enter aligner production from Bloom data — order number, upper/lower count, employee.</span></div><div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">⬇ Export CSV</span><span style="font-size:11px;color:var(--mu)">Downloads all session data for selected period as a spreadsheet.</span></div><div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start"><span style="font-family:var(--mono);font-size:10px;background:#f1f5f9;border:1px solid var(--bdr);border-radius:5px;padding:2px 7px;white-space:nowrap;color:var(--blue);font-weight:700;flex-shrink:0">↻ Refresh</span><span style="font-size:11px;color:var(--mu)">Manually refresh all data immediately.</span></div>
-    </div>
-    <!-- Footer -->
-    <div style="padding:12px 22px;border-top:1px solid var(--bdr);background:#f8fafc;border-radius:0 0 18px 18px">
-      <div style="font-size:10px;color:var(--dim);text-align:center">© 2026 Cedarwings SAS · ISO 13485 Platform v2.0 · Press ? anytime for this help</div>
-    </div>
-  </div>
-</div>
+<!-- HELP PANEL PLACEHOLDER - filled by lang.js CW_HELP -->
+<div id="helpPanelMount"></div>
+<script>
+(function() {
+  // Wait for lang.js to load then build the panel
+  function mountHelp() {
+    if (typeof CW_HELP === 'undefined' || typeof CW_HELP.buildPanel !== 'function') {
+      setTimeout(mountHelp, 50); return;
+    }
+    const html = CW_HELP.buildPanel('manager', '📊', 'Tableau de bord', 'Dashboard');
+    document.getElementById('helpPanelMount').innerHTML = html;
+    CW_HELP.init('manager', '📊', 'Tableau de bord', 'Dashboard');
+  }
+  document.addEventListener('DOMContentLoaded', mountHelp);
+})();
+</script>
+
+<script>
+(function(){
+  const l=localStorage.getItem('cw_lang')||'fr';
+  document.addEventListener('DOMContentLoaded',function(){
+    const b=document.getElementById('langToggle');
+    if(b){b.innerHTML=l==='fr'?'🇬🇧 English':'🇫🇷 Français';}
+  });
+})();
+</script>
 </body>
 </html>
