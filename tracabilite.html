@@ -585,7 +585,7 @@ function renderMaterials(o){
   const sessionMachines=(o.sessions||[]).map(s=>s.machine).filter(Boolean)
   const trackingMachines=Object.values(o.steps||{}).map(s=>s.machine_name||s.machine).filter(Boolean)
   const orderMachines=[...new Set([...sessionMachines,...trackingMachines])]
-  console.log('[Matières] order='+o.order_no+' sessionMachines='+JSON.stringify(sessionMachines)+' machineLots='+machineLots.length)
+  console.log('[Matières] order='+o.order_no+' machines='+JSON.stringify(orderMachines)+' machineLots='+machineLots.length+' lots:'+JSON.stringify(machineLots.slice(0,3).map(l=>l.machine_name+'|'+l.lot_number)))
   
   // Find lots assigned to those machines
   const machineMatMap={}
@@ -626,14 +626,17 @@ function renderMaterials(o){
     mats=orderMachines.map(m=>({machine:m,item_name:'— Lot non assigné',lot_number:'Assigner un lot dans la page Machines',qty_remaining:null,noLot:true}))
     matSource='machines_only'
   } else if(machineLots.length>0){
-    // No machines in sessions but lots exist — show all active lots as reference
-    mats=machineLots.filter(ml=>ml.is_active!==false).map(ml=>({
+    // No session machine match — show ALL lots that were active (most recently assigned)
+    // This covers the case where time_sessions.machine is null but lots exist
+    const activeLots = machineLots.filter(ml=>ml.is_active===true||ml.is_active==='true')
+    const recentLots = activeLots.length>0 ? activeLots : machineLots.slice(0,6)
+    mats=recentLots.map(ml=>({
       machine:ml.machine_name||'Machine',
       item_name:ml.item_name||ml.material_name||'Matière',
       lot_number:ml.lot_number||'—',
       qty_remaining:ml.remaining_qty||ml.qty_remaining,
       noLot:false,
-      isActive:true
+      isActive:ml.is_active===true
     }))
     matSource=mats.length>0?'all_active':'none'
   } else {
