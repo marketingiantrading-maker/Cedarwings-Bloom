@@ -626,7 +626,7 @@ async function showMachinePicker(step,ord){
 
   // Multiple → show picker
   document.getElementById("machModalTitle").textContent=`${step} — Choisir la machine`
-  document.getElementById("machModalSub").textContent=`Commande ${ord} · Tapez la machine que vous utilisez`
+  document.getElementById("machModalSub").textContent=`Order ${ord} · Select machine que vous utilisez`
   const COLORS=["#3b5fe2","#16a34a","#d97706","#dc2626","#7c3aed","#0d9488"]
   document.getElementById("machList").innerHTML=[
     `<div onclick="window._pickMachine('${step}','${ord}','','')"
@@ -780,7 +780,7 @@ function startInactivityWatch(){
       clearInterval(inactivityInt)
       // Show red fullscreen warning
       document.getElementById("inactivityInfo").textContent=
-        `Étape: ${activeSession.step} · Commande: ${activeSession.order||"—"} · Démarrée à ${fT(activeSession.startTime.toISOString())}`
+        `Step: ${activeSession.step} · Order: ${activeSession.order||"—"} · Started at ${fT(activeSession.startTime.toISOString())}`
       document.getElementById("inactivityModal").style.display="flex"
     }
   },60000) // check every minute
@@ -806,7 +806,7 @@ window.inactivityStop=async()=>{
   activeSession=null
   document.getElementById("jobBox").style.display="none"
   document.getElementById("alertBanner").classList.remove("on")
-  setSt("Session clôturée automatiquement","Tâche toujours ouverte — un autre employé peut reprendre.","ok")
+  setSt("Session auto-closed","Taskhe toujours ouverte — un autre employé peut reprendre.","ok")
   document.getElementById("ord").value=""
   renderPipeline("")
   loadToday()
@@ -946,7 +946,7 @@ window.pkgSavePartial=async()=>{
   const total=parseInt(document.getElementById('pkgInTotal').value)||0
   const upper=parseInt(document.getElementById('pkgInUpper').value)||0
   const lower=parseInt(document.getElementById('pkgInLower').value)||0
-  if(total<=0){document.getElementById('pkgErr').textContent='Entrez le nombre aligneurs produits';return}
+  if(total<=0){document.getElementById('pkgErr').textContent='Enter the number of aligners produced';return}
   document.getElementById('pkgModal').style.display='none'
   await _finalizeSession(total,upper,lower,true)
 }
@@ -987,7 +987,7 @@ async function _finalizeSession(alignersDone,upperDone,lowerDone,isPartial){
         aligners_remaining:remaining,
         session_id:sess.id,
         source:'clocking',
-        notes:isPartial?'Production partielle — étape: Packaging':'Production complète — étape: Packaging',
+        notes:isPartial?'Partial production — Packaging step':'Complete production — Packaging step',
         entered_by:emp||null,
         entered_at:sessionStart.toISOString(),
         session_date:sessionStart.toISOString().slice(0,10)
@@ -1035,7 +1035,7 @@ async function _finalizeSession(alignersDone,upperDone,lowerDone,isPartial){
   document.getElementById('alertBanner').classList.remove('on')
   renderPipeline(ord)
   loadToday()
-  setSt('Session terminée','Pointage clôturé avec succès.','ok')
+  setSt('Session ended','Clocked out successfully.','ok')
 }
 
 window.endFromBanner=endSession
@@ -1474,7 +1474,7 @@ cleanOrphans()
 <div id="inactivityModal" style="display:none;position:fixed;inset:0;background:rgba(180,0,0,.88);z-index:900;align-items:center;justify-content:center;padding:20px">
   <div style="background:#fff;border-radius:20px;padding:32px;max-width:440px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)">
     <div style="font-size:52px;margin-bottom:12px">⚠️</div>
-    <div style="font-size:20px;font-weight:800;color:#dc2626;margin-bottom:8px">Session ouverte depuis 1 heure !</div>
+    <div style="font-size:20px;font-weight:800;color:#dc2626;margin-bottom:8px">Session running for over 1 hour!</div>
     <div style="font-size:13px;color:#64748b;line-height:1.6;margin-bottom:8px">Vous avez une session active non fermée.</div>
     <div style="font-size:13px;font-weight:700;background:#fef2f2;border:1px solid #fee2e2;border-radius:8px;padding:10px;margin-bottom:20px;color:#dc2626" id="inactivityInfo">—</div>
     <div style="display:flex;flex-direction:column;gap:10px">
@@ -1539,9 +1539,9 @@ cleanOrphans()
     if (typeof CW_HELP === 'undefined' || typeof CW_HELP.buildPanel !== 'function') {
       setTimeout(mountHelp, 50); return;
     }
-    const html = CW_HELP.buildPanel('clocking', '⏲', 'Terminal de Pointage', 'Clocking Terminal');
+    const html = CW_HELP.buildPanel('clocking', '⏲', 'Clocking Terminal', 'Clocking Terminal');
     document.getElementById('helpPanelMount').innerHTML = html;
-    CW_HELP.init('clocking', '⏲', 'Terminal de Pointage', 'Clocking Terminal');
+    CW_HELP.init('clocking', '⏲', 'Clocking Terminal', 'Clocking Terminal');
   }
   document.addEventListener('DOMContentLoaded', mountHelp);
 })();
@@ -1557,13 +1557,13 @@ cleanOrphans()
     <!-- Header -->
     <div style="text-align:center;margin-bottom:20px">
       <div style="font-size:44px;margin-bottom:8px">📦</div>
-      <div style="font-size:19px;font-weight:800;margin-bottom:4px">Étape Emballage terminée</div>
-      <div style="font-size:13px;color:#64748b">Commande <strong id="pkgOrder" style="color:#3b5fe2"></strong></div>
+      <div style="font-size:19px;font-weight:800;margin-bottom:4px">Packaging Step Complete</div>
+      <div style="font-size:13px;color:#64748b">Order <strong id="pkgOrder" style="color:#3b5fe2"></strong></div>
     </div>
 
     <!-- Bloom plan info -->
     <div style="background:#f0f4f8;border-radius:12px;padding:14px;margin-bottom:18px">
-      <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Plan Bloom</div>
+      <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Bloom Plan</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">
         <div>
           <div style="font-size:22px;font-weight:800;font-family:monospace;color:#0f172a" id="pkgPlanned">—</div>
@@ -1571,38 +1571,38 @@ cleanOrphans()
         </div>
         <div>
           <div style="font-size:22px;font-weight:800;font-family:monospace;color:#3b5fe2" id="pkgUpper">—</div>
-          <div style="font-size:10px;color:#64748b;font-weight:600">MAXI</div>
+          <div style="font-size:10px;color:#64748b;font-weight:600">UPPER</div>
         </div>
         <div>
           <div style="font-size:22px;font-weight:800;font-family:monospace;color:#d97706" id="pkgLower">—</div>
-          <div style="font-size:10px;color:#64748b;font-weight:600">MANDI</div>
+          <div style="font-size:10px;color:#64748b;font-weight:600">LOWER</div>
         </div>
       </div>
       <div style="margin-top:10px;padding-top:10px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;font-size:12px">
-        <span style="color:#64748b">Déjà produits: <strong id="pkgPrevDone" style="color:#16a34a">0</strong></span>
-        <span style="color:#64748b">Restant: <strong id="pkgRemaining" style="color:#dc2626">0</strong></span>
+        <span style="color:#64748b">Already produced: <strong id="pkgPrevDone" style="color:#16a34a">0</strong></span>
+        <span style="color:#64748b">Remaining: <strong id="pkgRemaining" style="color:#dc2626">0</strong></span>
       </div>
     </div>
 
     <!-- YES/NO question -->
     <div style="font-size:15px;font-weight:700;text-align:center;margin-bottom:16px">
-      Tous les aligneurs sont-ils produits ?
+      Are all aligners produced?
     </div>
     <div style="display:flex;gap:10px;margin-bottom:14px">
       <button id="pkgYesBtn" onclick="pkgAnswerYes()"
         style="flex:1;padding:14px;background:#16a34a;border:none;border-radius:12px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;font-family:var(--f)">
-        ✅ OUI — Cas complet
+        ✅ YES — Case complete
       </button>
       <button id="pkgNoBtn" onclick="pkgAnswerNo()"
         style="flex:1;padding:14px;background:#f1f5f9;border:1.5px solid #e2e8f0;border-radius:12px;font-size:15px;font-weight:700;color:#0f172a;cursor:pointer;font-family:var(--f)">
-        ⚠️ NON — Partiel
+        ⚠️ NO — Partial
       </button>
     </div>
 
     <!-- Partial input (hidden until NO is clicked) -->
     <div id="pkgPartialBox" style="display:none;background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:16px;margin-bottom:14px">
       <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:12px">
- Entrez le nombre aligneurs produits cette session ?
+ Enter the number of aligners produced cette session ?
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
         <div>
@@ -1612,13 +1612,13 @@ cleanOrphans()
             onfocus="this.style.borderColor='#3b5fe2'" onblur="this.style.borderColor='#e2e8f0'"/>
         </div>
         <div>
-          <label style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;display:block;margin-bottom:4px">Maxi</label>
+          <label style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;display:block;margin-bottom:4px">Upper</label>
           <input id="pkgInUpper" type="number" min="0" placeholder="0"
             style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:16px;font-weight:700;text-align:center;font-family:monospace;outline:none"
             onfocus="this.style.borderColor='#3b5fe2'" onblur="this.style.borderColor='#e2e8f0'"/>
         </div>
         <div>
-          <label style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;display:block;margin-bottom:4px">Mandi</label>
+          <label style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;display:block;margin-bottom:4px">Lower</label>
           <input id="pkgInLower" type="number" min="0" placeholder="0"
             style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:16px;font-weight:700;text-align:center;font-family:monospace;outline:none"
             onfocus="this.style.borderColor='#3b5fe2'" onblur="this.style.borderColor='#e2e8f0'"/>
@@ -1627,14 +1627,14 @@ cleanOrphans()
       <div id="pkgErr" style="color:#dc2626;font-size:12px;margin-top:8px"></div>
       <button onclick="pkgSavePartial()"
         style="width:100%;margin-top:12px;padding:12px;background:#d97706;border:none;border-radius:10px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;font-family:var(--f)">
-        💾 Enregistrer production partielle
+        💾 Save partial production
       </button>
     </div>
 
     <!-- Skip -->
     <button onclick="pkgSkip()"
       style="width:100%;padding:10px;background:none;border:none;font-size:12px;color:#94a3b8;cursor:pointer;font-family:var(--f)">
-      Ignorer — clore sans enregistrer
+      Skip — close without saving
     </button>
   </div>
 </div>
