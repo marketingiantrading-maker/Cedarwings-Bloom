@@ -568,6 +568,8 @@ function renderDetail(o){
         </div>
       </div>
     </div>`
+  // Render materials asynchronously after detail panel is in DOM
+  setTimeout(()=>renderMaterials(o),0)
 }
 
 function renderMaterials(o){
@@ -575,20 +577,23 @@ function renderMaterials(o){
   const matEl=document.getElementById('matSection-'+safeId)
   const alnEl=document.getElementById('alignerSection-'+safeId)
 
-  // Materials — PRIMARY: machine_lot_assignments (lot loaded on machine used for this order)
-  // Get machines used for this order from sessions
+  // Materials — PRIMARY: machine_lot_assignments
   const orderMachines=[...new Set((o.sessions||[]).map(s=>s.machine).filter(Boolean))]
+  console.log('[Matières] order='+o.order_no+' machines='+JSON.stringify(orderMachines)+' machineLots='+machineLots.length)
   
   // Find lots assigned to those machines
   const machineMatMap={}
   if(machineLots && machineLots.length>0){
     orderMachines.forEach(mach=>{
       // Try exact match first, then partial match
-      const lotsForMach=machineLots.filter(ml=>
-        ml.machine_name===mach ||
-        (ml.machine_name||'').toLowerCase().includes((mach||'').toLowerCase().split(' ')[0]) ||
-        (mach||'').toLowerCase().includes((ml.machine_name||'').toLowerCase().split(' ')[0])
-      )
+      const machNorm=(s)=>(s||'').toLowerCase().trim()
+      const lotsForMach=machineLots.filter(ml=>{
+        const mlN=machNorm(ml.machine_name)
+        const mN=machNorm(mach)
+        return mlN===mN ||                          // exact
+          mlN.includes(mN.split(' ')[0]) ||         // ml contains first word of session machine
+          mN.includes(mlN.split(' ')[0])            // session contains first word of ml machine
+      })
       lotsForMach.forEach(ml=>{
         const k=(ml.machine_name||mach)+'|'+(ml.lot_number||'?')
         if(!machineMatMap[k]) machineMatMap[k]={
