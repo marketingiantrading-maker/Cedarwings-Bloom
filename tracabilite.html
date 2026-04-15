@@ -172,8 +172,11 @@ body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh
 <div class="content">
   <div class="topbar">
   
-  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:1">
-    <div><div class="tb-t">🔖 Fiches de Traçabilité</div><div class="tb-s">Traçabilité complète par commande — conformité ISO 13485</div></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+    <div>
+      <div class="tb-t">🔖 Fiches de Traçabilité</div>
+      <div class="tb-s">Traçabilité complète par commande — conformité ISO 13485</div>
+    </div>
     <div style="display:flex;gap:8px" class="no-print">
       <button class="btn bgh" onclick="window.print()">🖨 Imprimer</button>
     </div>
@@ -578,8 +581,11 @@ function renderMaterials(o){
   const alnEl=document.getElementById('alignerSection-'+safeId)
 
   // Materials — PRIMARY: machine_lot_assignments
-  const orderMachines=[...new Set((o.sessions||[]).map(s=>s.machine).filter(Boolean))]
-  console.log('[Matières] order='+o.order_no+' machines='+JSON.stringify(orderMachines)+' machineLots='+machineLots.length)
+  // Get machines from BOTH sessions AND order_step_tracking
+  const sessionMachines=(o.sessions||[]).map(s=>s.machine).filter(Boolean)
+  const trackingMachines=Object.values(o.steps||{}).map(s=>s.machine_name||s.machine).filter(Boolean)
+  const orderMachines=[...new Set([...sessionMachines,...trackingMachines])]
+  console.log('[Matières] order='+o.order_no+' sessionMachines='+JSON.stringify(sessionMachines)+' machineLots='+machineLots.length)
   
   // Find lots assigned to those machines
   const machineMatMap={}
@@ -616,9 +622,20 @@ function renderMaterials(o){
   } else if(o.consumption && o.consumption.length>0){
     mats=o.consumption; matSource='consumption'
   } else if(orderMachines.length>0){
-    // We know which machines were used - show them even without lot data
-    mats=orderMachines.map(m=>({machine:m,item_name:'— Lot non assigné',lot_number:'Assigner un lot dans Machines',qty_remaining:null,noLot:true}))
+    // Machines found but no matching lots - show machine with "no lot" message
+    mats=orderMachines.map(m=>({machine:m,item_name:'— Lot non assigné',lot_number:'Assigner un lot dans la page Machines',qty_remaining:null,noLot:true}))
     matSource='machines_only'
+  } else if(machineLots.length>0){
+    // No machines in sessions but lots exist — show all active lots as reference
+    mats=machineLots.filter(ml=>ml.is_active!==false).map(ml=>({
+      machine:ml.machine_name||'Machine',
+      item_name:ml.item_name||ml.material_name||'Matière',
+      lot_number:ml.lot_number||'—',
+      qty_remaining:ml.remaining_qty||ml.qty_remaining,
+      noLot:false,
+      isActive:true
+    }))
+    matSource=mats.length>0?'all_active':'none'
   } else {
     mats=[]; matSource='none'
   }

@@ -178,7 +178,6 @@ tbody tr:hover{background:#f8fafc}
     <a href="tracabilite.html" class="nl"><span class="ic">🔖</span>Traceability</a>
     <a href="qualite.html" class="nl"><span class="ic">✅</span>Quality Control</a>
     <a href="non_conformity.html" class="nl on"><span class="ic">⚠️</span>Non-Conformity</a>
-    <a href="non_conformity.html" class="nl"><span class="ic">⚠️</span>Non-Conformity</a>
     <a href="suppliers.html" class="nl"><span class="ic">🏭</span>Suppliers</a>
     <a href="customer_feedback.html" class="nl"><span class="ic">💬</span>Customer Feedback</a>
     <a href="internal_audit.html" class="nl"><span class="ic">🔍</span>Internal Audits</a>
@@ -303,7 +302,12 @@ tbody tr:hover{background:#f8fafc}
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
       <div><label class="lbl">Date *</label><input type="date" class="fi" id="nDate"/></div>
-      <div><label class="lbl">Order / Lot #</label><input type="text" class="fi" id="nOrder" placeholder="e.g. 5234 or LOT-001"/></div>
+      <div>
+        <label class="lbl">Order / Lot #</label>
+        <select class="fi" id="nOrder">
+          <option value="">— Select Order / Lot —</option>
+        </select>
+      </div>
       <div>
         <label class="lbl">Category *</label>
         <select class="fi" id="nCat">
@@ -397,6 +401,42 @@ const sevCls={high:'b-r',medium:'b-a',low:'b-b'};
 const stCls={open:'b-r',in_progress:'b-a',closed:'b-g'};
 const catCls={material:'b-gray',process:'b-b',product:'b-g',equipment:'b-a',documentation:'b-b',other:'b-gray'};
 
+async function loadOrderOptions(){
+  const sel=$('nOrder');
+  if(!sel)return;
+  try{
+    const[stRes,lotRes]=await Promise.all([
+      sb.from('order_step_tracking').select('order_no').eq('step','Packaging').eq('status','complete').order('completed_at',{ascending:false}),
+      sb.from('production_lots').select('lot_number,order_no').order('produced_at',{ascending:false}).limit(200)
+    ]);
+    const orders=[...new Set((stRes.data||[]).map(r=>r.order_no).filter(Boolean))];
+    const lots=(lotRes.data||[]);
+    // Build combined options: completed orders first, then lots
+    const seen=new Set();
+    let html='<option value="">— Select Order / Lot —</option>';
+    // Completed orders
+    if(orders.length){
+      html+='<optgroup label="✅ Completed Orders">';
+      orders.forEach(o=>{
+        if(!seen.has(o)){seen.add(o);html+=`<option value="${o}">${o}</option>`;}
+      });
+      html+='</optgroup>';
+    }
+    // Production lots
+    if(lots.length){
+      html+='<optgroup label="📦 Production Lots">';
+      lots.forEach(l=>{
+        const v=l.lot_number||l.order_no;
+        if(v&&!seen.has(v)){seen.add(v);html+=`<option value="${v}">${l.lot_number}${l.order_no?' — '+l.order_no:''}</option>`;}
+      });
+      html+='</optgroup>';
+    }
+    sel.innerHTML=html;
+  }catch(e){
+    sel.innerHTML='<option value="">— Orders unavailable —</option>';
+  }
+}
+
 async function load(){
   const r=await sb.from('non_conformity_reports').select('*').order('report_date',{ascending:false});
   all=r.data||[];
@@ -446,14 +486,29 @@ function render(){
 window.openNew=()=>{
   editId=null;$('ncTitle').textContent='⚠️ New Non-Conformity Report';
   $('nDate').value=new Date().toISOString().slice(0,10);
-  ['nOrder','nDet','nDesc','nRoot','nAction','nClosed'].forEach(id=>$(id).value='');
+  $('nOrder').value='';
+  ['nDet','nDesc','nRoot','nAction','nClosed'].forEach(id=>$(id).value='');
   $('nCat').value='material';$('nSev').value='medium';$('nSt').value='open';$('nStep').value='';
+  loadOrderOptions();
   $('ncModal').classList.add('on');
 };
 window.editNC=(id)=>{
   const r=all.find(x=>String(x.id)===String(id));if(!r)return;
   editId=id;$('ncTitle').textContent='✏️ Edit NC — '+r.nc_number;
-  $('nDate').value=r.report_date||'';$('nOrder').value=r.order_lot||'';
+  $('nDate').value=r.report_date||'';
+  loadOrderOptions().then(()=>{
+    // After options loaded, try to set the value; if not found, add it
+    const sel=$('nOrder');
+    if(r.order_lot){
+      const exists=[...sel.options].some(o=>o.value===r.order_lot);
+      if(!exists){
+        const opt=document.createElement('option');
+        opt.value=r.order_lot;opt.textContent=r.order_lot+' (existing)';
+        sel.appendChild(opt);
+      }
+      sel.value=r.order_lot;
+    }
+  });
   $('nCat').value=r.category||'material';$('nSev').value=r.severity||'medium';
   $('nDet').value=r.detected_by||'';$('nStep').value=r.production_step||'';
   $('nDesc').value=r.description||'';$('nRoot').value=r.root_cause||'';
@@ -519,12 +574,6 @@ load();
 </script>
 
 
-    </div>
-    <div style="background:var(--b50);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--blue);font-weight:500">ISO 13485 Clause 8.3 — record and manage all non-conforming products and processes. Every defect, deviation, or failure must be documented here.</div>
-    <div style="font-size:13px;line-height:1.8"><div style="margin-bottom:10px"><strong style="color:var(--txt)">+ New NC Report</strong><br><span style="color:var(--mu);font-size:12px">Create a report with: date, order/lot, category (material/process/product/equipment), severity, production step, description.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Root Cause Analysis</strong><br><span style="color:var(--mu);font-size:12px">Document WHY the non-conformity occurred. Required for ISO 13485 compliance.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Corrective Action</strong><br><span style="color:var(--mu);font-size:12px">Document WHAT was done to fix it and prevent recurrence (CAPA — Corrective and Preventive Action).</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Severity Levels</strong><br><span style="color:var(--mu);font-size:12px">Low: minor issue, no patient risk. Medium: process deviation. High: potential patient safety impact.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Status Flow</strong><br><span style="color:var(--mu);font-size:12px">Open → In Progress → Closed. Closed requires a closed date.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">🖨️ Print</strong><br><span style="color:var(--mu);font-size:12px">Print the NC report as a formal document for your quality file.</span></div></div>
-  </div>
-</div>
-<button onclick="document.getElementById('helpModal').classList.add('on')" style="position:fixed;bottom:50px;right:20px;width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(59,95,226,.4);z-index:800;font-family:var(--f)">?</button>
 
 
 
