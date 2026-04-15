@@ -135,24 +135,11 @@ tbody tr:hover{background:#f8fafc}
     <a href="roles.html" class="nl"><span class="ic">🔑</span>Roles</a>
     <a href="clocking.html" class="nl"><span class="ic">⏱</span>Clocking Terminal</a>
   </nav>
-  <div class="sb-foot">
-<button id="sbLangBtn" title="Changer la langue / Switch Language"
-  onclick="(function(){const l=localStorage.getItem('cw_lang')||'fr';const n=l==='fr'?'en':'fr';localStorage.setItem('cw_lang',n);document.getElementById('sbLangBtn').innerHTML=n==='fr'?'🇬🇧 EN':'🇫🇷 FR';if(typeof CW_LANG!=='undefined')CW_LANG.apply();})()"
-  style="display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:8px;
-         font-size:12px;font-weight:600;color:var(--mu);background:none;border:none;
-         cursor:pointer;width:100%;text-align:left;font-family:var(--f);
-         transition:background .12s,color .12s"
-  onmouseover="this.style.background='var(--bg)';this.style.color='var(--txt)'"
-  onmouseout="this.style.background='none';this.style.color='var(--mu)'">
-  🇫🇷 FR
-</button>
-<script>(function(){const l=localStorage.getItem('cw_lang')||'fr';const b=document.getElementById('sbLangBtn');if(b)b.innerHTML=l==='fr'?'🇬🇧 EN':'🇫🇷 FR';})()</script><a href="index.html" class="nl"><span class="ic">←</span>Switch Role</a></div>
+  <div class="sb-foot"><a href="index.html" class="nl"><span class="ic">←</span>Switch Role</a></div>
 </aside>
 
 <div class="content">
   <div class="topbar">
-  
-  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:1">
     <div><div class="tb-t">🏭 Production & Materials</div><div class="tb-s">Aligner output, material lots, yield rules and consumption tracking</div></div>
     <div style="display:flex;gap:8px">
       <a href="production.html" class="btn bgh">← Production</a>
@@ -689,7 +676,6 @@ load()
   document.addEventListener('DOMContentLoaded', mountHelp);
 })();
 </script>
-
 
 </body>
 </html>
