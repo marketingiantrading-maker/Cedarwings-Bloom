@@ -326,18 +326,23 @@ window.showTab=(t)=>{
 
 /* ─── LOAD ─── */
 async function load(){
-  const[mRes,yRes,lRes,eRes,cRes]=await Promise.all([
+  // Load all data - use try/catch per query to avoid one bad table crashing everything
+  const results = await Promise.allSettled([
     sb.from('machines').select('id,machine_name,machine_type').order('machine_name'),
-    sb.from('material_yield_rules').select('*').order('step'),
+    sb.from('yield_rules').select('*').order('step'),
     sb.from('machine_lot_assignments').select('*').eq('is_active',true).order('assigned_at',{ascending:false}).limit(50),
-    sb.from('bloom_aligner_details').select('case_number,aligner_upper,aligner_lower,number_of_aligners,order_type,imported_at').order('imported_at',{ascending:false}).limit(200),
+    sb.from('production_entries').select('*').order('entered_at',{ascending:false}).limit(200),
     sb.from('material_consumption_log').select('*').order('recorded_at',{ascending:false}).limit(100)
   ])
-  machines=mRes.data||[]
-  yieldRules=yRes.data||[]
-  activeLots=lRes.data||[]
-  entries=eRes.data||[]
-  consumption=cRes.data||[]
+  machines = results[0].status==='fulfilled' ? results[0].value.data||[] : []
+  yieldRules = results[1].status==='fulfilled' ? results[1].value.data||[] : []
+  activeLots = results[2].status==='fulfilled' ? results[2].value.data||[] : []
+  entries = results[3].status==='fulfilled' ? results[3].value.data||[] : []
+  consumption = results[4].status==='fulfilled' ? results[4].value.data||[] : []
+  // Fallback: if yield_rules empty try material_yield_rules
+  if(!yieldRules.length){
+    try{const{data}=await sb.from('material_yield_rules').select('*');yieldRules=data||[]}catch(e){}
+  }
   renderAll()
 }
 
@@ -406,7 +411,7 @@ function renderLotsCards(){
 
 function renderCounterGrid(){
   const todayStr=new Date().toISOString().slice(0,10)
-  const todayEntries=entries.filter(e=>e.session_date===todayStr)
+  const todayEntries=entries.filter(e=>(e.session_date||'').slice(0,10)===todayStr||(e.entered_at||'').slice(0,10)===todayStr)
   if(!todayEntries.length){
     document.getElementById('counterGrid').innerHTML='<div style="color:var(--dim);font-size:13px;padding:10px">Aucune production ce jour. Les entrees sont creees automatiquement lors du pointage Emballage.</div>'
     return
@@ -545,7 +550,9 @@ window.manualDeduct=async(id,itemName,unit)=>{
 }
 
 /* ─── YIELD RULES MODAL ─── */
-document.getElementById('btnYield').addEventListener('click',()=>{
+// Règles button
+const _yBtn=document.getElementById('btnYield')
+if(_yBtn)_yBtn.addEventListener('click',()=>{
   renderYieldList();document.getElementById('mYield').classList.add('on')
 })
 function renderYieldList(){
