@@ -877,17 +877,124 @@ window.markStepComplete=async(step,ord)=>{
 }
 
 /* ===================== END SESSION ===================== */
+// Store pending session for aligner modal
+let _pendingEndSession=null
+
 async function endSession(){
   if(!activeSession?.id)return
-  await sb.from("time_sessions").update({ended_at:new Date().toISOString()}).eq("id",activeSession.id)
+  // Capture session info before clearing
+  _pendingEndSession={
+    id:activeSession.id,
+    order:activeSession.order,
+    step:activeSession.step||document.querySelector(".sb.active")?.dataset?.step||"",
+    startTime:activeSession.startTime,
+    machine:activeSession.machine||null
+  }
+  // Show aligner count modal
+  document.getElementById("alignerModalOrder").textContent=_pendingEndSession.order||"—"
+  document.getElementById("alnTotal").value=""
+  document.getElementById("alnUpper").value=""
+  document.getElementById("alnLower").value=""
+  document.getElementById("alnResult").value="ok"
+  document.getElementById("alignerModal").style.display="flex"
+}
+
+function syncAlignerFields(){
+  const total=parseInt(document.getElementById("alnTotal").value)||0
+  const upper=parseInt(document.getElementById("alnUpper").value)||0
+  const lower=parseInt(document.getElementById("alnLower").value)||0
+  if(!upper&&!lower&&total>0){
+    // Auto-split equally
+  }
+}
+
+function syncAlignerTotal(){
+  const upper=parseInt(document.getElementById("alnUpper").value)||0
+  const lower=parseInt(document.getElementById("alnLower").value)||0
+  if(upper||lower) document.getElementById("alnTotal").value=upper+lower
+}
+
+window.skipAlignerCount=async()=>{
+  document.getElementById("alignerModal").style.display="none"
+  await _doEndSession(0,0,0,null)
+}
+
+window.saveAlignerCount=async()=>{
+  const total=parseInt(document.getElementById("alnTotal").value)||0
+  const upper=parseInt(document.getElementById("alnUpper").value)||0
+  const lower=parseInt(document.getElementById("alnLower").value)||0
+  const result=document.getElementById("alnResult").value
+  document.getElementById("alignerModal").style.display="none"
+  await _doEndSession(total,upper,lower,result)
+}
+
+async function _doEndSession(total,upper,lower,result){
+  if(!_pendingEndSession)return
+  const sess=_pendingEndSession
+  _pendingEndSession=null
+  const now=new Date()
+  // Update session with end time and aligner counts
+  await sb.from("time_sessions").update({
+    ended_at:now.toISOString(),
+    aligners_count:total||null,
+    upper_count:upper||null,
+    lower_count:lower||null
+  }).eq("id",sess.id)
+  // If aligners were produced, auto-create production entry
+  if(total>0){
+    try{
+      // Insert production entry with session start time as production date
+      const{error:peErr}=await sb.from("production_entries").insert([{
+        order_no:sess.order,
+        case_type:null,
+        aligners_done:total,
+        upper_count:upper||0,
+        lower_count:lower||0,
+        notes:"Auto-enregistré depuis pointage — étape: "+(sess.step||"—"),
+        entered_by:emp||null,
+        entered_at:sess.startTime?new Date(sess.startTime).toISOString():now.toISOString(),
+        session_date:sess.startTime?new Date(sess.startTime).toISOString().slice(0,10):now.toISOString().slice(0,10)
+      }])
+      if(peErr) console.warn("production_entries insert:",peErr.message)
+      // Auto-deduct materials if lots are loaded
+      try{
+        const{data:activeLots}=await sb.from("machine_lot_assignments").select("*").eq("is_active",true)
+        const{data:yieldRules}=await sb.from("yield_rules").select("*")
+        if(activeLots&&yieldRules&&activeLots.length>0){
+          for(const lot of activeLots){
+            const rule=(yieldRules||[]).find(r=>r.item_name&&lot.item_name&&
+              r.item_name.toLowerCase()===lot.item_name.toLowerCase())
+            if(!rule)continue
+            const deduct=parseFloat((rule.qty_per_aligner*total).toFixed(6))
+            const newRemaining=Math.max(0,parseFloat(((lot.remaining_qty||0)-deduct).toFixed(6)))
+            await sb.from("machine_lot_assignments").update({remaining_qty:newRemaining}).eq("id",lot.id)
+            await sb.from("material_consumption_log").insert([{
+              order_no:sess.order,
+              step:sess.step||rule.step||null,
+              machine_id:lot.machine_id||null,
+              machine_name:lot.machine_name||sess.machine||null,
+              assignment_id:lot.id,
+              item_name:lot.item_name,
+              lot_number:lot.lot_number,
+              qty_used:deduct,
+              unit:lot.unit||"g",
+              aligners_count:total,
+              recorded_by:emp||null,
+              recorded_at:sess.startTime?new Date(sess.startTime).toISOString():now.toISOString()
+            }])
+          }
+        }
+      }catch(e){console.warn("Auto-deduct error:",e)}
+    }catch(e){console.warn("Production entry error:",e)}
+  }
   clearInterval(timerInt)
-  const ord=activeSession.order
+  const ord=sess.order
   activeSession=null
   document.getElementById("jobBox").style.display="none"
   document.getElementById("alertBanner").classList.remove("on")
   renderPipeline(ord)
   loadToday()
-  setSt("Session ended","Clocked out successfully.","ok")
+  setSt("Session terminée","Pointage clôturé avec succès.","ok")
 }
 
 window.endFromBanner=endSession
@@ -1399,6 +1506,64 @@ cleanOrphans()
 })();
 </script>
 
+
+
+<!-- ALIGNER COUNT MODAL - shown when employee stops a session -->
+<div id="alignerModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.88);z-index:800;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:20px;padding:32px;max-width:400px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,.3)">
+    <div style="font-size:36px;text-align:center;margin-bottom:8px">🦷</div>
+    <div style="font-size:18px;font-weight:800;text-align:center;margin-bottom:4px">Aligneurs produits</div>
+    <div style="font-size:13px;color:#64748b;text-align:center;margin-bottom:20px" id="alignerModalSub">Commande <strong id="alignerModalOrder"></strong></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
+      <div style="grid-column:1/-1">
+        <label style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Total aligneurs *</label>
+        <input id="alnTotal" type="number" min="0" placeholder="ex: 28"
+          style="width:100%;padding:12px 14px;border:2px solid #e2e8f0;border-radius:10px;font-size:18px;font-weight:700;text-align:center;font-family:var(--mono);outline:none"
+          oninput="syncAlignerFields()"
+          onfocus="this.style.borderColor='#3b5fe2'"
+          onblur="this.style.borderColor='#e2e8f0'"/>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Maxillaire</label>
+        <input id="alnUpper" type="number" min="0" placeholder="0"
+          style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:15px;font-weight:700;text-align:center;font-family:var(--mono);outline:none"
+          oninput="syncAlignerTotal()"
+          onfocus="this.style.borderColor='#3b5fe2'"
+          onblur="this.style.borderColor='#e2e8f0'"/>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Mandibulaire</label>
+        <input id="alnLower" type="number" min="0" placeholder="0"
+          style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:15px;font-weight:700;text-align:center;font-family:var(--mono);outline:none"
+          oninput="syncAlignerTotal()"
+          onfocus="this.style.borderColor='#3b5fe2'"
+          onblur="this.style.borderColor='#e2e8f0'"/>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Résultat</label>
+        <select id="alnResult"
+          style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:13px;font-family:var(--f);outline:none;background:#fff">
+          <option value="ok">✅ Conforme</option>
+          <option value="partial">⚠️ Partiel</option>
+          <option value="reject">❌ Rejeté</option>
+        </select>
+      </div>
+    </div>
+    <div style="font-size:11px;color:#94a3b8;margin-bottom:16px;text-align:center">
+      Laissez à 0 si aucun aligneur produit à cette étape
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onclick="skipAlignerCount()"
+        style="flex:1;padding:12px;background:#f1f5f9;border:none;border-radius:10px;font-size:13px;font-weight:600;color:#64748b;cursor:pointer;font-family:var(--f)">
+        Ignorer
+      </button>
+      <button onclick="saveAlignerCount()"
+        style="flex:2;padding:12px;background:#3b5fe2;border:none;border-radius:10px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;font-family:var(--f)">
+        💾 Enregistrer & Clore
+      </button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
