@@ -527,16 +527,17 @@ async function load(){
     sb.from("production_lots").select("*").order("produced_at",{ascending:false}).limit(200),
     sb.from("employees").select("name,username").eq("is_active",true).order("name"),
     sb.from("quality_controls").select("*").order("performed_at",{ascending:false}).limit(200),
-    sb.from("order_step_tracking").select("order_no,step,status,completed_at").eq("step","Packaging").eq("status","complete"),
+    sb.from("order_step_tracking").select("order_no").not("order_no","is",null),
     sb.from("system_settings").select("key,value")
   ])
   const lots=lr.data||[]
   const allQC=qr.data||[]
-  const packagingDone=(stRes.data||[]).map(r=>r.order_no)
+  const packagingDone=[...new Set((stRes.data||[]).map(r=>r.order_no).filter(Boolean))]
   const smap={};(ssRes.data||[]).forEach(s=>smap[s.key]=s.value)
   const allowManualLot=smap.allow_manual_lot==='true'
 
-  const qcDoneOrders=new Set(allQC.map(q=>String(q.order_no||q.lot_number||'')))
+  // Only mark as done if QC was APPROVED — rejected orders need re-QC
+  const qcDoneOrders=new Set(allQC.filter(q=>q.overall_result==='approved').map(q=>String(q.order_no||q.lot_number||'')))
   const pendingQCOrders=packagingDone.filter(o=>!qcDoneOrders.has(String(o)))
 
   // ── Lot Select ──
