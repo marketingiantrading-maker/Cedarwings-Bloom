@@ -152,23 +152,28 @@ tbody tr:hover{background:#f8fafc}
 <div class="content">
   <div class="topbar">
   
-  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:1">
-    <div><div class="tb-t">🏭 Production & Materials</div><div class="tb-s">Aligner output, material lots, yield rules and consumption tracking</div></div>
-    <div style="display:flex;gap:8px">
-      <a href="production.html" class="btn bgh">← Production</a>
-      <button class="btn bgh" id="btnYield">⚙ Yield Rules</button>
-      <button class="btn bgh" id="btnLoadLot">📦 Load Lot to Machine</button>
+  <div style="display:flex;align-items:center;justify-content:space-between;width:100%;flex-wrap:wrap;gap:10px">
+    <div>
+      <div class="tb-t">🏭 Production & Matières</div>
+      <div class="tb-s">Lots actifs, consommation matière et traçabilité production</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <!-- TABS in header -->
+      <div class="tabs" style="margin:0;border:none;background:transparent;padding:0;gap:4px">
+        <button class="tab on" onclick="showTab('overview')">📊 Overview</button>
+        <button class="tab" onclick="showTab('lots')">📦 Lots actifs</button>
+        <button class="tab" onclick="showTab('entries')">📋 Journal</button>
+        <button class="tab" onclick="showTab('consumption')">🔬 Consommation</button>
+      </div>
+      <div style="width:1px;height:28px;background:var(--bdr)"></div>
+      <a href="production.html" class="btn bgh" style="padding:7px 12px;font-size:12px">← Production</a>
+      <button class="btn bgh" id="btnYield" style="padding:7px 12px;font-size:12px">⚙ Règles</button>
+      <button class="btn bgh" id="btnLoadLot" style="padding:7px 12px;font-size:12px">📦 Charger Lot</button>
     </div>
   </div>
 
   <div class="body">
-    <!-- TABS -->
-    <div class="tabs">
-      <button class="tab on" onclick="showTab('overview')">📊 Overview</button>
-      <button class="tab" onclick="showTab('lots')">📦 Active Material Lots</button>
-      <button class="tab" onclick="showTab('entries')">📋 Journal Production</button>
-      <button class="tab" onclick="showTab('consumption')">🔬 Consumption Log</button>
-    </div>
+    <!-- tabs moved to topbar -->
 
     <!-- OVERVIEW TAB -->
     <div id="tab-overview">
@@ -353,11 +358,11 @@ window.showTab=(t)=>{
 async function load(){
   const[mRes,iRes,yRes,lRes,eRes,cRes]=await Promise.all([
     sb.from('machines').select('id,machine_name,machine_type').order('machine_name'),
-    sb.from('inventory_items').select('id,name,unit_of_measure,current_stock').order('name'),
+    sb.from('inventory_items').select('id,name,unit_of_measure').order('name'),
     sb.from('material_yield_rules').select('*').order('step'),
-    sb.from('machine_lot_assignments').select('*').eq('is_active',true).order('loaded_at',{ascending:false}),
-    sb.from('bloom_aligner_details').select('case_number,aligner_upper,aligner_lower,number_of_aligners,order_type,imported_at').order('imported_at',{ascending:false}).limit(1000),
-    sb.from('material_consumption_log').select('*').order('recorded_at',{ascending:false}).limit(200)
+    sb.from('machine_lot_assignments').select('*').eq('is_active',true).order('assigned_at',{ascending:false}).limit(50),
+    sb.from('bloom_aligner_details').select('case_number,aligner_upper,aligner_lower,number_of_aligners,order_type,imported_at').order('imported_at',{ascending:false}).limit(200),
+    sb.from('material_consumption_log').select('*').order('recorded_at',{ascending:false}).limit(100)
   ])
   machines=mRes.data||[]
   inventory=iRes.data||[]
@@ -373,7 +378,7 @@ function populateSelects(){
   document.getElementById('llMachine').innerHTML='<option value="">Select machine…</option>'+
     machines.map(m=>`<option value="${m.id}" data-name="${m.machine_name}">${m.machine_name} (${m.machine_type})</option>`).join('')
   document.getElementById('llItem').innerHTML='<option value="">— Select from inventory or type below —</option>'+
-    inventory.map(i=>`<option value="${i.id}" data-name="${i.name}" data-unit="${i.unit_of_measure||'pcs'}">${i.name} (stock: ${i.current_stock||0} ${i.unit_of_measure||''})</option>`).join('')
+    inventory.map(i=>`<option value="${i.id}" data-name="${i.name}" data-unit="${i.unit_of_measure||'pcs'}">${i.name} </option>`).join('')
 }
 
 function renderAll(){
