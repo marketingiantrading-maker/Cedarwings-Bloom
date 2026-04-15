@@ -249,14 +249,19 @@ async function load(){
   const orderNos=[...new Set((tracking||[]).map(t=>t.order_no))]
   
   let sessions=[]
-  if(orderNos.length){
+  // Load sessions for tracking orders (we may not know all orders yet - use wide query)
+  try{
     const{data:sess}=await sb.from('time_sessions')
       .select('*')
-      .in('order_no',orderNos)
       .not('session_type','eq','W9 - Transition Time')
-      .order('started_at')
+      .not('order_no','is',null)
+      .order('started_at',{ascending:false})
+      .limit(2000)
     sessions=sess||[]
-  }
+    // Also extend orderNos from sessions
+    const sessOrderNos=[...new Set(sessions.map(s=>s.order_no).filter(Boolean))]
+    sessOrderNos.forEach(o=>{if(!orderNos.includes(o))orderNos.push(o)})
+  }catch(e){sessions=[]}
 
   // Get material consumption and production entries
   let consumption=[], prodEntries=[]
@@ -320,6 +325,44 @@ async function load(){
     })
   })
 
+  // FALLBACK: also load orders that only exist in time_sessions (no tracking rows yet)
+  let fallbackOrderNos=[]
+  try{
+    const{data:sessOrders}=await sb.from('time_sessions')
+      .select('order_no')
+      .not('order_no','is',null)
+      .not('order_no','eq','')
+      .order('started_at',{ascending:false})
+      .limit(500)
+    const allSessOrders=[...new Set((sessOrders||[]).map(s=>s.order_no).filter(Boolean))]
+    fallbackOrderNos=allSessOrders.filter(o=>!byOrder[o])
+    // Add these orders with steps derived from sessions
+    if(fallbackOrderNos.length && sessions){
+      fallbackOrderNos.forEach(ord=>{
+        if(!byOrder[ord]){
+          byOrder[ord]={order_no:ord,steps:{},first_started:null,last_completed:null,sessions:[]}
+        }
+      })
+      // Re-attach sessions for fallback orders
+      sessions.forEach(s=>{
+        if(s.order_no && byOrder[s.order_no]){
+          if(!byOrder[s.order_no].sessions)byOrder[s.order_no].sessions=[]
+          if(!byOrder[s.order_no].sessions.find(x=>x.id===s.id))
+            byOrder[s.order_no].sessions.push(s)
+          // Derive step status from session
+          const step=s.work_type||s.step_name
+          if(step && STEPS.includes(step)){
+            if(!byOrder[s.order_no].steps[step]){
+              byOrder[s.order_no].steps[step]={step,status:s.ended_at?'complete':'in_progress',order_no:s.order_no,completed_at:s.ended_at,first_started_at:s.started_at}
+            }
+            if(!byOrder[s.order_no].first_started || s.started_at < byOrder[s.order_no].first_started)
+              byOrder[s.order_no].first_started=s.started_at
+          }
+        }
+      })
+    }
+  }catch(e){console.warn('Fallback sessions load:',e)}
+  
   orders=Object.values(byOrder).sort((a,b)=>(b.first_started||'')>(a.first_started||'')?1:-1)
   renderList()
 
@@ -331,7 +374,14 @@ async function load(){
   }
 }
 
-function isComplete(o){return STEPS.every(s=>o.steps[s]?.status==='complete')}
+function isComplete(o){
+  // Primary: Packaging (last step) is complete = order fully done
+  if(o.steps['Packaging']?.status==='complete') return true
+  // Secondary: all steps that EXIST in tracking are complete (handles missing steps)
+  const tracked=Object.values(o.steps||{})
+  if(tracked.length===0) return false
+  return tracked.every(s=>s.status==='complete') && tracked.length>=4
+}
 function stepsDone(o){return STEPS.filter(s=>o.steps[s]?.status==='complete').length}
 
 function hasQC(orderNo){
