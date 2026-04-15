@@ -270,12 +270,13 @@ async function load(){
       sb.from('material_consumption_log').select('*').in('order_no',orderNos).order('recorded_at'),
       sb.from('bloom_aligner_details').select('case_number,aligner_upper,aligner_lower,number_of_aligners,order_type').in('case_number',orderNos),
       sb.from('quality_controls').select('id,lot_id,order_no,lot_number,performed_at').order('performed_at',{ascending:false}),
-      sb.from('machine_lot_assignments').select('machine_name,item_name,lot_number,lot_id,assigned_at,qty_remaining').order('assigned_at',{ascending:false})
+      sb.from('machine_lot_assignments').select('*').order('assigned_at',{ascending:false})
     ])
     consumption=cRes.data||[]
     prodEntries=eRes.data||[]
-    qcRecords=qcRes.data||[]
-    machineLots=mlRes.data||[]
+    qcRecords=(qcRes&&!qcRes.error)?qcRes.data||[]:[]
+    machineLots=(mlRes&&!mlRes.error)?mlRes.data||[]:[]
+    if(mlRes&&mlRes.error) console.warn('machine_lot_assignments not available:',mlRes.error.message)
     // Load employee list for operator dropdown
     if(!window._cwEmployees){
       const eResp=await sb.from('employees').select('name').eq('is_active',true).order('name')
@@ -560,7 +561,8 @@ function renderDetail(o){
     if(qcDone){
       return '<span style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:var(--g50);border:1px solid var(--g100);color:#15803d;border-radius:8px;font-size:13px;font-weight:600">✅ QC Réalisé</span>'
     }else{
-      return `<a href="qualite.html?order=${encodeURIComponent(o.order_no)}&lot=${encodeURIComponent(lotNum)}" class="btn" style="background:var(--b50);border:1px solid var(--b100);color:var(--blue);text-decoration:none">✅ Lancer Contrôle Qualité</a>`
+      const qcUrl='qualite.html?order='+encodeURIComponent(o.order_no)+'&lot='+encodeURIComponent(lotNum)
+      return '<a href="'+qcUrl+'" class="btn" style="background:var(--b50);border:1px solid var(--b100);color:var(--blue);text-decoration:none;display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600">✅ Lancer Contrôle Qualité</a>'
     }
   })()}
         </div>
@@ -576,22 +578,49 @@ function renderMaterials(o){
   // Materials — PRIMARY: machine_lot_assignments (lot loaded on machine used for this order)
   // Get machines used for this order from sessions
   const orderMachines=[...new Set((o.sessions||[]).map(s=>s.machine).filter(Boolean))]
-  // Find lots assigned to those machines (most recent assignment per machine)
+  
+  // Find lots assigned to those machines
   const machineMatMap={}
-  orderMachines.forEach(mach=>{
-    const lotsForMach=machineLots.filter(ml=>ml.machine_name===mach)
-    lotsForMach.forEach(ml=>{
-      const k=ml.machine_name+'|'+ml.lot_number
-      if(!machineMatMap[k]) machineMatMap[k]={machine:ml.machine_name,item_name:ml.item_name,lot_number:ml.lot_number,qty_remaining:ml.qty_remaining,assigned_at:ml.assigned_at}
+  if(machineLots && machineLots.length>0){
+    orderMachines.forEach(mach=>{
+      // Try exact match first, then partial match
+      const lotsForMach=machineLots.filter(ml=>
+        ml.machine_name===mach ||
+        (ml.machine_name||'').toLowerCase().includes((mach||'').toLowerCase().split(' ')[0]) ||
+        (mach||'').toLowerCase().includes((ml.machine_name||'').toLowerCase().split(' ')[0])
+      )
+      lotsForMach.forEach(ml=>{
+        const k=(ml.machine_name||mach)+'|'+(ml.lot_number||'?')
+        if(!machineMatMap[k]) machineMatMap[k]={
+          machine:ml.machine_name||mach,
+          item_name:ml.item_name||ml.material_name||ml.item||'Matière',
+          lot_number:ml.lot_number||'—',
+          qty_remaining:ml.qty_remaining,
+          assigned_at:ml.assigned_at
+        }
+      })
     })
-  })
+  }
+  
   const machineMats=Object.values(machineMatMap)
-  // FALLBACK: material_consumption_log if no machine lots found
-  const mats=machineMats.length>0?machineMats:(o.consumption||[])
-  const matSource=machineMats.length>0?'machine':'consumption'
+  
+  // If still empty but we have machines from sessions, show machine info without lot
+  let mats, matSource
+  if(machineMats.length>0){
+    mats=machineMats; matSource='machine'
+  } else if(o.consumption && o.consumption.length>0){
+    mats=o.consumption; matSource='consumption'
+  } else if(orderMachines.length>0){
+    // We know which machines were used - show them even without lot data
+    mats=orderMachines.map(m=>({machine:m,item_name:'— Lot non assigné',lot_number:'Assigner un lot dans Machines',qty_remaining:null,noLot:true}))
+    matSource='machines_only'
+  } else {
+    mats=[]; matSource='none'
+  }
   if(matEl){
     if(!mats.length){
-      matEl.innerHTML='<div style="background:#f8fafc;border:1px solid var(--bdr);border-radius:10px;padding:12px;font-size:12px;color:var(--dim)">Aucune matière enregistrée. Associez un lot à la machine utilisée pour cette commande.</div>'
+      const machineInfo=orderMachines.length>0?` (Machine: ${orderMachines.join(', ')})`:''
+      matEl.innerHTML='<div style="background:#fffbeb;border:1px solid var(--a100);border-radius:10px;padding:12px;font-size:12px;color:var(--amber)">'+'⚠️ Aucun lot matière trouvé'+machineInfo+'. Vérifiez que le lot est assigné à la machine dans la page <strong>Machines</strong>.</div>'
     } else {
       // Group by item+lot
       const grouped={}
@@ -602,10 +631,10 @@ function renderMaterials(o){
         grouped[k].aligners_count+=(m.aligners_count||0)
       })
       matEl.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px">
-        ${(matSource==='machine'?mats:Object.values(grouped)).map(m=>`
-        <div style="background:#f8fafc;border:1px solid var(--bdr);border-radius:10px;padding:12px">
-          <div style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">📦 ${m.item_name}${m.machine?` <span style="color:var(--blue)">⚙ ${m.machine}</span>`:''}</div>
-          <div style="font-family:var(--mono);font-size:13px;font-weight:700;margin-bottom:2px">${m.lot_number}</div>
+        ${(matSource==='machine'||matSource==='machines_only'?mats:Object.values(grouped)).map(m=>`
+        <div style="background:${m.noLot?'var(--a50)':'#f8fafc'};border:1px solid ${m.noLot?'var(--a100)':'var(--bdr)'};border-radius:10px;padding:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">📦 ${m.item_name||'Matière'}${m.machine?' <span style=\"color:var(--blue)\">⚙ '+m.machine+'</span>':''}</div>
+          <div style="font-family:var(--mono);font-size:13px;font-weight:${m.noLot?'400':'700'};margin-bottom:2px;color:${m.noLot?'var(--amber)':'inherit'}">${m.lot_number||'—'}</div>
           <div style="font-size:12px;color:var(--blue);font-weight:700">${parseFloat(m.qty_used.toFixed(4))} ${m.unit||''} utilisés</div>
           ${m.step?`<div style="font-size:10px;color:var(--dim);margin-top:4px">Étape: ${m.step}</div>`:''}
           ${m.machine_name?`<div style="font-size:10px;color:var(--dim)">Machine: ${m.machine_name}</div>`:''}
