@@ -214,6 +214,32 @@ tbody tr:last-child td{border:none}
     </div>
 
     <!-- NOTIFICATION LOG -->
+
+    <!-- PRODUCTION SETTINGS -->
+    <div class="card" style="border-left:3px solid var(--blue)">
+      <div class="card-title">🏭 Paramètres de Production</div>
+      <div class="card-sub">Fonctionnalités avancées pour la production et le contrôle qualité</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--bdr)">
+        <div>
+          <div style="font-size:13px;font-weight:700">Saisie manuelle de numéro de lot</div>
+          <div style="font-size:11px;color:var(--mu);margin-top:3px">Permet de saisir un numéro de lot manuellement dans le Contrôle Qualité quand aucun lot n'est trouvé dans la base (utile pour les tests)</div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex-shrink:0;margin-left:20px">
+          <div style="position:relative;width:44px;height:24px">
+            <input type="checkbox" id="toggleManualLot" style="opacity:0;width:0;height:0;position:absolute"
+              onchange="saveToggle('allow_manual_lot',this.checked)">
+            <span id="manualLotSlider" style="position:absolute;cursor:pointer;inset:0;background:#cbd5e1;border-radius:999px;transition:.3s">
+              <span style="position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s;display:block" id="manualLotThumb"></span>
+            </span>
+          </div>
+          <span id="manualLotLabel" style="font-size:12px;font-weight:600;color:var(--mu)">Désactivé</span>
+        </label>
+      </div>
+      <div style="margin-top:12px;font-size:11px;color:var(--dim)">
+        💡 <strong>Désactiver</strong> ce paramètre avant la mise en production pour forcer l'utilisation des lots enregistrés.
+      </div>
+    </div>
+
     <div class="card">
       <div class="card-title">📜 Notification Log</div>
       <div class="card-sub">History of all sent notifications</div>
@@ -242,6 +268,21 @@ async function load(){
   // Load settings
   const{data:ss}=await sb.from('system_settings').select('*')
   const smap={};(ss||[]).forEach(s=>smap[s.key]=s.value)
+  // Load manual lot toggle
+  const manualLotEnabled = smap.allow_manual_lot === 'true'
+  const cb = document.getElementById('toggleManualLot')
+  const slider = document.getElementById('manualLotSlider')
+  const thumb = document.getElementById('manualLotThumb')
+  const lbl = document.getElementById('manualLotLabel')
+  if(cb){
+    cb.checked = manualLotEnabled
+    if(manualLotEnabled){
+      slider.style.background='var(--green)'
+      thumb.style.left='23px'
+      lbl.textContent='Activé'
+      lbl.style.color='var(--green)'
+    }
+  }
   if(smap.brevo_api_key){document.getElementById('brevoKey').value=smap.brevo_api_key;window._brevoKey=smap.brevo_api_key}
   if(smap.brevo_sender_email){document.getElementById('brevoEmail').value=smap.brevo_sender_email;window._brevoEmail=smap.brevo_sender_email}
   if(smap.brevo_sender_name){document.getElementById('brevoName').value=smap.brevo_sender_name;window._brevoName=smap.brevo_sender_name}
@@ -293,6 +334,17 @@ window.addRecipient=()=>{
 }
 window.removeRecipient=i=>{recipients.splice(i,1);renderRecipients()}
 
+window.saveToggle=async(key,val)=>{
+  await sb.from('system_settings').upsert({key,value:String(val),updated_at:new Date().toISOString()},{onConflict:'key'})
+  const slider=document.getElementById('manualLotSlider')
+  const thumb=document.getElementById('manualLotThumb')
+  const lbl=document.getElementById('manualLotLabel')
+  if(slider&&thumb&&lbl){
+    if(val){slider.style.background='var(--green)';thumb.style.left='23px';lbl.textContent='Activé';lbl.style.color='var(--green)'}
+    else{slider.style.background='#cbd5e1';thumb.style.left='3px';lbl.textContent='Désactivé';lbl.style.color='var(--mu)'}
+  }
+  ntf('Paramètre enregistré','ok')
+}
 window.saveAll=async()=>{
   // Save system settings
   const settings=[

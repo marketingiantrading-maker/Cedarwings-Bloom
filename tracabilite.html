@@ -191,6 +191,11 @@ body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh
             <option value="complete">✅ Terminé</option>
             <option value="in_progress">🔄 En cours</option>
           </select>
+          <select class="flt" id="fltQC">
+            <option value="all">Tout (QC)</option>
+            <option value="qc_done">✅ QC Fait</option>
+            <option value="qc_pending">⏳ QC En attente</option>
+          </select>
         </div>
         <div class="order-list" id="orderList">
           <div style="text-align:center;padding:30px;color:var(--dim)">Chargement…</div>
@@ -233,6 +238,10 @@ const genLot=(ord,date)=>{const d=new Date(date||Date.now());return`LOT-${d.getF
 let orders=[]
 let selOrder=null
 
+// Global QC records cache
+let qcRecords=[]
+let machineLots=[]
+
 async function load(){
   // Get all order_step_tracking rows
   const{data:tracking}=await sb.from('order_step_tracking').select('*').order('first_started_at',{ascending:false})
@@ -252,12 +261,16 @@ async function load(){
   // Get material consumption and production entries
   let consumption=[], prodEntries=[]
   if(orderNos.length){
-    const[cRes,eRes]=await Promise.all([
+    const[cRes,eRes,qcRes,mlRes]=await Promise.all([
       sb.from('material_consumption_log').select('*').in('order_no',orderNos).order('recorded_at'),
-      sb.from('bloom_aligner_details').select('case_number,aligner_upper,aligner_lower,number_of_aligners,order_type').in('case_number',orderNos)
+      sb.from('bloom_aligner_details').select('case_number,aligner_upper,aligner_lower,number_of_aligners,order_type').in('case_number',orderNos),
+      sb.from('quality_controls').select('id,lot_id,order_no,lot_number,performed_at').order('performed_at',{ascending:false}),
+      sb.from('machine_lot_assignments').select('machine_name,item_name,lot_number,lot_id,assigned_at,qty_remaining').order('assigned_at',{ascending:false})
     ])
     consumption=cRes.data||[]
     prodEntries=eRes.data||[]
+    qcRecords=qcRes.data||[]
+    machineLots=mlRes.data||[]
     // Load employee list for operator dropdown
     if(!window._cwEmployees){
       const eResp=await sb.from('employees').select('name').eq('is_active',true).order('name')
@@ -321,14 +334,20 @@ async function load(){
 function isComplete(o){return STEPS.every(s=>o.steps[s]?.status==='complete')}
 function stepsDone(o){return STEPS.filter(s=>o.steps[s]?.status==='complete').length}
 
+function hasQC(orderNo){
+  return qcRecords.some(q=>String(q.order_no||q.lot_number||'').toLowerCase().includes(String(orderNo).toLowerCase()))
+}
 function renderList(){
   const term=document.getElementById('srch').value.toLowerCase()
   const flt=document.getElementById('fltStatus').value
+  const fltQC=document.getElementById('fltQC').value
   const filtered=orders.filter(o=>{
     const mT=!term||o.order_no.toLowerCase().includes(term)
     const complete=isComplete(o)
     const mS=flt==='all'||(flt==='complete'&&complete)||(flt==='in_progress'&&!complete)
-    return mT&&mS
+    const qcDone=hasQC(o.order_no)
+    const mQ=fltQC==='all'||(fltQC==='qc_done'&&qcDone)||(fltQC==='qc_pending'&&!qcDone)
+    return mT&&mS&&mQ
   })
   if(!filtered.length){
     document.getElementById('orderList').innerHTML='<div style="text-align:center;padding:30px;color:var(--dim)">Aucune commande trouvée</div>'
@@ -485,7 +504,15 @@ function renderDetail(o){
         <!-- ACTIONS -->
         <div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap" class="no-print">
           <button class="btn bgh" onclick="window.print()">🖨 Imprimer fiche</button>
-          <a href="qualite.html?order=${encodeURIComponent(o.order_no)}" class="btn" style="background:var(--g50);border:1px solid var(--g100);color:#15803d;text-decoration:none">✅ Contrôle Qualité</a>
+          ${(()=>{
+    const qcDone=hasQC(o.order_no)
+    const lotNum=genLot(o.order_no,o.first_started)
+    if(qcDone){
+      return '<span style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:var(--g50);border:1px solid var(--g100);color:#15803d;border-radius:8px;font-size:13px;font-weight:600">✅ QC Réalisé</span>'
+    }else{
+      return `<a href="qualite.html?order=${encodeURIComponent(o.order_no)}&lot=${encodeURIComponent(lotNum)}" class="btn" style="background:var(--b50);border:1px solid var(--b100);color:var(--blue);text-decoration:none">✅ Lancer Contrôle Qualité</a>`
+    }
+  })()}
         </div>
       </div>
     </div>`
@@ -496,11 +523,25 @@ function renderMaterials(o){
   const matEl=document.getElementById('matSection-'+safeId)
   const alnEl=document.getElementById('alignerSection-'+safeId)
 
-  // Materials
-  const mats=o.consumption||[]
+  // Materials — PRIMARY: machine_lot_assignments (lot loaded on machine used for this order)
+  // Get machines used for this order from sessions
+  const orderMachines=[...new Set((o.sessions||[]).map(s=>s.machine).filter(Boolean))]
+  // Find lots assigned to those machines (most recent assignment per machine)
+  const machineMatMap={}
+  orderMachines.forEach(mach=>{
+    const lotsForMach=machineLots.filter(ml=>ml.machine_name===mach)
+    lotsForMach.forEach(ml=>{
+      const k=ml.machine_name+'|'+ml.lot_number
+      if(!machineMatMap[k]) machineMatMap[k]={machine:ml.machine_name,item_name:ml.item_name,lot_number:ml.lot_number,qty_remaining:ml.qty_remaining,assigned_at:ml.assigned_at}
+    })
+  })
+  const machineMats=Object.values(machineMatMap)
+  // FALLBACK: material_consumption_log if no machine lots found
+  const mats=machineMats.length>0?machineMats:(o.consumption||[])
+  const matSource=machineMats.length>0?'machine':'consumption'
   if(matEl){
     if(!mats.length){
-      matEl.innerHTML='<div style="background:#f8fafc;border:1px solid var(--bdr);border-radius:10px;padding:12px;font-size:12px;color:var(--dim)">Aucune matière enregistrée pour cette commande. Utilisez la page Production pour saisir la consommation.</div>'
+      matEl.innerHTML='<div style="background:#f8fafc;border:1px solid var(--bdr);border-radius:10px;padding:12px;font-size:12px;color:var(--dim)">Aucune matière enregistrée. Associez un lot à la machine utilisée pour cette commande.</div>'
     } else {
       // Group by item+lot
       const grouped={}
@@ -511,9 +552,9 @@ function renderMaterials(o){
         grouped[k].aligners_count+=(m.aligners_count||0)
       })
       matEl.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px">
-        ${Object.values(grouped).map(m=>`
+        ${(matSource==='machine'?mats:Object.values(grouped)).map(m=>`
         <div style="background:#f8fafc;border:1px solid var(--bdr);border-radius:10px;padding:12px">
-          <div style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">📦 ${m.item_name}</div>
+          <div style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">📦 ${m.item_name}${m.machine?` <span style="color:var(--blue)">⚙ ${m.machine}</span>`:''}</div>
           <div style="font-family:var(--mono);font-size:13px;font-weight:700;margin-bottom:2px">${m.lot_number}</div>
           <div style="font-size:12px;color:var(--blue);font-weight:700">${parseFloat(m.qty_used.toFixed(4))} ${m.unit||''} utilisés</div>
           ${m.step?`<div style="font-size:10px;color:var(--dim);margin-top:4px">Étape: ${m.step}</div>`:''}
@@ -558,6 +599,7 @@ function renderMaterials(o){
 
 document.getElementById('srch').addEventListener('input',renderList)
 document.getElementById('fltStatus').addEventListener('change',renderList)
+document.getElementById('fltQC').addEventListener('change',renderList)
 load()
 </script>
 

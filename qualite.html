@@ -171,7 +171,9 @@ window.applyManualLot=()=>{
               <div id="manualLotBox" style="display:none;margin-top:6px;gap:6px;align-items:center">
                 <input type="text" class="fi" id="manualLotInput" placeholder="Saisir n° lot manuellement..." style="flex:1"/>
                 <button class="btn bgh" style="padding:6px 12px;font-size:11px;white-space:nowrap" onclick="applyManualLot()">✓ Appliquer</button>
-              </div></div>
+              </div>
+              <div id="manualLotNote" style="display:none;margin-top:4px;font-size:10px;color:var(--amber);font-weight:600">⚠️ Mode test — désactiver dans Paramètres avant mise en production</div>
+              </div>
             <div><label style="font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Contrôleur *</label>
               <select class="fi" id="qcController"><option value="">— Sélectionner —</option></select></div>
             <div><label style="font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Type de contrôle</label>
@@ -411,22 +413,53 @@ const checks={}
 let currentLotId=null
 
 async function load(){
-  const[lr,er,qr]=await Promise.all([
-    sb.from("production_lots").select("*").order("produced_at",{ascending:false}).limit(50),
+  const[lr,er,qr,stRes,ssRes]=await Promise.all([
+    sb.from("production_lots").select("*").order("produced_at",{ascending:false}).limit(200),
     sb.from("employees").select("name").eq("is_active",true).order("name"),
-    sb.from("quality_controls").select("*,production_lots(lot_number,order_no)").order("performed_at",{ascending:false}).limit(50)
+    sb.from("quality_controls").select("*,production_lots(lot_number,order_no)").order("performed_at",{ascending:false}).limit(200),
+    sb.from("order_step_tracking").select("order_no,step,status,completed_at").eq("step","Packaging").eq("status","complete"),
+    sb.from("system_settings").select("key,value")
   ])
   const lots=lr.data||[]
+  const allQC=qr.data||[]
+  const packagingDone=(stRes.data||[]).map(r=>r.order_no)
+  const smap={};(ssRes.data||[]).forEach(s=>smap[s.key]=s.value)
+  const allowManualLot=smap.allow_manual_lot==='true'
+  
+  // Build list of orders pending QC:
+  // = packaging done AND no QC record yet
+  const qcDoneOrders=new Set(allQC.map(q=>String(q.order_no||q.lot_number||'')))
+  const pendingQCOrders=packagingDone.filter(o=>!qcDoneOrders.has(String(o)))
+  
   const lSel=document.getElementById("qcLot")
-  if(lots.length === 0){
-    lSel.innerHTML='<option value="">— No production lots found. Log production first. —</option>'
-    // Add manual entry option
-    const manualOpt = document.createElement('option')
-    manualOpt.value = 'manual'
-    manualOpt.textContent = '+ Enter lot number manually'
-    lSel.appendChild(manualOpt)
-  } else {
+  
+  // Priority 1: pending QC orders (packaging done, no QC yet)
+  if(pendingQCOrders.length>0){
+    const lotForOrder=(orderNo)=>{
+      const lot=lots.find(l=>l.order_no===orderNo)
+      return lot?`${lot.lot_number} — Commande ${orderNo}`:orderNo
+    }
+    lSel.innerHTML='<option value="">— Sélectionner commande —</option>'+
+      pendingQCOrders.map(o=>{
+        const lot=lots.find(l=>l.order_no===o)
+        const val=lot?lot.id:o
+        const num=lot?lot.lot_number:o
+        return `<option value="${val}" data-order="${o}" data-num="${num}" data-pending="true">⏳ ${o}${lot?' — '+lot.lot_number:''}</option>`
+      }).join("")+
+      (lots.length?'<optgroup label="— Tous les lots —">'+lots.map(l=>`<option value="${l.id}" data-order="${l.order_no}" data-num="${l.lot_number}">${l.lot_number} — ${l.order_no} (${l.quality_status||'pending'})</option>`).join("")+'</optgroup>':'')
+  } else if(lots.length>0){
     lSel.innerHTML='<option value="">— Select lot —</option>'+lots.map(l=>`<option value="${l.id}" data-order="${l.order_no}" data-num="${l.lot_number}">${l.lot_number} — Order ${l.order_no} (${l.quality_status||'pending'})</option>`).join("")
+  } else {
+    lSel.innerHTML='<option value="">— Aucun lot trouvé —</option>'
+  }
+  
+  // Show manual lot option if enabled in settings
+  if(allowManualLot){
+    document.getElementById('manualLotBox').style.display='flex'
+    document.getElementById('manualLotNote').style.display='block'
+  } else {
+    document.getElementById('manualLotBox').style.display='none'
+    document.getElementById('manualLotNote').style.display='none'
   }
   const eSel=document.getElementById("qcController")
   eSel.innerHTML='<option value="">— Sélectionner —</option>'+(er.data||[]).map(e=>`<option value="${e.name}">${e.name}</option>`).join("")
@@ -447,11 +480,31 @@ async function load(){
     </tr>`}).join(""):`<tr><td colspan="8" class="ec">Aucun contrôle enregistré</td></tr>`
   
   // Check URL param for pre-selected lot
-  const p=new URLSearchParams(location.search).get("lot")
-  if(p){
-    document.getElementById("qcLot").value=p
-    document.getElementById("newQCForm").style.display="block"
-    onLotChange()
+  const params=new URLSearchParams(location.search)
+  const pLot=params.get("lot")   // lot number from tracabilite
+  const pOrder=params.get("order") // order number from tracabilite
+  
+  if(pOrder||pLot){
+    // Try to find matching option in select
+    const sel=document.getElementById("qcLot")
+    let matched=false
+    for(const opt of sel.options){
+      if(pOrder && opt.dataset.order===pOrder){sel.value=opt.value;matched=true;break}
+      if(pLot && (opt.dataset.num===pLot||opt.value===pLot)){sel.value=opt.value;matched=true;break}
+    }
+    // If no match found AND manual lot allowed, pre-fill manually
+    if(!matched && (pLot||pOrder)){
+      const v=pLot||pOrder
+      const manualOpt=document.createElement('option')
+      manualOpt.value=v; manualOpt.textContent='✏️ '+v+' (depuis traçabilité)'
+      manualOpt.dataset.order=pOrder||v; manualOpt.dataset.num=pLot||v
+      sel.appendChild(manualOpt); sel.value=v; matched=true
+    }
+    if(matched){
+      document.getElementById("newQCForm").style.display="block"
+      document.getElementById("newQCForm").scrollIntoView({behavior:"smooth"})
+      onLotChange()
+    }
   }
 }
 
