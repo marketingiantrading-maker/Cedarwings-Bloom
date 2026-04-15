@@ -268,18 +268,24 @@ async function load(){
 
   // Get material consumption and production entries
   let consumption=[], prodEntries=[]
+  // Load machine_lot_assignments unconditionally (doesn't depend on orderNos)
+  try{
+    const{data:mlData,error:mlErr}=await sb.from('machine_lot_assignments').select('*').order('assigned_at',{ascending:false})
+    machineLots=mlErr?[]:mlData||[]
+    if(mlErr) console.warn('machine_lot_assignments:',mlErr.message)
+    else console.log('[machineLots] loaded:',machineLots.length,'lots')
+  }catch(e){machineLots=[];console.warn('machine_lot_assignments error:',e)}
+
   if(orderNos.length){
-    const[cRes,eRes,qcRes,mlRes]=await Promise.all([
+    const[cRes,eRes,qcRes]=await Promise.all([
       sb.from('material_consumption_log').select('*').in('order_no',orderNos).order('recorded_at'),
       sb.from('bloom_aligner_details').select('case_number,aligner_upper,aligner_lower,number_of_aligners,order_type').in('case_number',orderNos),
-      sb.from('quality_controls').select('id,lot_id,order_no,lot_number,performed_at').order('performed_at',{ascending:false}),
-      sb.from('machine_lot_assignments').select('*').order('assigned_at',{ascending:false})
+      sb.from('quality_controls').select('id,lot_id,order_no,lot_number,performed_at').order('performed_at',{ascending:false})
     ])
     consumption=cRes.data||[]
     prodEntries=eRes.data||[]
     qcRecords=(qcRes&&!qcRes.error)?qcRes.data||[]:[]
-    machineLots=(mlRes&&!mlRes.error)?mlRes.data||[]:[]
-    if(mlRes&&mlRes.error) console.warn('machine_lot_assignments not available:',mlRes.error.message)
+    // machineLots already loaded unconditionally above
     // Load employee list for operator dropdown
     if(!window._cwEmployees){
       const eResp=await sb.from('employees').select('name').eq('is_active',true).order('name')
@@ -572,7 +578,18 @@ function renderDetail(o){
       </div>
     </div>`
   // Render materials asynchronously after detail panel is in DOM
-  setTimeout(()=>renderMaterials(o),0)
+  setTimeout(()=>{
+    // Ensure DOM elements exist before rendering
+    const checkReady=()=>{
+      const safeId=o.order_no.replace(/[^a-z0-9]/gi,'_')
+      if(document.getElementById('matSection-'+safeId)){
+        renderMaterials(o)
+      } else {
+        setTimeout(checkReady,50)
+      }
+    }
+    checkReady()
+  },0)
 }
 
 function renderMaterials(o){
@@ -713,14 +730,6 @@ load()
   <span>v2.0 · ISO 13485 Compliant · All rights reserved</span>
 </div>
 
-
-
-    </div>
-    <div style="background:var(--b50);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--blue);font-weight:500">Full order traceability — track every production step, material used, and employee involved for any order. Required by ISO 13485 Clause 7.5.9.</div>
-    <div style="font-size:13px;line-height:1.8"><div style="margin-bottom:10px"><strong style="color:var(--txt)">Search Order</strong><br><span style="color:var(--mu);font-size:12px">Enter a Bloom case/order number to see the complete history.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Production Steps</strong><br><span style="color:var(--mu);font-size:12px">Shows every step completed: Printing, Cleaning, Thermoforming, Line Cut, Laser Marking, Packaging — with employee and timestamp.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Materials Used</strong><br><span style="color:var(--mu);font-size:12px">Lists all material lots consumed for this order with lot numbers and quantities.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">QC Results</strong><br><span style="color:var(--mu);font-size:12px">Shows quality control results linked to this order's production lot.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Print Traceability Sheet</strong><br><span style="color:var(--mu);font-size:12px">Generate a formal traceability document to include in the device batch record.</span></div></div>
-  </div>
-</div>
-<button onclick="document.getElementById('helpModal').classList.add('on')" style="position:fixed;bottom:50px;right:20px;width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(59,95,226,.4);z-index:800;font-family:var(--f)">?</button>
 
 
 
