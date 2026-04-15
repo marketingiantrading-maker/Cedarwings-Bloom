@@ -156,17 +156,17 @@ tbody tr:hover{background:#f8fafc}
   <div class="topbar" style="padding:10px 28px">
   <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px">
     <div style="flex-shrink:0">
-      <div class="tb-t" style="font-size:17px">🏭 Production & Matières</div>
-      <div class="tb-s">Lots actifs · consommation · traçabilité</div>
+      <div class="tb-t" style="font-size:17px">🏭 Production & Materials</div>
+      <div class="tb-s">Active lots · consumption · traceability</div>
     </div>
     <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
       <button class="prod-tab tab-on" id="tab-btn-overview" onclick="showTab('overview')">📊 Overview</button>
       <button class="prod-tab" id="tab-btn-lots" onclick="showTab('lots')">📦 Lots</button>
       <button class="prod-tab" id="tab-btn-entries" onclick="showTab('entries')">📋 Journal</button>
-      <button class="prod-tab" id="tab-btn-consumption" onclick="showTab('consumption')">🔬 Conso</button>
+      <button class="prod-tab" id="tab-btn-consumption" onclick="showTab('consumption')">🔬 Consumption</button>
       <span style="width:1px;height:20px;background:var(--bdr);display:inline-block;margin:0 3px"></span>
       <a href="production.html" class="btn bgh" style="padding:5px 10px;font-size:11px">← Prod</a>
-      <button class="btn bgh" id="btnYield" style="padding:5px 10px;font-size:11px">⚙ Règles</button>
+      <button class="btn bgh" id="btnYield" style="padding:5px 10px;font-size:11px">⚙ Rules</button>
     </div>
   </div>
 </div>
@@ -211,9 +211,9 @@ tbody tr:hover{background:#f8fafc}
     <div id="tab-entries" style="display:none">
       <div class="card">
         <div class="card-t">📋 Production Log</div>
-        <div class="card-s">Manual entry of aligners completed per order. Future: auto-linked from production API.</div>
+        <div class="card-s">Complete history — Bloom Import data enriched with actual production (Packaging clocking).</div>
         <div class="tw"><table>
-          <thead><tr><th>Date</th><th>Order</th><th>Case Type</th><th>Aligners</th><th>Upper</th><th>Lower</th><th>By</th><th>Notes</th><th></th></tr></thead>
+          <thead><tr><th>Date</th><th>Order</th><th>Type</th><th>Status</th><th>Produced / Planned</th><th>Upper</th><th>Lower</th><th>Operator</th><th>Notes</th><th></th></tr></thead>
           <tbody id="entriesTable"><tr><td colspan="9" style="text-align:center;padding:24px;color:var(--dim)">No entries yet.</td></tr></tbody>
         </table></div>
       </div>
@@ -311,7 +311,7 @@ const ntf=(m,t='ok')=>{const e=document.getElementById('notif');e.textContent=(t
 const fd=v=>v?new Date(v).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'—'
 const fmt=n=>n%1===0?n:parseFloat(n).toFixed(3)
 
-let machines=[],yieldRules=[],activeLots=[],entries=[],consumption=[]
+let machines=[],yieldRules=[],activeLots=[],entries=[],consumption=[],bloomCases=[]
 
 /* ─── TABS ─── */
 window.showTab=(t)=>{
@@ -344,6 +344,7 @@ async function load(){
   // Try yield_rules, fallback to material_yield_rules
   yieldRules = await qry(()=>sb.from('yield_rules').select('*').order('step'))
   if(!yieldRules.length) yieldRules = await qry(()=>sb.from('material_yield_rules').select('*'))
+  bloomCases = await qry(()=>sb.from('bloom_aligner_details').select('case_number,number_of_aligners,aligner_upper,aligner_lower,order_type,imported_at').order('imported_at',{ascending:false}).limit(300))
   renderAll()
 }
 
@@ -358,12 +359,18 @@ function renderAll(){
 
 function renderKPIs(){
   const todayStr=new Date().toISOString().slice(0,10)
-  const todayEntries=entries.filter(e=>(e.imported_at||'').slice(0,10)===todayStr)
-  const todayTotal=todayEntries.filter(e=>e.order_type==='TreatmentPlan').reduce((s,e)=>s+(e.number_of_aligners||0),0)
+  // Today: sum aligners_done from production_entries today
+  const todayProduced=entries.filter(e=>(e.session_date||e.entered_at||'').slice(0,10)===todayStr)
+    .reduce((s,e)=>s+(e.aligners_done||0),0)
+  // Week: sum from production_entries this week
   const mon=new Date();mon.setDate(mon.getDate()-mon.getDay()+1);mon.setHours(0,0,0,0)
-  const weekTotal=entries.filter(e=>e.order_type==='TreatmentPlan'&&new Date(e.imported_at||0)>=mon).reduce((s,e)=>s+(e.number_of_aligners||0),0)
-  const lowLots=activeLots.filter(l=>(l.remaining_qty/l.initial_qty)<0.2).length
-  document.getElementById('kpiToday').textContent=todayTotal
+  const weekTotal=entries.filter(e=>new Date(e.entered_at||0)>=mon)
+    .reduce((s,e)=>s+(e.aligners_done||0),0)
+  // Pending cases from Bloom not yet produced
+  const producedOrders=new Set(entries.map(e=>e.order_no))
+  const pendingCases=bloomCases.filter(b=>!producedOrders.has(b.case_number)).length
+  const lowLots=activeLots.filter(l=>l.initial_qty>0&&(l.remaining_qty/l.initial_qty)<0.2).length
+  document.getElementById('kpiToday').textContent=todayProduced
   document.getElementById('kpiWeek').textContent=weekTotal
   document.getElementById('kpiLots').textContent=activeLots.length
   document.getElementById('kpiLow').textContent=lowLots
@@ -405,7 +412,7 @@ function lotCardHtml(lot){
 }
 
 function renderLotsCards(){
-  const html=activeLots.length?activeLots.map(lotCardHtml).join(''):'<div style="color:var(--dim);font-size:13px;padding:20px">Aucun lot actif. Charger un lot depuis la page Machines.</div>'
+  const html=activeLots.length?activeLots.map(lotCardHtml).join(''):'<div style="color:var(--dim);font-size:13px;padding:20px">No active lots. Load a lot from the Machines page.</div>'
   document.getElementById('lotsOverview').innerHTML=html
   document.getElementById('lotsAll').innerHTML=html
 }
@@ -414,7 +421,7 @@ function renderCounterGrid(){
   const todayStr=new Date().toISOString().slice(0,10)
   const todayEntries=entries.filter(e=>(e.session_date||'').slice(0,10)===todayStr||(e.entered_at||'').slice(0,10)===todayStr)
   if(!todayEntries.length){
-    document.getElementById('counterGrid').innerHTML='<div style="color:var(--dim);font-size:13px;padding:10px">Aucune production ce jour. Les entrees sont creees automatiquement lors du pointage Emballage.</div>'
+    document.getElementById('counterGrid').innerHTML='<div style="color:var(--dim);font-size:13px;padding:10px">No production today. Entries are created automatically from Packaging clocking.</div>'
     return
   }
   document.getElementById('counterGrid').innerHTML=todayEntries.map(e=>`
@@ -427,18 +434,85 @@ function renderCounterGrid(){
 }
 
 function renderEntriesTable(){
-  document.getElementById('entriesTable').innerHTML=entries.length?entries.map(e=>`
+  // Build unified log: merge bloom cases with production_entries
+  // For each bloom case, find matching production_entries (by case_number = order_no)
+  const prodByOrder={}
+  entries.forEach(e=>{
+    if(!prodByOrder[e.order_no])prodByOrder[e.order_no]=[]
+    prodByOrder[e.order_no].push(e)
+  })
+
+  // Combined rows: bloom cases enriched with actual production data
+  const rows=[]
+
+  // First: all bloom cases
+  bloomCases.forEach(b=>{
+    const prods=prodByOrder[b.case_number]||[]
+    const totalProduced=prods.reduce((s,p)=>s+(p.aligners_done||0),0)
+    const planned=parseInt(b.number_of_aligners||0)
+    const isPartial=totalProduced>0&&totalProduced<planned
+    const isDone=totalProduced>=planned
+    const hasProduction=totalProduced>0
+
+    rows.push({
+      date:b.imported_at,
+      order_no:b.case_number,
+      case_type:b.order_type||'—',
+      planned,
+      produced:totalProduced,
+      upper:hasProduction?prods.reduce((s,p)=>s+(p.upper_count||0),0):(b.aligner_upper||0),
+      lower:hasProduction?prods.reduce((s,p)=>s+(p.lower_count||0),0):(b.aligner_lower||0),
+      entered_by:prods.length?prods.map(p=>p.entered_by||'').filter(Boolean).join(', '):'—',
+      notes:prods.length?prods.map(p=>p.notes||'').filter(Boolean).join(' | '):'Imported from Bloom',
+      status:isDone?'done':isPartial?'partial':hasProduction?'done':'pending',
+      source:'bloom'
+    })
+  })
+
+  // Also add any production_entries NOT from Bloom (manual entries)
+  entries.forEach(e=>{
+    const inBloom=bloomCases.find(b=>b.case_number===e.order_no)
+    if(!inBloom){
+      rows.push({
+        date:e.entered_at,
+        order_no:e.order_no,
+        case_type:e.case_type||'—',
+        planned:e.aligners_done||0,
+        produced:e.aligners_done||0,
+        upper:e.upper_count||0,
+        lower:e.lower_count||0,
+        entered_by:e.entered_by||'—',
+        notes:e.notes||'—',
+        status:'done',
+        source:'manual'
+      })
+    }
+  })
+
+  // Sort by date desc
+  rows.sort((a,b)=>new Date(b.date||0)-new Date(a.date||0))
+
+  const statusBadge={
+    done:'<span style="background:#f0fdf4;color:#16a34a;border:1px solid #dcfce7;border-radius:999px;font-size:10px;font-weight:700;padding:2px 8px">✅ Done</span>',
+    partial:'<span style="background:#fffbeb;color:#d97706;border:1px solid #fde68a;border-radius:999px;font-size:10px;font-weight:700;padding:2px 8px">⚠️ Partial</span>',
+    pending:'<span style="background:#f0f4f8;color:#64748b;border:1px solid #e2e8f0;border-radius:999px;font-size:10px;font-weight:700;padding:2px 8px">⏳ Pending</span>'
+  }
+
+  document.getElementById('entriesTable').innerHTML=rows.length?rows.map(r=>`
     <tr>
-      <td>${fd(e.entered_at)}</td>
-      <td style="font-weight:700;font-family:var(--mono)">${e.order_no}</td>
-      <td>${e.case_type||'—'}</td>
-      <td style="font-weight:700;color:var(--blue)">${e.number_of_aligners||0}</td>
-      <td>${e.upper_count||0}</td>
-      <td>${e.lower_count||0}</td>
-      <td>${e.entered_by||'—'}</td>
-      <td style="color:var(--mu);font-size:11px">${e.notes||'—'}</td>
-      <td><button class="btn br bs" onclick="deleteEntry('${e.id}')">🗑</button></td>
-    </tr>`).join(''):'<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--dim)">No entries yet.</td></tr>'
+      <td style="font-size:11px;color:var(--mu)">${fd(r.date)}</td>
+      <td style="font-weight:700;font-family:var(--mono);color:var(--blue)">${r.order_no}</td>
+      <td style="font-size:11px">${r.case_type}</td>
+      <td style="text-align:center">${statusBadge[r.status]||''}</td>
+      <td>
+        <span style="font-family:var(--mono);font-weight:700;color:${r.produced>0?'var(--green)':'var(--dim)'}">${r.produced}</span>
+        ${r.planned&&r.planned!==r.produced?`<span style="font-size:10px;color:var(--mu)"> / ${r.planned}</span>`:''}
+      </td>
+      <td style="font-family:var(--mono)">${r.upper}</td>
+      <td style="font-family:var(--mono)">${r.lower}</td>
+      <td style="font-size:11px;color:var(--mu)">${r.entered_by}</td>
+      <td style="font-size:10px;color:var(--dim);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.notes}</td>
+    </tr>`).join(''):'<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--dim)">No entries yet. Data appears after Bloom Import and Packaging clocking.</td></tr>'
 }
 
 function renderConsumptionTable(){
@@ -551,7 +625,7 @@ window.manualDeduct=async(id,itemName,unit)=>{
 }
 
 /* ─── YIELD RULES MODAL ─── */
-// Règles button
+// Rules button
 const _yBtn=document.getElementById('btnYield')
 if(_yBtn)_yBtn.addEventListener('click',()=>{
   renderYieldList();document.getElementById('mYield').classList.add('on')
@@ -615,9 +689,9 @@ load()
     if (typeof CW_HELP === 'undefined' || typeof CW_HELP.buildPanel !== 'function') {
       setTimeout(mountHelp, 50); return;
     }
-    const html = CW_HELP.buildPanel('production_materials', '📦', 'Matières & Lots', 'Materials & Lots');
+    const html = CW_HELP.buildPanel('production_materials', '📦', 'Materials & Lots', 'Materials & Lots');
     document.getElementById('helpPanelMount').innerHTML = html;
-    CW_HELP.init('production_materials', '📦', 'Matières & Lots', 'Materials & Lots');
+    CW_HELP.init('production_materials', '📦', 'Materials & Lots', 'Materials & Lots');
   }
   document.addEventListener('DOMContentLoaded', mountHelp);
 })();
