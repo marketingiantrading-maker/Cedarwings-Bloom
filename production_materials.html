@@ -135,17 +135,29 @@ tbody tr:hover{background:#f8fafc}
     <a href="roles.html" class="nl"><span class="ic">🔑</span>Roles</a>
     <a href="clocking.html" class="nl"><span class="ic">⏱</span>Clocking Terminal</a>
   </nav>
-  <div class="sb-foot"><a href="index.html" class="nl"><span class="ic">←</span>Switch Role</a></div>
+  <div class="sb-foot">
+<button id="sbLangBtn" title="Changer la langue / Switch Language"
+  onclick="(function(){const l=localStorage.getItem('cw_lang')||'fr';const n=l==='fr'?'en':'fr';localStorage.setItem('cw_lang',n);document.getElementById('sbLangBtn').innerHTML=n==='fr'?'🇬🇧 EN':'🇫🇷 FR';if(typeof CW_LANG!=='undefined')CW_LANG.apply();})()"
+  style="display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:8px;
+         font-size:12px;font-weight:600;color:var(--mu);background:none;border:none;
+         cursor:pointer;width:100%;text-align:left;font-family:var(--f);
+         transition:background .12s,color .12s"
+  onmouseover="this.style.background='var(--bg)';this.style.color='var(--txt)'"
+  onmouseout="this.style.background='none';this.style.color='var(--mu)'">
+  🇫🇷 FR
+</button>
+<script>(function(){const l=localStorage.getItem('cw_lang')||'fr';const b=document.getElementById('sbLangBtn');if(b)b.innerHTML=l==='fr'?'🇬🇧 EN':'🇫🇷 FR';})()</script><a href="index.html" class="nl"><span class="ic">←</span>Switch Role</a></div>
 </aside>
 
 <div class="content">
   <div class="topbar">
+  
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:1">
     <div><div class="tb-t">🏭 Production & Materials</div><div class="tb-s">Aligner output, material lots, yield rules and consumption tracking</div></div>
     <div style="display:flex;gap:8px">
       <a href="production.html" class="btn bgh">← Production</a>
       <button class="btn bgh" id="btnYield">⚙ Yield Rules</button>
       <button class="btn bgh" id="btnLoadLot">📦 Load Lot to Machine</button>
-      <button class="btn bb" id="btnEntry">+ Log Production</button>
     </div>
   </div>
 
@@ -154,7 +166,7 @@ tbody tr:hover{background:#f8fafc}
     <div class="tabs">
       <button class="tab on" onclick="showTab('overview')">📊 Overview</button>
       <button class="tab" onclick="showTab('lots')">📦 Active Material Lots</button>
-      <button class="tab" onclick="showTab('entries')">📋 Production Log</button>
+      <button class="tab" onclick="showTab('entries')">📋 Journal Production</button>
       <button class="tab" onclick="showTab('consumption')">🔬 Consumption Log</button>
     </div>
 
@@ -430,7 +442,7 @@ function renderCounterGrid(){
   const todayStr=new Date().toISOString().slice(0,10)
   const todayEntries=entries.filter(e=>e.session_date===todayStr)
   if(!todayEntries.length){
-    document.getElementById('counterGrid').innerHTML='<div style="color:var(--dim);font-size:13px;padding:10px">No production logged today. Click "+ Log Production" to add.</div>'
+    document.getElementById('counterGrid').innerHTML='<div style="color:var(--dim);font-size:13px;padding:10px">No production logged today. Click "Aucune production aujourd'hui. Créée auto lors du pointage Emballage.</div>'
     return
   }
   document.getElementById('counterGrid').innerHTML=todayEntries.map(e=>`
@@ -676,6 +688,7 @@ load()
   document.addEventListener('DOMContentLoaded', mountHelp);
 })();
 </script>
+
 
 </body>
 </html>

@@ -410,6 +410,25 @@ tr:hover td{background:#fafbfc}
         </div>
       </div>
 
+      <!-- RETURN TO STEP (shown only when rejected) -->
+      <div id="returnStepBox" style="display:none;background:#fef2f2;border:1.5px solid #fecaca;border-radius:12px;padding:14px;margin-bottom:16px">
+        <label style="font-size:11px;font-weight:700;color:#dc2626;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:8px">
+          🔄 Retourner à l'étape — Quelle étape doit être refaite ?
+        </label>
+        <select class="fi" id="qcReturnStep" style="border-color:#fecaca">
+          <option value="">— Sélectionner l'étape de retour —</option>
+          <option value="Printing">🖨 Impression (Printing)</option>
+          <option value="Cleaning">🧼 Nettoyage (Cleaning)</option>
+          <option value="Thermoforming">🔄 Thermoformage (Thermoforming)</option>
+          <option value="Line Cut">✂ Découpe (Line Cut)</option>
+          <option value="Laser Marking">🔆 Marquage Laser (Laser Marking)</option>
+          <option value="Packaging">📦 Emballage (Packaging)</option>
+        </select>
+        <div style="font-size:11px;color:#64748b;margin-top:6px">
+          ⚠️ Seule cette étape sera remise en attente. Les étapes précédentes restent validées.
+        </div>
+      </div>
+
       <!-- RESULT BOX -->
       <div id="qcResultBox" class="result-box pending">
         <div style="font-size:13px;font-weight:700;color:var(--mu)">Résultat en attente — compléter les points de contrôle</div>
@@ -748,8 +767,14 @@ function updateResult(){
     box.innerHTML='<div style="font-size:13px;font-weight:700;color:var(--mu)">Résultat en attente — compléter les points de contrôle</div>'
   } else if(fails>0){
     box.className='result-box rejected'
+    // Show return-to-step selector when rejected
+    const rsb=document.getElementById('returnStepBox')
+    if(rsb)rsb.style.display='block'
     box.innerHTML='<div style="font-size:14px;font-weight:800;color:var(--red)">❌ Non-conformités détectées ('+fails+' point'+(fails>1?'s':'')+' échoué'+(fails>1?'s':'')+')</div><div style="font-size:12px;color:var(--red);margin-top:4px">'+passes+' conforme'+(passes>1?'s':'')+' · '+fails+' échoué'+(fails>1?'s':'')+' · '+(done-passes-fails)+' N/A</div>'
   } else {
+    // Hide return-to-step selector when approved
+    const rsbA=document.getElementById('returnStepBox')
+    if(rsbA)rsbA.style.display='none'
     box.className='result-box approved'
     box.innerHTML='<div style="font-size:14px;font-weight:800;color:var(--green)">✅ Tous les points sont conformes ('+passes+'/'+done+')</div><div style="font-size:12px;color:var(--green);margin-top:4px">Prêt pour approbation</div>'
   }
@@ -791,9 +816,21 @@ window.submitQC=async(result)=>{
     qty_ok:checks["qty"]??null,
     overall_result:result,
     non_conformities:document.getElementById("qcNC").value.trim()||null,
-    corrective_action:document.getElementById("qcCA").value.trim()||null
+    corrective_action:document.getElementById("qcCA").value.trim()||null,
+    return_to_step:document.getElementById("qcReturnStep")?document.getElementById("qcReturnStep").value||null:null
   }])
   if(error){ntf("Erreur: "+error.message,"err");return}
+
+  // If REJECTED: reset the specific step in order_step_tracking
+  if(result==='rejected'){
+    const returnStep=document.getElementById("qcReturnStep")?.value
+    if(returnStep&&currentOrderNo){
+      await sb.from("order_step_tracking")
+        .update({status:"pending",completed_at:null})
+        .eq("order_no",currentOrderNo)
+        .eq("step",returnStep)
+    }
+  }
 
   if(isUUID(currentLotId)){
     await sb.from("production_lots").update({quality_status:result,quality_checked_by:controller,quality_checked_at:new Date().toISOString()}).eq("id",currentLotId)

@@ -244,12 +244,12 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
 <!-- MODAL: INSTALL MATERIAL -->
 <div class="mov" id="mInst">
   <div class="mo">
-    <div class="mot">Install Material on Machine</div>
-    <div class="mos" id="mInstSub">Select the material, enter quantity. System picks FEFO lot and deducts from stock automatically.</div>
+    <div class="mot">📦 Charger un Lot sur la Machine</div>
+    <div class="mos" id="mInstSub">Sélectionner la matière et entrer le numéro de lot. Le système suivra la consommation automatiquement.</div>
     <input type="hidden" id="instMid"/>
     <div class="mof">
-      <div><lbl>Item *</lbl><select class="fi" id="instItem"><option value="">-- Select inventory item --</option></select></div>
-      <div id="instLotDiv" style="display:none"><lbl>FEFO Lot (auto-selected)</lbl><div class="fi" id="instLotInfo" style="background:var(--a50);border-color:var(--a100);font-size:12px;min-height:44px">Select an item first</div></div>
+      <div><lbl>Item *</lbl><select class="fi" id="instItem"><option value="">— Sélectionner la matière —</option></select></div>
+      <div id="instLotDiv" style="display:none"><lbl>Numéro de lot</lbl><div class="fi" id="instLotInfo" style="background:var(--a50);border-color:var(--a100);font-size:12px;min-height:44px">Select an item first</div></div>
       <div class="fg">
         <div><lbl>Quantity Installed *</lbl><input class="fi" id="instQty" type="number" step="0.01" min="0.01" placeholder="0"/></div>
         <div><lbl>Unit</lbl><input class="fi" id="instUnit" placeholder="Auto" readonly/></div>
@@ -333,7 +333,7 @@ ${a?`<div class="sec"><div class="sec-t">&#128994; Active Session</div><div styl
 <div class="sec-t">&#128221; Orders on this Machine (Today)</div>
 <div id="ord-${x.id}" style="font-size:11px;color:var(--dim)">Loading...</div>
 </div>
-<div class="sec"><div class="sec-t">&#128230; Materials Installed<button class="btn bs" style="background:var(--a50);border:1px solid var(--a100);color:#92400e;padding:3px 8px" onclick="openInst('${x.id}','${mn}')">+ Install</button></div>
+<div class="sec"><div class="sec-t">🟠 Matière / Lot actif<button class="btn bs" style="background:var(--a50);border:1px solid var(--a100);color:#92400e;padding:3px 8px" onclick="openInst('${x.id}','${mn}')">📦 Load Lot</button></div>
 ${cl.length?cl.map(c=>{const p=c.qty_installed>0?Math.round(c.qty_remaining/c.qty_installed*100):0;return`<div class="cr-row"><div><div style="font-weight:600;font-size:11px">${c.item_name}</div><div style="font-size:10px;color:var(--dim)">Lot: ${c.lot_no||'—'} · ${new Date(c.installed_at).toLocaleDateString()} · By: ${c.installed_by||'—'}</div></div><div style="text-align:right"><div style="font-weight:700;font-family:var(--mono);font-size:12px;color:${p<20?'var(--red)':p<40?'var(--amber)':'var(--green)'}">${c.qty_remaining}/${c.qty_installed} ${c.unit||''}</div><div style="font-size:10px;margin-top:2px"><span style="color:#d97706;font-weight:700">${c.aligners_produced_since_install||0}</span> aligners · <span style="color:#7c3aed;font-weight:700">${c.cases_completed_since_install||0}</span> cases since install</div><div class="crb"><div class="crf" style="width:${p}%;background:${p<20?'#dc2626':p<40?'#d97706':'#16a34a'}"></div></div></div></div>`}).join(''):`<div style="color:var(--dim);font-size:11px;text-align:center;padding:4px">No materials installed.</div>`}
 </div>
 </div></div>`
@@ -534,6 +534,24 @@ document.getElementById('svInst').addEventListener('click',async()=>{
     await sb.from('inventory_lots').update({available_qty:Number(fefoLot.available_qty)-qty}).eq('id',fefoLot.lot_id)
     await sb.from('inventory_stock_history').insert([{lot_id:fefoLot.lot_id,action_type:'usage',quantity:qty,unit_cost:fefoLot.unit_cost||0,note:'Installed on machine: '+mid}])
     await sb.from('machine_consumable_loads').insert([{machine_id:mid,lot_id:fefoLot.lot_id,item_name:iopt.dataset.name,lot_no:fefoLot.lot_no,qty_installed:qty,qty_remaining:qty,unit:document.getElementById('instUnit').value||null,installed_by:document.getElementById('instBy').value.trim()||null,notes:document.getElementById('instNotes').value.trim()||null,is_active:true}])
+    // Sync to machine_lot_assignments so clocking auto-deduction works
+    try{
+      await sb.from('machine_lot_assignments').update({is_active:false}).eq('machine_id',mid).eq('is_active',true)
+      await sb.from('machine_lot_assignments').insert([{
+        machine_id:mid,
+        machine_name:(machines||[]).find(m=>m.id===mid)?.machine_name||'',
+        item_id:isel.value||null,
+        item_name:iopt.dataset.name,
+        lot_number:fefoLot.lot_no||'',
+        initial_qty:qty,
+        remaining_qty:qty,
+        qty_remaining:qty,
+        unit:document.getElementById('instUnit').value||null,
+        loaded_by:document.getElementById('instBy').value.trim()||null,
+        is_active:true,
+        assigned_at:new Date().toISOString()
+      }])
+    }catch(e){console.warn('machine_lot_assignments sync:',e)}
     document.getElementById('mInst').classList.remove('on');ntf(qty+' installed and deducted from stock');load()
   }catch(err){document.getElementById('instErr').textContent=err.message}
 })
