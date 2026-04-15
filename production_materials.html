@@ -167,7 +167,6 @@ tbody tr:hover{background:#f8fafc}
       <span style="width:1px;height:20px;background:var(--bdr);display:inline-block;margin:0 3px"></span>
       <a href="production.html" class="btn bgh" style="padding:5px 10px;font-size:11px">← Prod</a>
       <button class="btn bgh" id="btnYield" style="padding:5px 10px;font-size:11px">⚙ Règles</button>
-      <button class="btn bgh" id="btnLoadLot" style="padding:5px 10px;font-size:11px">📦 Charger Lot</button>
     </div>
   </div>
 </div>
@@ -231,38 +230,6 @@ tbody tr:hover{background:#f8fafc}
         </table></div>
       </div>
     </div>
-  </div>
-</div>
-
-<!-- MODAL: Load Lot to Machine -->
-<div class="mov" id="mLoadLot">
-  <div class="mo">
-    <div class="mo-t">📦 Load Material Lot to Machine</div>
-    <div class="mo-s">Assign a lot from inventory to a machine. The system will track consumption automatically.</div>
-    <div class="fgrp"><lbl>Machine *</lbl><select class="fi" id="llMachine"><option value="">Select machine…</option></select></div>
-    <div class="fgrp">
-      <lbl>Material / Item *</lbl>
-      <select class="fi" id="llItem" onchange="onItemSelect(this)" style="margin-bottom:6px">
-        <option value="">— Select from inventory or type below —</option>
-      </select>
-      <input class="fi" id="llItemText" placeholder="Or type material name manually (e.g. Resin, Thermoforming Film…)"/>
-      <div style="font-size:10px;color:var(--mu);margin-top:4px">Select from inventory OR type a name manually</div>
-    </div>
-    <div class="fg2">
-      <div><lbl>Lot Number *</lbl><input class="fi" id="llLot" placeholder="e.g. LOT-2024-RESIN-001"/></div>
-      <div><lbl>Initial Quantity *</lbl>
-        <div style="display:flex;gap:6px">
-          <input class="fi" id="llQty" type="number" step="0.001" placeholder="e.g. 1.5" style="flex:1"/>
-          <select class="fi" id="llUnit" style="width:80px"><option>kg</option><option>g</option><option>ml</option><option>L</option><option>pcs</option></select>
-        </div>
-      </div>
-    </div>
-    <div class="fgrp"><lbl>Loaded by</lbl><input class="fi" id="llBy" placeholder="Your name"/></div>
-    <div class="mo-actions">
-      <button class="btn bgh" onclick="document.getElementById('mLoadLot').classList.remove('on')">Cancel</button>
-      <button class="btn bb" onclick="saveLoadLot()">Load Lot</button>
-    </div>
-    <div class="mer" id="llErr"></div>
   </div>
 </div>
 
@@ -344,7 +311,7 @@ const ntf=(m,t='ok')=>{const e=document.getElementById('notif');e.textContent=(t
 const fd=v=>v?new Date(v).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'—'
 const fmt=n=>n%1===0?n:parseFloat(n).toFixed(3)
 
-let machines=[],inventory=[],yieldRules=[],activeLots=[],entries=[],consumption=[]
+let machines=[],yieldRules=[],activeLots=[],entries=[],consumption=[]
 
 /* ─── TABS ─── */
 window.showTab=(t)=>{
@@ -359,30 +326,21 @@ window.showTab=(t)=>{
 
 /* ─── LOAD ─── */
 async function load(){
-  const[mRes,iRes,yRes,lRes,eRes,cRes]=await Promise.all([
+  const[mRes,yRes,lRes,eRes,cRes]=await Promise.all([
     sb.from('machines').select('id,machine_name,machine_type').order('machine_name'),
-    sb.from('inventory_items').select('id,name,unit_of_measure').order('name'),
     sb.from('material_yield_rules').select('*').order('step'),
     sb.from('machine_lot_assignments').select('*').eq('is_active',true).order('assigned_at',{ascending:false}).limit(50),
     sb.from('bloom_aligner_details').select('case_number,aligner_upper,aligner_lower,number_of_aligners,order_type,imported_at').order('imported_at',{ascending:false}).limit(200),
     sb.from('material_consumption_log').select('*').order('recorded_at',{ascending:false}).limit(100)
   ])
   machines=mRes.data||[]
-  inventory=iRes.data||[]
   yieldRules=yRes.data||[]
   activeLots=lRes.data||[]
   entries=eRes.data||[]
   consumption=cRes.data||[]
   renderAll()
-  populateSelects()
 }
 
-function populateSelects(){
-  document.getElementById('llMachine').innerHTML='<option value="">Select machine…</option>'+
-    machines.map(m=>`<option value="${m.id}" data-name="${m.machine_name}">${m.machine_name} (${m.machine_type})</option>`).join('')
-  document.getElementById('llItem').innerHTML='<option value="">— Select from inventory or type below —</option>'+
-    inventory.map(i=>`<option value="${i.id}" data-name="${i.name}" data-unit="${i.unit_of_measure||'pcs'}">${i.name} </option>`).join('')
-}
 
 function renderAll(){
   renderLotsCards()
@@ -441,7 +399,7 @@ function lotCardHtml(lot){
 }
 
 function renderLotsCards(){
-  const html=activeLots.length?activeLots.map(lotCardHtml).join(''):'<div style="color:var(--dim);font-size:13px;padding:20px">No active lots. Click "Load Lot to Machine" to assign a material lot.</div>'
+  const html=activeLots.length?activeLots.map(lotCardHtml).join(''):'<div style="color:var(--dim);font-size:13px;padding:20px">Aucun lot actif. Charger un lot depuis la page Machines.</div>'
   document.getElementById('lotsOverview').innerHTML=html
   document.getElementById('lotsAll').innerHTML=html
 }
@@ -492,49 +450,9 @@ function renderConsumptionTable(){
 }
 
 /* ─── LOAD LOT MODAL ─── */
-document.getElementById('btnLoadLot').addEventListener('click',()=>{
-  document.getElementById('llErr').textContent=''
-  document.getElementById('llMachine').value=''
-  document.getElementById('llItem').value=''
-  document.getElementById('llItemText').value=''
-  document.getElementById('llLot').value=''
-  document.getElementById('llQty').value=''
-  document.getElementById('mLoadLot').classList.add('on')
-})
 
-window.onItemSelect=function(sel){
-  const opt=sel.options[sel.selectedIndex]
-  if(opt&&opt.dataset.name){
-    document.getElementById('llItemText').value=opt.dataset.name
-    if(opt.dataset.unit)document.getElementById('llUnit').value=opt.dataset.unit
-  }
-}
 
-window.saveLoadLot=async()=>{
-  const machSel=document.getElementById('llMachine')
-  const itemSel=document.getElementById('llItem')
-  const machId=machSel.value
-  const machName=machSel.options[machSel.selectedIndex]?.dataset.name||''
-  const itemId=itemSel.value||null
-  // Use typed name if no dropdown selection
-  const itemName=document.getElementById('llItemText').value.trim()||
-    itemSel.options[itemSel.selectedIndex]?.dataset.name||''
-  const lot=document.getElementById('llLot').value.trim()
-  const qty=parseFloat(document.getElementById('llQty').value||0)
-  const unit=document.getElementById('llUnit').value
-  const by=document.getElementById('llBy').value.trim()
-  if(!machId||!itemName||!lot||!qty){document.getElementById('llErr').textContent='Machine, material, lot and quantity required';return}
-  // Deactivate any existing assignment for same machine+item
-  await sb.from('machine_lot_assignments').update({is_active:false,unloaded_at:new Date().toISOString()})
-    .eq('machine_id',machId).eq('item_name',itemName).eq('is_active',true)
-  const{error}=await sb.from('machine_lot_assignments').insert([{
-    machine_id:machId,machine_name:machName,item_id:itemId,item_name:itemName,
-    lot_number:lot,initial_qty:qty,remaining_qty:qty,unit,loaded_by:by||null,is_active:true
-  }])
-  if(error){document.getElementById('llErr').textContent=error.message;return}
-  document.getElementById('mLoadLot').classList.remove('on')
-  ntf('Lot loaded to '+machName);load()
-}
+
 
 /* ─── PRODUCTION ENTRY MODAL ─── */
 document.getElementById('btnEntry').addEventListener('click',()=>{
