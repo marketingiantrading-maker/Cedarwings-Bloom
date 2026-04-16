@@ -11,6 +11,7 @@
   --red:#dc2626;--r50:#fff1f2;--r100:#fecdd3;
   --amber:#d97706;--a50:#fffbeb;--a100:#fde68a;
   --purple:#7c3aed;--p50:#f5f3ff;--p100:#ede9fe;
+  --teal:#0d9488;--t50:#f0fdfa;--t100:#ccfbf1;
   --sh:0 1px 3px rgba(0,0,0,.07),0 0 0 1px rgba(0,0,0,.04);
   --sh2:0 6px 24px rgba(0,0,0,.09)}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -20,61 +21,85 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
 .page-title{font-size:20px;font-weight:800;letter-spacing:-.4px}
 .page-sub{font-size:12px;color:var(--mu);margin-top:2px}
 .body{padding:24px 28px 80px}
-.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px}
-.kpi{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:20px 18px 16px;position:relative;overflow:hidden;border-top:3px solid var(--bdr)}
-.kpi-ico{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px}
-.kpi-val{font-size:32px;font-weight:800;font-family:'JetBrains Mono',monospace;letter-spacing:-1.5px;line-height:1}
-.kpi-lbl{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-top:8px}
-.kpi-sub{font-size:11px;color:var(--dim);margin-top:4px}
-.sync-card{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:24px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
-.sync-info{display:flex;align-items:center;gap:16px}
-.sync-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px}
+.kpi{background:var(--card);border-radius:14px;box-shadow:var(--sh);padding:16px;border-top:3px solid var(--bdr)}
+.kpi-ico{font-size:20px;margin-bottom:10px}
+.kpi-val{font-size:26px;font-weight:800;font-family:'JetBrains Mono',monospace;letter-spacing:-1px;line-height:1}
+.kpi-lbl{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-top:6px}
+.sync-banner{background:var(--card);border-radius:14px;box-shadow:var(--sh);padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.sync-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
 .sync-dot.ok{background:var(--green);animation:pulse 2s infinite}
 .sync-dot.running{background:var(--amber);animation:blink .8s infinite}
 .sync-dot.err{background:var(--red)}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(22,163,74,.4)}60%{box-shadow:0 0 0 6px rgba(22,163,74,0)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(22,163,74,.4)}60%{box-shadow:0 0 0 5px rgba(22,163,74,0)}}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
-.btn-blue{background:var(--blue);color:#fff}
-.btn-blue:hover{background:#2d4dd4}
-.btn-blue:disabled{background:#94a3b8;cursor:not-allowed}
-.btn-ghost{background:var(--card);border:1.5px solid var(--bdr);color:var(--mu)}
-.btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
-.live-badge{display:flex;align-items:center;gap:6px;background:var(--g50);border:1px solid var(--g100);padding:5px 13px;border-radius:999px;font-size:12px;font-weight:700;color:var(--green)}
-.live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;flex-shrink:0}
-.breakdown-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
-.card{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:22px;margin-bottom:16px}
-.card-title{font-size:14px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:8px}
-.status-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;font-size:13px}
-.status-label{width:210px;flex-shrink:0;color:var(--mu);font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.status-bar-bg{flex:1;height:8px;background:var(--bg);border-radius:999px;overflow:hidden;border:1px solid var(--bdr)}
-.status-bar-fill{height:100%;border-radius:999px;transition:width .4s}
-.status-count{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;min-width:40px;text-align:right}
-.tw{overflow-x:auto;border-radius:12px;border:1px solid var(--bdr)}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th{background:#f8fafc;padding:10px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--bdr);white-space:nowrap}
-td{padding:12px 14px;border-bottom:1px solid var(--bdr);vertical-align:middle}
+.stat-box{text-align:center}
+.stat-val{font-size:22px;font-weight:800;font-family:'JetBrains Mono',monospace;line-height:1}
+.stat-lbl{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-top:3px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#2d4dd4}.btn-blue:disabled{background:#94a3b8;cursor:not-allowed}
+.btn-ghost{background:var(--card);border:1.5px solid var(--bdr);color:var(--mu)}.btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+.live-badge{display:flex;align-items:center;gap:6px;background:var(--g50);border:1px solid var(--g100);padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700;color:var(--green)}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;flex-shrink:0}
+.tabs{display:flex;gap:4px;background:var(--bg);border:1px solid var(--bdr);border-radius:10px;padding:3px;margin-bottom:20px;width:fit-content}
+.tab{padding:7px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--mu);font-family:inherit;transition:all .12s}
+.tab.active{background:var(--card);color:var(--blue);box-shadow:var(--sh)}
+.card{background:var(--card);border-radius:14px;box-shadow:var(--sh);padding:20px;margin-bottom:16px}
+.card-title{font-size:14px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* FILTERS BAR */
+.filters-bar{background:var(--card);border-radius:12px;box-shadow:var(--sh);padding:14px 18px;margin-bottom:16px;display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.fi-group{display:flex;flex-direction:column;gap:4px}
+.fi-label{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px}
+.fi-input{padding:7px 11px;border:1.5px solid var(--bdr);border-radius:8px;font-size:12px;font-family:inherit;background:var(--bg);color:var(--txt);outline:none;min-width:140px}
+.fi-input:focus{border-color:var(--blue)}
+.fi-input[type="date"]{min-width:130px}
+.filter-tag{display:inline-flex;align-items:center;gap:5px;background:var(--b50);color:var(--blue);border:1px solid var(--b100);border-radius:999px;padding:3px 10px;font-size:11px;font-weight:700}
+.filter-tag button{background:none;border:none;cursor:pointer;color:var(--blue);font-size:13px;line-height:1;padding:0}
+
+/* STATUS BARS */
+.status-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.status-lbl{width:200px;flex-shrink:0;font-size:11px;font-weight:600;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-bg{flex:1;height:7px;background:var(--bg);border-radius:999px;overflow:hidden;border:1px solid var(--bdr)}
+.bar-fill{height:100%;border-radius:999px}
+.bar-cnt{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;min-width:38px;text-align:right}
+.bar-pct{font-size:10px;color:var(--dim);min-width:28px;text-align:right}
+
+/* TABLE */
+.tw{overflow-x:auto;border-radius:11px;border:1px solid var(--bdr)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#f8fafc;padding:9px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--bdr);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--bdr);vertical-align:middle}
 tr:last-child td{border:none}
-tr:hover td{background:#f8fafc}
-.mono{font-family:'JetBrains Mono',monospace;font-size:12px}
-.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700}
+tr:hover td{background:#fafbfc}
+.mono{font-family:'JetBrains Mono',monospace;font-size:11px}
+.bdg{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700}
 .b-g{background:var(--g100);color:#15803d}
 .b-r{background:var(--r100);color:#991b1b}
 .b-a{background:var(--a100);color:#92400e}
-.b-gray{background:#f1f5f9;color:var(--mu)}
 .b-b{background:var(--b100);color:#1e40af}
-.case-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bdr);font-size:13px}
-.case-row:last-child{border:none}
-.case-id{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--blue);font-size:12px;min-width:46px}
-.case-patient{font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.case-doc{font-size:11px;color:var(--mu);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+.b-p{background:var(--p100);color:#5b21b6}
+.b-gray{background:#f1f5f9;color:var(--mu)}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:200;align-items:center;justify-content:center}
+.overlay.on{display:flex}
+.modal{background:var(--card);border-radius:18px;padding:28px;width:min(680px,95vw);max-height:90vh;overflow-y:auto;box-shadow:var(--sh2)}
+.mo-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.detail-item{background:var(--bg);border-radius:9px;padding:10px 12px}
+.detail-lbl{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.detail-val{font-size:13px;font-weight:600}
+.aligner-card{background:var(--b50);border:1px solid var(--b100);border-radius:10px;padding:12px;margin-bottom:8px}
+
+/* PAGINATION */
+.pg{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12px;color:var(--mu)}
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.stat-box{text-align:center;padding:0 8px}
-.stat-val{font-size:28px;font-weight:800;font-family:'JetBrains Mono',monospace;line-height:1}
-.stat-lbl{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+
 @media(max-width:1400px){.kpi-grid{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:900px){.breakdown-grid{grid-template-columns:1fr}.main{margin-left:0}.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:1fr}.main{margin-left:0}}
 </style>
 <script>const PAGE_KEY='bloom_import'</script>
 <script src="access.js"></script>
@@ -84,111 +109,217 @@ tr:hover td{background:#f8fafc}
   <div class="topbar">
     <div>
       <div class="page-title">🔵 Bloom Sync</div>
-      <div class="page-sub">Automatic sync from Bloom Aligner API · Refreshes every minute</div>
+      <div class="page-sub" id="pageSub">Automatic sync from Bloom Aligner API · Every minute</div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <div class="live-badge"><div class="live-dot"></div><span id="liveTxt">Loading...</span></div>
-      <button class="btn btn-ghost" style="padding:8px 14px;font-size:12px" onclick="loadData()">↻ Refresh</button>
+      <button class="btn btn-ghost" style="padding:7px 14px;font-size:12px" onclick="loadAll()">↻ Refresh</button>
       <button class="btn btn-blue" id="syncBtn" onclick="triggerSync()">🔄 Sync Now</button>
     </div>
   </div>
 
   <div class="body">
 
-    <!-- SYNC STATUS BANNER -->
-    <div class="sync-card">
-      <div class="sync-info">
+    <!-- SYNC BANNER -->
+    <div class="sync-banner">
+      <div style="display:flex;align-items:center;gap:12px">
         <div class="sync-dot ok" id="syncDot"></div>
         <div>
-          <div style="font-size:16px;font-weight:800" id="syncStatusTxt">Checking sync status...</div>
-          <div style="font-size:12px;color:var(--mu);margin-top:2px" id="syncMetaTxt">—</div>
+          <div style="font-size:15px;font-weight:800" id="syncTxt">Checking sync...</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:2px" id="syncMeta">—</div>
         </div>
       </div>
-      <div style="display:flex;gap:32px;flex-wrap:wrap">
-        <div class="stat-box">
-          <div class="stat-val" id="statTotal" style="color:var(--blue)">—</div>
-          <div class="stat-lbl">Total Cases</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-val" id="statSyncs" style="color:var(--green)">—</div>
-          <div class="stat-lbl">Sync Runs</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-val" id="statAligns" style="color:var(--purple)">—</div>
-          <div class="stat-lbl">Aligners Synced</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-val" id="statLast" style="color:var(--amber)">—</div>
-          <div class="stat-lbl">Last Sync</div>
-        </div>
+      <div style="display:flex;gap:28px;flex-wrap:wrap">
+        <div class="stat-box"><div class="stat-val" id="sBTotal" style="color:var(--blue)">—</div><div class="stat-lbl">Total Cases</div></div>
+        <div class="stat-box"><div class="stat-val" id="sBAligns" style="color:var(--purple)">—</div><div class="stat-lbl">Aligner Records</div></div>
+        <div class="stat-box"><div class="stat-val" id="sBSyncs" style="color:var(--green)">—</div><div class="stat-lbl">Sync Runs</div></div>
+        <div class="stat-box"><div class="stat-val" id="sBLast" style="color:var(--amber)">—</div><div class="stat-lbl">Last Sync</div></div>
       </div>
     </div>
 
-    <!-- KPIs -->
+    <!-- KPI ROW -->
     <div class="kpi-grid">
       <div class="kpi" style="border-top-color:var(--blue)">
-        <div class="kpi-ico" style="background:var(--b50)">🔵</div>
-        <div class="kpi-val" id="kTotal" style="color:var(--blue)">—</div>
-        <div class="kpi-lbl">Total Cases</div>
-        <div class="kpi-sub">from Bloom API</div>
+        <div class="kpi-ico">🔵</div><div class="kpi-val" id="kTotal" style="color:var(--blue)">—</div><div class="kpi-lbl">Total Cases</div>
       </div>
       <div class="kpi" style="border-top-color:var(--green)">
-        <div class="kpi-ico" style="background:var(--g50)">📦</div>
-        <div class="kpi-val" id="kReceived" style="color:var(--green)">—</div>
-        <div class="kpi-lbl">Aligners Received</div>
-        <div class="kpi-sub">delivered to clinic</div>
+        <div class="kpi-ico">📦</div><div class="kpi-val" id="kReceived" style="color:var(--green)">—</div><div class="kpi-lbl">Aligners Received</div>
       </div>
       <div class="kpi" style="border-top-color:var(--amber)">
-        <div class="kpi-ico" style="background:var(--a50)">⚙️</div>
-        <div class="kpi-val" id="kInProd" style="color:var(--amber)">—</div>
-        <div class="kpi-lbl">In Production</div>
-        <div class="kpi-sub">printed / ordered</div>
+        <div class="kpi-ico">⚙️</div><div class="kpi-val" id="kProd" style="color:var(--amber)">—</div><div class="kpi-lbl">In Production</div>
       </div>
       <div class="kpi" style="border-top-color:var(--purple)">
-        <div class="kpi-ico" style="background:var(--p50)">📋</div>
-        <div class="kpi-val" id="kPlanning" style="color:var(--purple)">—</div>
-        <div class="kpi-lbl">Planning</div>
-        <div class="kpi-sub">plan stage</div>
+        <div class="kpi-ico">📋</div><div class="kpi-val" id="kPlan" style="color:var(--purple)">—</div><div class="kpi-lbl">Planning</div>
       </div>
-      <div class="kpi" style="border-top-color:var(--dim)">
-        <div class="kpi-ico" style="background:#f1f5f9">📝</div>
-        <div class="kpi-val" id="kDraft" style="color:var(--mu)">—</div>
-        <div class="kpi-lbl">Drafts</div>
-        <div class="kpi-sub">not submitted</div>
+      <div class="kpi" style="border-top-color:var(--teal)">
+        <div class="kpi-ico">🦷</div><div class="kpi-val" id="kAligners" style="color:var(--teal)">—</div><div class="kpi-lbl">Aligner Records</div>
+      </div>
+      <div class="kpi" style="border-top-color:var(--mu)">
+        <div class="kpi-ico">📝</div><div class="kpi-val" id="kDraft" style="color:var(--mu)">—</div><div class="kpi-lbl">Drafts</div>
       </div>
     </div>
 
-    <!-- BREAKDOWN + RECENT -->
-    <div class="breakdown-grid">
-      <div class="card" style="margin-bottom:0">
-        <div class="card-title">📊 Status Breakdown</div>
-        <div id="statusBars"><div style="color:var(--dim);font-size:12px;padding:16px;text-align:center">Loading...</div></div>
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('cases',this)">👥 All Cases</button>
+      <button class="tab" onclick="showTab('aligners',this)">🦷 Aligner Details</button>
+      <button class="tab" onclick="showTab('analytics',this)">📊 Analytics</button>
+      <button class="tab" onclick="showTab('synclog',this)">📜 Sync Log</button>
+    </div>
+
+    <!-- ===== TAB: CASES ===== -->
+    <div id="tab-cases">
+      <!-- FILTERS BAR -->
+      <div class="filters-bar">
+        <!-- Search -->
+        <div class="fi-group">
+          <div class="fi-label">🔍 Search</div>
+          <input class="fi-input" style="min-width:220px" type="text" id="fSearch" placeholder="Case #, patient, doctor, clinic..." oninput="applyFilters()"/>
+        </div>
+        <!-- Status -->
+        <div class="fi-group">
+          <div class="fi-label">Status</div>
+          <select class="fi-input" id="fStatus" onchange="applyFilters()">
+            <option value="">All Statuses</option>
+          </select>
+        </div>
+        <!-- Status Change Date FROM -->
+        <div class="fi-group">
+          <div class="fi-label">📅 Status Changed From</div>
+          <input class="fi-input" type="date" id="fStatusFrom" onchange="applyFilters()"/>
+        </div>
+        <!-- Status Change Date TO -->
+        <div class="fi-group">
+          <div class="fi-label">Status Changed To</div>
+          <input class="fi-input" type="date" id="fStatusTo" onchange="applyFilters()"/>
+        </div>
+        <!-- Synced Date FROM -->
+        <div class="fi-group">
+          <div class="fi-label">🔄 Synced From</div>
+          <input class="fi-input" type="date" id="fSyncFrom" onchange="applyFilters()"/>
+        </div>
+        <!-- Synced Date TO -->
+        <div class="fi-group">
+          <div class="fi-label">Synced To</div>
+          <input class="fi-input" type="date" id="fSyncTo" onchange="applyFilters()"/>
+        </div>
+        <!-- Distributor -->
+        <div class="fi-group">
+          <div class="fi-label">Distributor</div>
+          <select class="fi-input" id="fDist" onchange="applyFilters()">
+            <option value="">All</option>
+          </select>
+        </div>
+        <!-- Action Required -->
+        <div class="fi-group">
+          <div class="fi-label">Action Required</div>
+          <select class="fi-input" id="fAction" onchange="applyFilters()">
+            <option value="">All</option>
+            <option value="yes">⚠️ Yes</option>
+            <option value="no">✅ No</option>
+          </select>
+        </div>
+        <!-- Clear -->
+        <button class="btn btn-ghost" style="padding:7px 14px;font-size:12px;align-self:flex-end" onclick="clearFilters()">✕ Clear</button>
       </div>
-      <div class="card" style="margin-bottom:0">
-        <div class="card-title">👥 Latest Cases <span style="font-size:11px;font-weight:500;color:var(--mu)" id="caseCountLbl"></span></div>
-        <div id="recentCases"><div style="color:var(--dim);font-size:12px;padding:16px;text-align:center">Loading...</div></div>
+
+      <!-- ACTIVE FILTER TAGS -->
+      <div id="filterTags" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>👥 Cases <span style="font-size:11px;font-weight:500;color:var(--mu)" id="casesCount"></span></span>
+          <button class="btn btn-ghost" style="padding:5px 12px;font-size:11px" onclick="exportCSV()">⬇ Export CSV</button>
+        </div>
+        <div class="tw">
+          <table>
+            <thead><tr>
+              <th>Case #</th><th>Patient</th><th>Doctor</th><th>Clinic</th>
+              <th>Distributor</th><th>Status</th>
+              <th>Status Changed</th><th>Last Synced</th>
+              <th>Aligners ↕</th><th>Upper</th><th>Lower</th><th>Package</th>
+              <th>Action Req.</th><th>Refinements</th><th></th>
+            </tr></thead>
+            <tbody id="casesTbl"><tr><td colspan="15" style="text-align:center;padding:30px;color:var(--dim)">Loading...</td></tr></tbody>
+          </table>
+        </div>
+        <div class="pg">
+          <button class="btn btn-ghost" style="padding:5px 12px;font-size:11px" id="pgPrev" onclick="changePage(-1)">← Prev</button>
+          <span id="pgInfo" style="flex:1;text-align:center"></span>
+          <button class="btn btn-ghost" style="padding:5px 12px;font-size:11px" id="pgNext" onclick="changePage(1)">Next →</button>
+        </div>
       </div>
     </div>
 
-    <!-- SYNC LOG -->
-    <div class="card">
-      <div class="card-title">📜 Sync History <span style="font-size:11px;font-weight:500;color:var(--mu)" id="logCountLbl"></span></div>
-      <div class="tw">
-        <table>
-          <thead><tr>
-            <th>Started</th><th>Type</th><th>Status</th>
-            <th>Cases</th><th>New</th><th>Updated</th><th>Aligners</th>
-            <th>Duration</th><th>Error</th>
-          </tr></thead>
-          <tbody id="logTbl"><tr><td colspan="9" style="text-align:center;padding:30px;color:var(--dim)">Loading...</td></tr></tbody>
-        </table>
+    <!-- ===== TAB: ALIGNERS ===== -->
+    <div id="tab-aligners" style="display:none">
+      <div class="card">
+        <div class="card-title">🦷 Aligner Details <span style="font-size:11px;font-weight:500;color:var(--mu)" id="alignersCount"></span></div>
+        <div class="tw">
+          <table>
+            <thead><tr>
+              <th>Case #</th><th>Patient</th><th>Doctor</th><th>Order Type</th>
+              <th>Package</th><th>Upper</th><th>Lower</th><th>Total Aligners</th>
+            </tr></thead>
+            <tbody id="alignersTbl"><tr><td colspan="8" style="text-align:center;padding:30px;color:var(--dim)">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: ANALYTICS ===== -->
+    <div id="tab-analytics" style="display:none">
+      <div class="g2">
+        <div class="card"><div class="card-title">📊 Status Breakdown</div><div id="statusBars"></div></div>
+        <div class="card"><div class="card-title">🏥 Top Clinics</div><div id="clinicBars"></div></div>
+      </div>
+      <div class="g2">
+        <div class="card"><div class="card-title">👨‍⚕️ Top Doctors</div><div id="doctorBars"></div></div>
+        <div class="card"><div class="card-title">📦 Package Types</div><div id="packageBars"></div></div>
+      </div>
+      <div class="g2">
+        <div class="card"><div class="card-title">🌍 Distributors</div><div id="distBars"></div></div>
+        <div class="card">
+          <div class="card-title">📅 Status Changes by Month</div>
+          <div id="monthBars"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: SYNC LOG ===== -->
+    <div id="tab-synclog" style="display:none">
+      <div class="card">
+        <div class="card-title">📜 Sync History <span style="font-size:11px;font-weight:500;color:var(--mu)" id="logCount"></span></div>
+        <div class="tw">
+          <table>
+            <thead><tr>
+              <th>Started</th><th>Type</th><th>Status</th><th>Cases</th>
+              <th>New</th><th>Updated</th><th>Aligners</th><th>Duration</th><th>Error</th>
+            </tr></thead>
+            <tbody id="logTbl"><tr><td colspan="9" style="text-align:center;padding:30px;color:var(--dim)">Loading...</td></tr></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
   </div>
 </div>
 
-<div id="notif" style="position:fixed;bottom:24px;right:24px;padding:13px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;display:none;align-items:center;gap:8px;box-shadow:var(--sh2)"></div>
+<!-- CASE DETAIL MODAL -->
+<div class="overlay" id="caseModal">
+  <div class="modal">
+    <div class="mo-hdr">
+      <div>
+        <div style="font-size:18px;font-weight:800" id="moTitle">Case</div>
+        <div style="font-size:12px;color:var(--mu);margin-top:3px" id="moSub"></div>
+      </div>
+      <button class="btn btn-ghost" style="padding:6px 12px" onclick="closeModal()">✕</button>
+    </div>
+    <div id="moBody"></div>
+  </div>
+</div>
+
+<div id="notif" style="position:fixed;bottom:24px;right:24px;padding:13px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;display:none;box-shadow:var(--sh2)"></div>
 
 <script type="module">
 import{createClient}from'https://esm.sh/@supabase/supabase-js@2'
@@ -196,157 +327,377 @@ import{SUPABASE_CONFIG}from'./config.js'
 const sb=createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey)
 
 const $=id=>document.getElementById(id)
-const ntf=(msg,ok=true)=>{
-  const e=$('notif');e.textContent=msg
-  e.style.cssText=`position:fixed;bottom:24px;right:24px;padding:13px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;display:flex;align-items:center;gap:8px;box-shadow:0 6px 24px rgba(0,0,0,.09);background:${ok?'#f0fdf4':'#fff1f2'};color:${ok?'#15803d':'#dc2626'};border:1px solid ${ok?'#bbf7d0':'#fecdd3'}`
-  clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',4000)
-}
+const ntf=(msg,ok=true)=>{const e=$('notif');e.textContent=msg;e.style.cssText=`position:fixed;bottom:24px;right:24px;padding:13px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;display:block;box-shadow:0 6px 24px rgba(0,0,0,.09);background:${ok?'#f0fdf4':'#fff1f2'};color:${ok?'#15803d':'#dc2626'};border:1px solid ${ok?'#bbf7d0':'#fecdd3'}`;clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',4000)}
 
-const fdt=v=>{
-  if(!v)return'—'
-  const d=new Date(v),now=new Date(),diff=Math.floor((now-d)/1000)
-  if(diff<60)return diff+'s ago'
-  if(diff<3600)return Math.floor(diff/60)+'m ago'
-  if(diff<86400)return Math.floor(diff/3600)+'h ago'
-  return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})
-}
+// Parse DD.MM.YYYY to Date object
+const parseBDate=s=>{if(!s)return null;const m=s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);if(m)return new Date(+m[3],+m[2]-1,+m[1]);return new Date(s)}
+const fmtDate=v=>{if(!v)return'—';const d=parseBDate(v)||new Date(v);if(isNaN(d))return v;return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}
+const fdt=v=>{if(!v)return'—';const d=new Date(v),now=new Date(),diff=Math.floor((now-d)/1000);if(diff<60)return diff+'s ago';if(diff<3600)return Math.floor(diff/60)+'m ago';if(diff<86400)return Math.floor(diff/3600)+'h ago';return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}
 const fmt=v=>v?new Date(v).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—'
+const cl=s=>(s||'').replace(/_/g,' ').toLowerCase().replace(/\b\w/g,c=>c.toUpperCase())
+const toISO=ddmmyyyy=>{if(!ddmmyyyy)return null;const m=ddmmyyyy.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);if(m)return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;return ddmmyyyy}
 
 const STATUS_COLORS={
   ALIGNERS_RECEIVED:'#16a34a',REFINEMENT_ALIGNERS_RECEIVED:'#16a34a',RETAINER_ALIGNERS_RECEIVED:'#16a34a',REPLACEMENT_ALIGNERS_RECEIVED:'#16a34a',
   ALIGNERS_ORDER_CREATED:'#3b5fe2',REFINEMENT_ORDER_CREATED:'#3b5fe2',RETAINER_ORDER_READY_TO_PRINT:'#3b5fe2',REPLACEMENT_ORDER_READY_TO_PRINT:'#3b5fe2',
   ORDER_IS_PRINTED:'#d97706',REFINEMENT_ORDER_IS_PRINTED:'#d97706',ALIGNERS_ARE_MADE:'#d97706',RETAINER_ALIGNERS_ARE_MADE:'#d97706',
   PLAN_WITH_BLOOM_ADDED:'#7c3aed',PLAN_WITH_BLOOM_PROCESSED:'#7c3aed',PLAN_WITH_BLOOM_CONFIRMED:'#7c3aed',PLAN_WITH_BLOOM_CONFIRMATION_PROCESSED:'#7c3aed',
-  REFINEMENT_PLAN_ADDED:'#7c3aed',REFINEMENT_PLAN_PROCESSED:'#7c3aed',REFINEMENT_PLAN_CONFIRMED:'#7c3aed',REFINEMENT_PLAN_CONFIRMATION_PROCESSED:'#7c3aed',
-  TREATMENT_ASSESSMENT_PERFORMED:'#0d9488',
-  DRAFT:'#94a3b8',
+  REFINEMENT_PLAN_ADDED:'#7c3aed',REFINEMENT_PLAN_PROCESSED:'#7c3aed',TREATMENT_ASSESSMENT_PERFORMED:'#0d9488',DRAFT:'#94a3b8',
   TREATMENT_PLAN_DECLINED_DOCTOR:'#dc2626',TREATMENT_PLAN_DECLINED_OBSERVER:'#dc2626',
   REFINEMENT_PLAN_DECLINED_DOCTOR:'#dc2626',REFINEMENT_PLAN_DECLINED_OBSERVER:'#dc2626',
 }
 const sc=s=>STATUS_COLORS[s]||'#94a3b8'
-const cl=s=>s.replace(/_/g,' ').toLowerCase().replace(/\b\w/g,c=>c.toUpperCase())
 
-async function loadData(){
+let allCases=[], allAligners=[], alignerMap={}, filtered=[], page=0
+const PAGE_SIZE=50
+
+function bars(data,total,color='var(--blue)',limit=15){
+  const sorted=Object.entries(data).sort((a,b)=>b[1]-a[1]).slice(0,limit)
+  const max=sorted[0]?.[1]||1
+  if(!sorted.length)return'<div style="color:var(--dim);font-size:12px;padding:10px">No data</div>'
+  return sorted.map(([label,cnt])=>`<div class="status-row">
+    <div class="status-lbl" title="${label}">${label}</div>
+    <div class="bar-bg"><div class="bar-fill" style="width:${Math.round(cnt/max*100)}%;background:${color}"></div></div>
+    <div class="bar-cnt" style="color:${color}">${cnt.toLocaleString()}</div>
+    <div class="bar-pct">${Math.round(cnt/(total||1)*100)}%</div>
+  </div>`).join('')
+}
+
+async function loadAll(){
   try{
-    const[{count:total},{data:logs},{data:statusData},{data:recent}]=await Promise.all([
-      sb.from('bloom_cases').select('*',{count:'exact',head:true}),
-      sb.from('bloom_sync_log').select('*').order('started_at',{ascending:false}).limit(25),
-      sb.from('bloom_cases').select('current_status'),
-      sb.from('bloom_cases').select('case_id,patient_name,doctor,current_status').order('case_id',{ascending:false}).limit(15)
+    const[{data:cases,count:total},{data:aligData,count:alTotal},{data:logs}]=await Promise.all([
+      sb.from('bloom_cases').select('*',{count:'exact'}).order('case_id',{ascending:false}).limit(10000),
+      sb.from('bloom_aligner_details').select('*',{count:'exact'}).limit(20000),
+      sb.from('bloom_sync_log').select('*').order('started_at',{ascending:false}).limit(50)
     ])
 
-    // Status map
-    const smap={}
-    ;(statusData||[]).forEach(r=>{smap[r.current_status]=(smap[r.current_status]||0)+1})
+    allCases=cases||[]
+    allAligners=aligData||[]
+
+    // Build aligner map
+    alignerMap={}
+    allAligners.forEach(a=>{
+      const k=String(a.case_number)
+      if(!alignerMap[k])alignerMap[k]=[]
+      alignerMap[k].push(a)
+    })
+
+    // Populate filter dropdowns
+    const statuses=[...new Set(allCases.map(c=>c.current_status).filter(Boolean))].sort()
+    $('fStatus').innerHTML='<option value="">All Statuses</option>'+statuses.map(s=>`<option value="${s}">${cl(s)}</option>`).join('')
+    const dists=[...new Set(allCases.map(c=>c.distributor).filter(Boolean))].sort()
+    $('fDist').innerHTML='<option value="">All</option>'+dists.map(d=>`<option value="${d}">${d}</option>`).join('')
 
     // KPIs
+    const smap={}
+    allCases.forEach(c=>{smap[c.current_status]=(smap[c.current_status]||0)+1})
     const received=['ALIGNERS_RECEIVED','REFINEMENT_ALIGNERS_RECEIVED','RETAINER_ALIGNERS_RECEIVED','REPLACEMENT_ALIGNERS_RECEIVED'].reduce((a,k)=>a+(smap[k]||0),0)
-    const inProd=['ORDER_IS_PRINTED','REFINEMENT_ORDER_IS_PRINTED','ALIGNERS_ARE_MADE','ALIGNERS_ORDER_CREATED','REFINEMENT_ORDER_CREATED','RETAINER_ALIGNERS_ARE_MADE'].reduce((a,k)=>a+(smap[k]||0),0)
-    const planning=['PLAN_WITH_BLOOM_ADDED','PLAN_WITH_BLOOM_PROCESSED','PLAN_WITH_BLOOM_CONFIRMED','PLAN_WITH_BLOOM_CONFIRMATION_PROCESSED','REFINEMENT_PLAN_ADDED','REFINEMENT_PLAN_PROCESSED'].reduce((a,k)=>a+(smap[k]||0),0)
-    const draft=smap['DRAFT']||0
-
+    const inProd=['ORDER_IS_PRINTED','REFINEMENT_ORDER_IS_PRINTED','ALIGNERS_ARE_MADE','ALIGNERS_ORDER_CREATED','REFINEMENT_ORDER_CREATED'].reduce((a,k)=>a+(smap[k]||0),0)
+    const planning=['PLAN_WITH_BLOOM_ADDED','PLAN_WITH_BLOOM_PROCESSED','PLAN_WITH_BLOOM_CONFIRMED','REFINEMENT_PLAN_ADDED','REFINEMENT_PLAN_PROCESSED'].reduce((a,k)=>a+(smap[k]||0),0)
     $('kTotal').textContent=(total||0).toLocaleString()
+    $('sBTotal').textContent=(total||0).toLocaleString()
     $('kReceived').textContent=received.toLocaleString()
-    $('kInProd').textContent=inProd.toLocaleString()
-    $('kPlanning').textContent=planning.toLocaleString()
-    $('kDraft').textContent=draft.toLocaleString()
-    $('statTotal').textContent=(total||0).toLocaleString()
+    $('kProd').textContent=inProd.toLocaleString()
+    $('kPlan').textContent=planning.toLocaleString()
+    $('kDraft').textContent=(smap['DRAFT']||0).toLocaleString()
+    $('kAligners').textContent=(alTotal||0).toLocaleString()
+    $('sBAligns').textContent=(alTotal||0).toLocaleString()
+    $('sBSyncs').textContent=(logs||[]).length+'+'
 
-    // Sync log stats
-    const successLogs=(logs||[]).filter(l=>l.status==='success')
-    const totalAligns=successLogs.reduce((a,l)=>a+(l.aligners_fetched||0),0)
-    $('statSyncs').textContent=(logs||[]).length+'+'
-    $('statAligns').textContent=totalAligns.toLocaleString()
-
-    const lastOk=successLogs[0]
+    // Sync status
+    const lastOk=(logs||[]).find(l=>l.status==='success')
     const isRunning=(logs||[])[0]?.status==='running'
-
     if(isRunning){
       $('syncDot').className='sync-dot running'
-      $('syncStatusTxt').textContent='🔄 Sync running now...'
+      $('syncTxt').textContent='🔄 Sync running now...'
       $('liveTxt').textContent='Syncing...'
-      $('statLast').textContent='Now'
+      $('sBLast').textContent='Now'
     } else if(lastOk){
       $('syncDot').className='sync-dot ok'
-      $('syncStatusTxt').textContent='✅ Auto-sync active — running every minute'
-      $('syncMetaTxt').textContent='Last sync: '+fdt(lastOk.completed_at)+' · '+lastOk.cases_fetched.toLocaleString()+' cases fetched · '+lastOk.aligners_fetched+' aligners'
+      $('syncTxt').textContent='✅ Auto-sync active — every minute'
+      $('syncMeta').textContent='Last: '+fdt(lastOk.completed_at)+' · '+lastOk.cases_fetched.toLocaleString()+' cases · '+lastOk.aligners_fetched+' aligners'
       $('liveTxt').textContent='Live · '+fdt(lastOk.completed_at)
-      $('statLast').textContent=fdt(lastOk.completed_at)
+      $('sBLast').textContent=fdt(lastOk.completed_at)
     } else {
       $('syncDot').className='sync-dot err'
-      $('syncStatusTxt').textContent='⚠️ No successful sync found'
-      $('liveTxt').textContent='Not synced'
+      $('syncTxt').textContent='⚠️ Sync error — check log tab'
+      $('liveTxt').textContent='Error'
+      $('sBLast').textContent='—'
     }
 
-    // Status bars
-    const sorted=Object.entries(smap).sort((a,b)=>b[1]-a[1])
-    const maxC=sorted[0]?.[1]||1
-    $('statusBars').innerHTML=sorted.map(([st,cnt])=>{
-      const color=sc(st)
-      const pct=Math.round(cnt/(total||1)*100)
-      return`<div class="status-row">
-        <div class="status-label" title="${st}">${cl(st)}</div>
-        <div class="status-bar-bg"><div class="status-bar-fill" style="width:${Math.round(cnt/maxC*100)}%;background:${color}"></div></div>
-        <div class="status-count" style="color:${color}">${cnt.toLocaleString()}</div>
-        <div style="font-size:10px;color:var(--dim);min-width:30px;text-align:right">${pct}%</div>
-      </div>`
-    }).join('')
-
-    // Recent cases
-    $('caseCountLbl').textContent=(total||0).toLocaleString()+' total'
-    $('recentCases').innerHTML=(recent||[]).map(c=>`<div class="case-row">
-      <div class="case-id">#${c.case_id}</div>
-      <div class="case-patient">${c.patient_name||'—'}</div>
-      <div class="case-doc">${c.doctor||'—'}</div>
-      <span style="background:${sc(c.current_status)}22;color:${sc(c.current_status)};font-size:9px;font-weight:700;padding:2px 7px;border-radius:999px;flex-shrink:0;white-space:nowrap">${(c.current_status||'').replace(/_/g,' ')}</span>
-    </div>`).join('')
-
-    // Sync log table
-    $('logCountLbl').textContent=(logs||[]).length+' records'
-    $('logTbl').innerHTML=(logs||[]).map(l=>{
-      const stCls=l.status==='success'?'b-g':l.status==='running'?'b-a':'b-r'
-      const stLabel=l.status==='success'?'✅ Success':l.status==='running'?'⏳ Running':'❌ Error'
-      const dms=l.completed_at&&l.started_at?new Date(l.completed_at)-new Date(l.started_at):null
-      return`<tr>
-        <td class="mono" style="font-size:11px">${fmt(l.started_at)}</td>
-        <td><span class="badge b-b">${l.sync_type||'polling'}</span></td>
-        <td><span class="badge ${stCls}">${stLabel}</span></td>
-        <td class="mono">${(l.cases_fetched||0).toLocaleString()}</td>
-        <td class="mono" style="color:var(--green)">${(l.cases_new||0).toLocaleString()}</td>
-        <td class="mono" style="color:var(--blue)">${(l.cases_updated||0).toLocaleString()}</td>
-        <td class="mono">${(l.aligners_fetched||0).toLocaleString()}</td>
-        <td class="mono">${dms?Math.round(dms/1000)+'s':'—'}</td>
-        <td style="font-size:11px;color:var(--red);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${l.error_message||''}">${l.error_message||''}</td>
-      </tr>`
-    }).join('')||'<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--dim)">No logs yet</td></tr>'
+    renderAligners()
+    renderAnalytics(smap,total||0)
+    renderLog(logs||[])
+    applyFilters()
 
   }catch(e){
-    console.error('[BloomSync]',e)
-    $('syncStatusTxt').textContent='Error: '+e.message
+    console.error(e)
+    $('syncTxt').textContent='Error: '+e.message
     $('syncDot').className='sync-dot err'
   }
 }
 
-window.triggerSync=async()=>{
-  const btn=$('syncBtn')
-  btn.disabled=true
-  btn.innerHTML='<span class="spinner"></span> Syncing...'
-  ntf('🔄 Sync triggered — calling Bloom API...')
-  try{
-    const r=await fetch(SUPABASE_CONFIG.url+'/functions/v1/bloom-sync',{
-      method:'POST',headers:{'Content-Type':'application/json'}
-    })
-    const d=await r.json()
-    if(r.ok) ntf(`✅ Sync done — ${(d.cases_fetched||0).toLocaleString()} cases, ${(d.cases_new||0)} new`)
-    else ntf('⚠️ Sync error: '+r.status,false)
-  }catch(e){ntf('⚠️ '+e.message,false)}
-  btn.disabled=false;btn.innerHTML='🔄 Sync Now'
-  setTimeout(loadData,2000)
+// ===== FILTERING =====
+function applyFilters(){
+  page=0
+  const q=($('fSearch').value||'').toLowerCase().trim()
+  const sf=$('fStatus').value
+  const sfrom=$('fStatusFrom').value   // YYYY-MM-DD
+  const sto=$('fStatusTo').value
+  const syncFrom=$('fSyncFrom').value
+  const syncTo=$('fSyncTo').value
+  const dist=$('fDist').value
+  const action=$('fAction').value
+
+  filtered=allCases.filter(c=>{
+    // Text search
+    if(q){
+      const hay=[c.case_id,c.patient_name,c.doctor,c.clinic,c.distributor,c.current_status].join(' ').toLowerCase()
+      if(!hay.includes(q))return false
+    }
+    // Status
+    if(sf&&c.current_status!==sf)return false
+    // Distributor
+    if(dist&&c.distributor!==dist)return false
+    // Action required
+    if(action==='yes'&&!c.action_required_for)return false
+    if(action==='no'&&c.action_required_for)return false
+    // Status change date filter (stored as DD.MM.YYYY)
+    if(sfrom||sto){
+      const iso=toISO(c.status_change_date)
+      if(sfrom&&iso&&iso<sfrom)return false
+      if(sto&&iso&&iso>sto)return false
+      if((sfrom||sto)&&!iso)return false
+    }
+    // Sync date filter (last_synced_at is ISO)
+    if(syncFrom||syncTo){
+      const d=c.last_synced_at?c.last_synced_at.substring(0,10):null
+      if(syncFrom&&d&&d<syncFrom)return false
+      if(syncTo&&d&&d>syncTo)return false
+      if((syncFrom||syncTo)&&!d)return false
+    }
+    return true
+  })
+
+  // Show active filter tags
+  const tags=[]
+  if(q)tags.push(`Search: "${q}"`)
+  if(sf)tags.push(`Status: ${cl(sf)}`)
+  if(sfrom||sto)tags.push(`Status Date: ${sfrom||'*'} → ${sto||'*'}`)
+  if(syncFrom||syncTo)tags.push(`Synced: ${syncFrom||'*'} → ${syncTo||'*'}`)
+  if(dist)tags.push(`Distributor: ${dist}`)
+  if(action==='yes')tags.push('Action Required')
+  if(action==='no')tags.push('No Action Needed')
+
+  $('filterTags').innerHTML=tags.map(t=>`<div class="filter-tag">${t}<button onclick="clearFilters()">✕</button></div>`).join('')
+  renderCases()
 }
 
-window.loadData=loadData
-loadData()
-setInterval(loadData,30000)
+function clearFilters(){
+  $('fSearch').value=''
+  $('fStatus').value=''
+  $('fStatusFrom').value=''
+  $('fStatusTo').value=''
+  $('fSyncFrom').value=''
+  $('fSyncTo').value=''
+  $('fDist').value=''
+  $('fAction').value=''
+  applyFilters()
+}
+
+// ===== RENDER CASES TABLE =====
+function renderCases(){
+  const total=filtered.length
+  const slice=filtered.slice(page*PAGE_SIZE,(page+1)*PAGE_SIZE)
+  $('casesCount').textContent=total.toLocaleString()+' cases'
+  $('pgInfo').textContent=`Page ${page+1} of ${Math.max(1,Math.ceil(total/PAGE_SIZE))} · ${total.toLocaleString()} total`
+  $('pgPrev').disabled=page===0
+  $('pgNext').disabled=(page+1)*PAGE_SIZE>=total
+
+  $('casesTbl').innerHTML=slice.length?slice.map(c=>{
+    const color=sc(c.current_status)
+    const als=alignerMap[String(c.case_id)]||[]
+    const totalUpper=als.reduce((a,r)=>a+(Number(r.aligner_upper)||0),0)
+    const totalLower=als.reduce((a,r)=>a+(Number(r.aligner_lower)||0),0)
+    const totalAl=als.reduce((a,r)=>a+(Number(r.number_of_aligners)||0),0)||(totalUpper+totalLower)||null
+    const pkg=[...new Set(als.map(a=>a.package_type).filter(Boolean))].join(', ')
+    const statusDate=fmtDate(c.status_change_date)
+    return`<tr style="cursor:pointer" onclick="openCase('${c.case_id}')">
+      <td class="mono" style="font-weight:700;color:var(--blue)">#${c.case_id}</td>
+      <td style="font-weight:600;white-space:nowrap">${c.patient_name||'—'}</td>
+      <td style="color:var(--mu);font-size:11px;white-space:nowrap">${c.doctor||'—'}</td>
+      <td style="color:var(--mu);font-size:11px">${c.clinic||'—'}</td>
+      <td style="color:var(--mu);font-size:11px">${c.distributor||'—'}</td>
+      <td><span class="bdg" style="background:${color}22;color:${color};white-space:nowrap">${(c.current_status||'').replace(/_/g,' ')}</span></td>
+      <td class="mono" style="font-size:11px;color:var(--amber);white-space:nowrap">${statusDate}</td>
+      <td style="font-size:11px;color:var(--dim);white-space:nowrap">${fdt(c.last_synced_at)}</td>
+      <td class="mono" style="font-weight:800;color:var(--teal);text-align:center">${totalAl||'—'}</td>
+      <td class="mono" style="color:var(--blue);text-align:center">${totalUpper||'—'}</td>
+      <td class="mono" style="color:var(--purple);text-align:center">${totalLower||'—'}</td>
+      <td style="font-size:11px;color:var(--mu)">${pkg||'—'}</td>
+      <td style="font-size:11px;color:${c.action_required_for?'var(--red)':'var(--dim)'}">${c.action_required_for?'⚠️ '+c.action_required_for:'—'}</td>
+      <td class="mono" style="text-align:center">${c.number_of_extra_refinements||'—'}</td>
+      <td><button class="btn btn-ghost" style="padding:3px 9px;font-size:11px" onclick="event.stopPropagation();openCase('${c.case_id}')">👁</button></td>
+    </tr>`
+  }).join(''):'<tr><td colspan="15" style="text-align:center;padding:30px;color:var(--dim)">No cases match your filters</td></tr>'
+}
+
+// ===== RENDER ALIGNERS =====
+function renderAligners(){
+  $('alignersCount').textContent=allAligners.length.toLocaleString()+' records'
+  $('alignersTbl').innerHTML=allAligners.slice(0,500).map(a=>{
+    const c=allCases.find(x=>String(x.case_id)===String(a.case_number))
+    const tot=Number(a.number_of_aligners)||(Number(a.aligner_upper||0)+Number(a.aligner_lower||0))
+    const typeColor=a.order_type==='TreatmentPlan'?'b-b':a.order_type==='AlignersOrder'?'b-g':'b-gray'
+    return`<tr>
+      <td class="mono" style="font-weight:700;color:var(--blue)">#${a.case_number}</td>
+      <td style="font-weight:600">${c?.patient_name||'—'}</td>
+      <td style="color:var(--mu);font-size:11px">${c?.doctor||'—'}</td>
+      <td><span class="bdg ${typeColor}">${a.order_type||'—'}</span></td>
+      <td style="font-size:11px;color:var(--mu)">${a.package_type||'—'}</td>
+      <td class="mono" style="font-weight:700;color:var(--blue);text-align:center">${a.aligner_upper!=null?a.aligner_upper:'—'}</td>
+      <td class="mono" style="font-weight:700;color:var(--purple);text-align:center">${a.aligner_lower!=null?a.aligner_lower:'—'}</td>
+      <td class="mono" style="font-weight:800;color:var(--teal);text-align:center">${tot||'—'}</td>
+    </tr>`
+  }).join('')||'<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--dim)">No aligner data</td></tr>'
+}
+
+// ===== RENDER ANALYTICS =====
+function renderAnalytics(smap,total){
+  $('statusBars').innerHTML=bars(smap,total)
+  const clinicMap={};allCases.forEach(c=>{if(c.clinic)clinicMap[c.clinic]=(clinicMap[c.clinic]||0)+1})
+  $('clinicBars').innerHTML=bars(clinicMap,total,'var(--teal)')
+  const docMap={};allCases.forEach(c=>{if(c.doctor)docMap[c.doctor]=(docMap[c.doctor]||0)+1})
+  $('doctorBars').innerHTML=bars(docMap,total,'var(--purple)')
+  const pkgMap={};allAligners.forEach(a=>{if(a.package_type)pkgMap[a.package_type]=(pkgMap[a.package_type]||0)+1})
+  $('packageBars').innerHTML=bars(pkgMap,allAligners.length,'var(--blue)')
+  const distMap={};allCases.forEach(c=>{if(c.distributor)distMap[c.distributor]=(distMap[c.distributor]||0)+1})
+  $('distBars').innerHTML=bars(distMap,total,'var(--amber)')
+  // Month distribution from status_change_date
+  const monthMap={}
+  allCases.forEach(c=>{
+    if(!c.status_change_date)return
+    const iso=toISO(c.status_change_date)
+    if(!iso)return
+    const ym=iso.substring(0,7) // YYYY-MM
+    monthMap[ym]=(monthMap[ym]||0)+1
+  })
+  const sortedMonths=Object.entries(monthMap).sort((a,b)=>a[0].localeCompare(b[0]))
+  const maxM=sortedMonths.reduce((a,[,v])=>Math.max(a,v),1)
+  $('monthBars').innerHTML=sortedMonths.length?sortedMonths.map(([ym,cnt])=>`<div class="status-row">
+    <div class="status-lbl">${ym}</div>
+    <div class="bar-bg"><div class="bar-fill" style="width:${Math.round(cnt/maxM*100)}%;background:var(--amber)"></div></div>
+    <div class="bar-cnt" style="color:var(--amber)">${cnt}</div>
+    <div class="bar-pct">${Math.round(cnt/total*100)}%</div>
+  </div>`).join(''):'<div style="color:var(--dim);font-size:12px;padding:10px">No date data</div>'
+}
+
+// ===== RENDER LOG =====
+function renderLog(logs){
+  $('logCount').textContent=logs.length+' records'
+  $('logTbl').innerHTML=logs.map(l=>{
+    const stCls=l.status==='success'?'b-g':l.status==='running'?'b-a':'b-r'
+    const stLabel=l.status==='success'?'✅ Success':l.status==='running'?'⏳ Running':'❌ Error'
+    const dms=l.completed_at&&l.started_at?new Date(l.completed_at)-new Date(l.started_at):null
+    return`<tr>
+      <td class="mono" style="font-size:11px">${fmt(l.started_at)}</td>
+      <td><span class="bdg b-b">${l.sync_type||'polling'}</span></td>
+      <td><span class="bdg ${stCls}">${stLabel}</span></td>
+      <td class="mono">${(l.cases_fetched||0).toLocaleString()}</td>
+      <td class="mono" style="color:var(--green)">${(l.cases_new||0).toLocaleString()}</td>
+      <td class="mono" style="color:var(--blue)">${(l.cases_updated||0).toLocaleString()}</td>
+      <td class="mono">${(l.aligners_fetched||0).toLocaleString()}</td>
+      <td class="mono">${dms?Math.round(dms/1000)+'s':'—'}</td>
+      <td style="font-size:11px;color:var(--red);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${l.error_message||''}">${l.error_message||''}</td>
+    </tr>`
+  }).join('')||'<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--dim)">No logs</td></tr>'
+}
+
+// ===== CASE DETAIL MODAL =====
+window.openCase=caseId=>{
+  const c=allCases.find(x=>String(x.case_id)===String(caseId))
+  if(!c)return
+  const als=alignerMap[String(caseId)]||[]
+  const color=sc(c.current_status)
+  $('moTitle').textContent='Case #'+c.case_id
+  $('moSub').textContent=(c.patient_name||'')+(c.doctor?' · '+c.doctor:'')
+  $('moBody').innerHTML=`
+    <div style="background:${color}15;border:1px solid ${color}40;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0"></div>
+      <div style="font-size:13px;font-weight:700;color:${color}">${cl(c.current_status)}</div>
+      ${c.status_change_date?`<div style="font-size:11px;color:var(--amber);background:var(--a50);padding:3px 10px;border-radius:999px">📅 Changed: ${fmtDate(c.status_change_date)}</div>`:''}
+      ${c.action_required_for?`<div style="font-size:11px;font-weight:700;color:var(--red);background:var(--r50);padding:3px 10px;border-radius:999px;margin-left:auto">⚠️ Action: ${c.action_required_for}</div>`:''}
+    </div>
+    <div class="detail-grid">
+      <div class="detail-item"><div class="detail-lbl">Patient</div><div class="detail-val">${c.patient_name||'—'}</div></div>
+      <div class="detail-item"><div class="detail-lbl">Doctor</div><div class="detail-val">${c.doctor||'—'}</div></div>
+      <div class="detail-item"><div class="detail-lbl">Clinic</div><div class="detail-val">${c.clinic||'—'}</div></div>
+      <div class="detail-item"><div class="detail-lbl">Distributor</div><div class="detail-val">${c.distributor||'—'}</div></div>
+      <div class="detail-item"><div class="detail-lbl">Status Changed</div><div class="detail-val" style="color:var(--amber)">${fmtDate(c.status_change_date)}</div></div>
+      <div class="detail-item"><div class="detail-lbl">Last Synced</div><div class="detail-val" style="font-size:12px">${fdt(c.last_synced_at)}</div></div>
+      ${c.number_of_extra_refinements?`<div class="detail-item"><div class="detail-lbl">Extra Refinements</div><div class="detail-val">${c.number_of_extra_refinements}</div></div>`:''}
+      ${c.overdue_for?`<div class="detail-item" style="border:1px solid var(--r100)"><div class="detail-lbl" style="color:var(--red)">Overdue For</div><div class="detail-val" style="color:var(--red)">${c.overdue_for}</div></div>`:''}
+      ${c.notes?`<div class="detail-item" style="grid-column:1/-1"><div class="detail-lbl">Notes</div><div class="detail-val" style="font-weight:400">${c.notes}</div></div>`:''}
+    </div>
+    ${als.length?`<div style="font-size:12px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">🦷 Aligner Orders (${als.length})</div>`:''}
+    ${als.map(a=>{
+      const tot=Number(a.number_of_aligners)||(Number(a.aligner_upper||0)+Number(a.aligner_lower||0))
+      return`<div class="aligner-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span style="font-weight:700;color:var(--blue)">${a.order_type||'—'}</span>
+          <span style="background:#f1f5f9;color:var(--mu);font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px">${a.package_type||'—'}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:12px">
+          <div style="text-align:center"><div style="color:var(--mu);font-size:10px">UPPER</div><div style="font-family:'JetBrains Mono',monospace;font-weight:800;font-size:18px;color:var(--blue)">${a.aligner_upper!=null?a.aligner_upper:'—'}</div></div>
+          <div style="text-align:center"><div style="color:var(--mu);font-size:10px">LOWER</div><div style="font-family:'JetBrains Mono',monospace;font-weight:800;font-size:18px;color:var(--purple)">${a.aligner_lower!=null?a.aligner_lower:'—'}</div></div>
+          <div style="text-align:center"><div style="color:var(--mu);font-size:10px">TOTAL</div><div style="font-family:'JetBrains Mono',monospace;font-weight:800;font-size:18px;color:var(--teal)">${tot||'—'}</div></div>
+        </div>
+      </div>`
+    }).join('')}
+    ${als.length===0?'<div style="color:var(--dim);font-size:12px;text-align:center;padding:20px;background:var(--bg);border-radius:10px">No aligner records synced for this case yet</div>':''}
+  `
+  $('caseModal').classList.add('on')
+}
+window.closeModal=()=>$('caseModal').classList.remove('on')
+$('caseModal').addEventListener('click',e=>{if(e.target===$('caseModal'))closeModal()})
+
+// ===== EXPORT CSV =====
+window.exportCSV=()=>{
+  const headers=['Case #','Patient','Doctor','Clinic','Distributor','Status','Status Changed','Last Synced','Total Aligners','Upper','Lower','Package','Action Required','Refinements']
+  const rows=filtered.map(c=>{
+    const als=alignerMap[String(c.case_id)]||[]
+    const totalUpper=als.reduce((a,r)=>a+(Number(r.aligner_upper)||0),0)
+    const totalLower=als.reduce((a,r)=>a+(Number(r.aligner_lower)||0),0)
+    const totalAl=als.reduce((a,r)=>a+(Number(r.number_of_aligners)||0),0)||(totalUpper+totalLower)||''
+    const pkg=[...new Set(als.map(a=>a.package_type).filter(Boolean))].join('; ')
+    return[c.case_id,c.patient_name||'',c.doctor||'',c.clinic||'',c.distributor||'',c.current_status||'',c.status_change_date||'',c.last_synced_at||'',totalAl,totalUpper||'',totalLower||'',pkg,c.action_required_for||'',c.number_of_extra_refinements||''].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')
+  })
+  const csv=[headers.join(','),...rows].join('\n')
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=`bloom_cases_${new Date().toISOString().slice(0,10)}.csv`;a.click()
+  ntf(`✅ Exported ${filtered.length} cases to CSV`)
+}
+
+window.changePage=d=>{page=Math.max(0,page+d);renderCases()}
+window.showTab=(name,btn)=>{document.querySelectorAll('[id^="tab-"]').forEach(el=>el.style.display='none');document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));$('tab-'+name).style.display='block';btn.classList.add('active')}
+window.applyFilters=applyFilters
+window.clearFilters=clearFilters
+
+window.triggerSync=async()=>{
+  const btn=$('syncBtn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Syncing...'
+  ntf('🔄 Sync triggered...')
+  try{
+    const r=await fetch(SUPABASE_CONFIG.url+'/functions/v1/bloom-sync',{method:'POST',headers:{'Content-Type':'application/json'}})
+    const d=await r.json()
+    if(r.ok)ntf(`✅ Done — ${(d.cases_fetched||0).toLocaleString()} cases`)
+    else ntf('⚠️ Error '+r.status,false)
+  }catch(e){ntf('⚠️ '+e.message,false)}
+  btn.disabled=false;btn.innerHTML='🔄 Sync Now'
+  setTimeout(loadAll,2000)
+}
+
+window.loadAll=loadAll
+loadAll()
+setInterval(loadAll,30000)
 </script>
 </body>
 </html>
