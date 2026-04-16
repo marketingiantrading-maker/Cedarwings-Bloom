@@ -217,8 +217,9 @@ tbody tr:hover{background:#f8fafc}
       <button class="btn bgh" id="btnRefresh">🔄 Refresh</button>
     </div>
   </div>
+</div>
 
-  <div class="body">
+<div class="body">
 
     <!-- KPIs -->
     <div class="kpi-grid" style="grid-template-columns:repeat(6,1fr)">
@@ -244,30 +245,54 @@ tbody tr:hover{background:#f8fafc}
 
     <!-- UPLOAD -->
     <div class="card">
-      <div style="font-size:15px;font-weight:800;margin-bottom:4px">🚀 Daily Upload</div>
-      <div style="font-size:12px;color:var(--mu);margin-bottom:14px">Upload files exported from bloomaligner.fr</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px">
-        <div style="border:2px dashed var(--bdr);border-radius:12px;padding:20px;text-align:center">
-          <div style="font-size:28px;margin-bottom:6px">📄</div>
-          <div style="font-weight:700;color:var(--blue);margin-bottom:4px">Cases CSV</div>
-          <div style="font-size:11px;color:var(--mu);margin-bottom:12px">bloomaligner.fr → Cases → EXPORT CSV</div>
-          <button class="btn bb" style="width:100%;justify-content:center" id="btnChooseCSV">📁 Choose CSV File</button>
-          <input type="file" id="csvInput" accept=".csv,.txt" style="display:none"/>
+      <div style="font-size:15px;font-weight:800;margin-bottom:4px">🚀 Import / Sync</div>
+      <div style="font-size:12px;color:var(--mu);margin-bottom:14px">Sync directly from the Bloom API or upload exported files.</div>
+      <!-- API SYNC BUTTON -->
+      <div style="background:linear-gradient(135deg,#eef2ff,#e0e7ff);border:1.5px solid #c7d2fe;border-radius:12px;padding:16px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#3730a3;margin-bottom:3px">⚡ Sync from Bloom API</div>
+            <div style="font-size:11px;color:#6366f1;line-height:1.5">Fetches all cases and aligners directly from api.bloomaligner.fr — no file needed.</div>
+          </div>
+          <button class="btn" id="btnApiSync" style="background:#3b5fe2;color:#fff;padding:10px 18px;font-size:13px;font-weight:700;white-space:nowrap;flex-shrink:0">
+            🔄 Sync Now
+          </button>
         </div>
-        <div style="border:2px dashed var(--bdr);border-radius:12px;padding:20px;text-align:center">
-          <div style="font-size:28px;margin-bottom:6px">📊</div>
-          <div style="font-weight:700;color:var(--green);margin-bottom:4px">Aligners Excel</div>
-          <div style="font-size:11px;color:var(--mu);margin-bottom:12px">SHIPPING + ALIGNER sheets</div>
-          <button class="btn bg2" style="width:100%;justify-content:center" id="btnChooseXLSX">📁 Choose Excel File</button>
-          <input type="file" id="xlsxInput" accept=".xlsx,.xls" style="display:none"/>
+        <div id="apiSyncStatus" style="display:none;margin-top:10px;font-size:12px;color:#4338ca;background:#fff;border-radius:8px;padding:10px 12px;border:1px solid #c7d2fe">
+          <div id="apiSyncMsg">Connecting...</div>
+          <div style="margin-top:6px;background:#e0e7ff;border-radius:99px;height:6px;overflow:hidden">
+            <div id="apiSyncBar" style="height:100%;background:#3b5fe2;border-radius:99px;width:0%;transition:width .3s"></div>
+          </div>
+          <div id="apiSyncDetail" style="margin-top:4px;font-size:10px;color:#6366f1"></div>
         </div>
       </div>
-      <div id="uploadProg" style="display:none;padding:10px;background:var(--b50);border-radius:10px;border:1px solid var(--b100)">
-        <div style="font-size:13px;font-weight:700;margin-bottom:6px" id="progTitle">Processing...</div>
-        <div style="background:var(--bdr);border-radius:999px;height:7px"><div id="progFill" style="height:7px;border-radius:999px;background:var(--blue);width:0%;transition:width .3s"></div></div>
-        <div style="font-size:11px;color:var(--mu);margin-top:4px" id="progSub"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div style="background:var(--bg);border-radius:10px;padding:16px">
+          <div style="font-size:13px;font-weight:700;margin-bottom:6px">📂 CSV Import</div>
+          <div style="font-size:11px;color:var(--mu);margin-bottom:10px;line-height:1.6">Export from bloomaligner.fr → Cases & Status</div>
+          <button class="btn bb" style="width:100%;justify-content:center" id="btnChooseCSV">📂 Choose CSV File</button>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:16px">
+          <div style="font-size:13px;font-weight:700;margin-bottom:6px">📊 Excel Import</div>
+          <div style="font-size:11px;color:var(--mu);margin-bottom:10px;line-height:1.6">Full export with aligners & shipping data</div>
+          <button class="btn b-g" style="width:100%;justify-content:center" id="btnChooseXLSX">📊 Choose Excel File</button>
+        </div>
       </div>
-      <div id="uploadMsg" style="font-size:13px;min-height:16px;margin-top:8px"></div>
+      <div id="importPreview" style="display:none">
+        <div style="font-size:13px;font-weight:700;margin-bottom:8px" id="prevTitle">Preview</div>
+        <div style="max-height:160px;overflow-y:auto;border:1px solid var(--bdr);border-radius:8px;margin-bottom:10px">
+          <table style="width:100%">
+            <thead><tr id="prevHead"></tr></thead>
+            <tbody id="prevBody"></tbody>
+          </table>
+        </div>
+        <div style="font-size:12px;color:var(--mu);margin-bottom:10px" id="prevSub"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn bb" id="btnConfirmImport">⚡ Confirm Import</button>
+          <button class="btn bgh" id="btnCancelPreview">✕ Cancel</button>
+        </div>
+      </div>
+      <div id="importMsg" style="font-size:12px;margin-top:8px"></div>
     </div>
 
     <!-- PREVIEW -->
@@ -1140,21 +1165,26 @@ async function saveExcelData(shipRows, alRows, filename) {
   document.getElementById('progFill').style.width = '20%';
 
   if (alRows.length) {
-    var alMap={};
-    alRows.forEach(function(r){ alMap[r.case_number]=r; });
-    // Ensure all values are string/null for DB
-    var alDeduped = Object.values(alMap).map(function(r){
+    // Each row in the Excel = a separate order — keep ALL rows per case
+    // Delete old rows for affected cases first, then insert fresh
+    var excelCaseIds = [...new Set(alRows.map(function(r){ return String(r.case_number); }))];
+    for(var d=0; d<excelCaseIds.length; d+=50){
+      await sb.from('bloom_aligner_details').delete().in('case_number', excelCaseIds.slice(d,d+50));
+    }
+    var alDeduped = alRows.map(function(r, idx){
       return {
         case_number: String(r.case_number),
+        order_index: idx,
         aligner_upper: r.aligner_upper !== null ? Number(r.aligner_upper) : null,
         aligner_lower: r.aligner_lower !== null ? Number(r.aligner_lower) : null,
         number_of_aligners: r.number_of_aligners !== null ? String(r.number_of_aligners) : null,
         package_type: r.package_type || null,
-        order_type: r.order_type || null
+        order_type: r.order_type || null,
+        updated_at: r.updated_at || r.update_date || null
       };
     });
     for (var i=0; i<alDeduped.length; i+=100) {
-      var ar = await sb.from('bloom_aligner_details').upsert(alDeduped.slice(i,i+100),{onConflict:'case_number'});
+      var ar = await sb.from('bloom_aligner_details').insert(alDeduped.slice(i,i+100),{onConflict:'case_number'});
       if (ar.error) { ntf('Aligner error: '+(ar.error.message||JSON.stringify(ar.error)),'err'); return; }
     }
   }
@@ -1254,20 +1284,7 @@ function parseExcelFile(file) {
 }
 
 // ── EVENTS ────────────────────────────────────────────────────────────────
-document.getElementById('csvInput').addEventListener('change',function(){
-  var f=this.files[0]; if(!f) return;
-  var r=new FileReader();
-  r.onload=function(e){ parseCSV(e.target.result,f.name); };
-  r.readAsText(f,'UTF-8'); this.value='';
-});
-document.getElementById('xlsxInput').addEventListener('change',function(){
-  var f=this.files[0]; if(!f) return;
-  loadXLSX(function(){ parseExcelFile(f); }); this.value='';
-});
-document.getElementById('btnChooseCSV').addEventListener('click',function(){ document.getElementById('csvInput').click(); });
-document.getElementById('btnChooseXLSX').addEventListener('click',function(){ document.getElementById('xlsxInput').click(); });
-document.getElementById('btnConfirmImport').addEventListener('click',confirmImport);
-document.getElementById('btnCancelPreview').addEventListener('click',function(){ pendingImport=null; document.getElementById('previewCard').style.display='none'; msg('',''); });
+
 document.getElementById('caseSearch').addEventListener('input',function(){ casesPage=0; renderCases(); if(document.getElementById('tabAnalytics').style.display!=='none') renderAnalytics(); });
 document.getElementById('caseStatus').addEventListener('change',function(){ casesPage=0; renderCases(); if(document.getElementById('tabAnalytics').style.display!=='none') renderAnalytics(); });
 document.getElementById('caseDoctor').addEventListener('change',function(){ casesPage=0; renderCases(); if(document.getElementById('tabAnalytics').style.display!=='none') renderAnalytics(); });
@@ -1290,11 +1307,27 @@ document.getElementById('tabBtnImports').addEventListener('click',function(){ sw
 document.getElementById('tabBtnAnalytics').addEventListener('click',function(){ switchTab('analytics'); });
 
 window.sortBy=sortBy; window.sortAligners=sortAligners;
+
+
+
+document.getElementById('csvInput').addEventListener('change',function(){
+  var f=this.files[0]; if(!f)return; var r=new FileReader();
+  r.onload=function(e){ parseCSV(e.target.result,f.name); }; r.readAsText(f); this.value='';
+});
+document.getElementById('xlsxInput').addEventListener('change',function(){
+  var f=this.files[0]; if(!f)return;
+  loadXLSX(function(){ parseExcelFile(f); }); this.value='';
+});
+document.getElementById('btnChooseCSV').addEventListener('click',function(){ document.getElementById('csvInput').click(); });
+document.getElementById('btnChooseXLSX').addEventListener('click',function(){ document.getElementById('xlsxInput').click(); });
+document.getElementById('btnConfirmImport').addEventListener('click',confirmImport);
+document.getElementById('btnCancelPreview').addEventListener('click',function(){ pendingImport=null; document.getElementById('importPreview').style.display='none'; document.getElementById('importMsg').textContent=''; });
 window.openCase=openCase; window.confirmImport=confirmImport; window.switchTab=switchTab;
 
 // ── INIT ──────────────────────────────────────────────────────────────────
 dbg('Connecting...');
 loadAll();
+
 
 </script>();
 
@@ -1310,7 +1343,7 @@ loadAll();
 
     </div>
     <div style="background:var(--b50);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--blue);font-weight:500">Import and manage patient aligner cases from bloomaligner.fr. Supports both CSV (case status updates) and Excel (shipping + aligner details) file formats.</div>
-    <div style="font-size:13px;line-height:1.8"><div style="margin-bottom:10px"><strong style="color:var(--txt)">📂 CSV Import</strong><br><span style="color:var(--mu);font-size:12px">Export from bloomaligner.fr and import here. Updates case statuses, overdue flags, doctor/distributor info for all cases.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">📊 Excel Import</strong><br><span style="color:var(--mu);font-size:12px">Import the Bloom Excel file. Reads SHIPPING sheet (box numbers, dates) and ALIGNER sheet (upper/lower counts, order type).</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Cases Tab</strong><br><span style="color:var(--mu);font-size:12px">Full list of all Bloom cases with sortable columns and filters: status, doctor, date range, search.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Aligners Tab</strong><br><span style="color:var(--mu);font-size:12px">All aligner orders with patient name, upper/lower counts, package type, shipping info.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Analytics Tab</strong><br><span style="color:var(--mu);font-size:12px">Charts showing cases by status and aligners by order type. Uses same filters as the tables.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">History Tab</strong><br><span style="color:var(--mu);font-size:12px">Log of all status changes per case over time.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Imports Tab</strong><br><span style="color:var(--mu);font-size:12px">Log of all CSV/Excel import events with timestamps.</span></div></div>
+    <div style="font-size:13px;line-height:1.8"><div style="margin-bottom:10px"><strong style="color:var(--txt)">🔄 Live API Syncmport</strong><br><span style="color:var(--mu);font-size:12px">Export from bloomaligner.fr and import here. Updates case statuses, overdue flags, doctor/distributor info for all cases.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">📊 Excel Import</strong><br><span style="color:var(--mu);font-size:12px">Import the Bloom Excel file. Reads SHIPPING sheet (box numbers, dates) and ALIGNER sheet (upper/lower counts, order type).</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Cases Tab</strong><br><span style="color:var(--mu);font-size:12px">Full list of all Bloom cases with sortable columns and filters: status, doctor, date range, search.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Aligners Tab</strong><br><span style="color:var(--mu);font-size:12px">All aligner orders with patient name, upper/lower counts, package type, shipping info.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Analytics Tab</strong><br><span style="color:var(--mu);font-size:12px">Charts showing cases by status and aligners by order type. Uses same filters as the tables.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">History Tab</strong><br><span style="color:var(--mu);font-size:12px">Log of all status changes per case over time.</span></div><div style="margin-bottom:10px"><strong style="color:var(--txt)">Imports Tab</strong><br><span style="color:var(--mu);font-size:12px">Log of all CSV/Excel import events with timestamps.</span></div></div>
   </div>
 </div>
 <button onclick="document.getElementById('helpModal').classList.add('on')" style="position:fixed;bottom:50px;right:20px;width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(59,95,226,.4);z-index:800;font-family:var(--f)">?</button>
@@ -1332,8 +1365,201 @@ loadAll();
   }
   document.addEventListener('DOMContentLoaded', mountHelp);
 })();
+
+/* ═══════════════════════════════════════════════════════
+   BLOOM API DIRECT SYNC
+   Endpoints:
+     GET /api/integration/data_sync/case?offset=X&limit=Y
+     GET /api/integration/data_sync/cases/{id}/aligners?offset=X&limit=Y
+   Auth: Bearer token
+═══════════════════════════════════════════════════════ */
+
+const BLOOM_API_BASE = 'https://api.bloomaligner.fr';
+const BLOOM_API_TOKEN = '2405cb1d3b6520787d35b03f8e586582437e6db0e77b1e3252b04fd7825c9e15';
+const BLOOM_API_HEADERS = {
+  'Authorization': 'Bearer ' + BLOOM_API_TOKEN,
+  'Content-Type': 'application/json'
+};
+
+function apiSyncMsg(msg, pct, detail) {
+  var el = document.getElementById('apiSyncStatus');
+  if(el) el.style.display = 'block';
+  var m = document.getElementById('apiSyncMsg');
+  if(m) m.textContent = msg;
+  var b = document.getElementById('apiSyncBar');
+  if(b && pct !== undefined) b.style.width = pct + '%';
+  var d = document.getElementById('apiSyncDetail');
+  if(d && detail !== undefined) d.textContent = detail;
+}
+
+async function bloomApiFetch(path) {
+  var resp = await fetch(BLOOM_API_BASE + path, { headers: BLOOM_API_HEADERS });
+  if(!resp.ok) throw new Error('API error ' + resp.status + ' on ' + path);
+  return await resp.json();
+}
+
+async function bloomFetchAllPages(path, limitParam) {
+  var limit = limitParam || 100;
+  var offset = 0;
+  var allItems = [];
+  while(true) {
+    var sep = path.includes('?') ? '&' : '?';
+    var data = await bloomApiFetch(path + sep + 'offset=' + offset + '&limit=' + limit);
+    // Handle both array response and {data:[...]} or {cases:[...]} or {results:[...]} wrapper
+    var items = Array.isArray(data) ? data 
+              : (data.data || data.cases || data.aligners || data.results || []);
+    allItems = allItems.concat(items);
+    if(items.length < limit) break; // last page
+    offset += limit;
+    apiSyncMsg('Fetching...', undefined, offset + ' records fetched...');
+  }
+  return allItems;
+}
+
+document.getElementById('btnApiSync').addEventListener('click', async function() {
+  var btn = this;
+  btn.disabled = true;
+  btn.textContent = '⏳ Syncing...';
+  apiSyncMsg('Connecting to Bloom API...', 2);
+  
+  try {
+    // ── STEP 1: Fetch all cases ──────────────────────────
+    apiSyncMsg('Fetching cases from Bloom API...', 5, 'GET /api/integration/data_sync/case');
+    var rawCases = await bloomFetchAllPages('/api/integration/data_sync/case');
+    apiSyncMsg('Got ' + rawCases.length + ' cases — saving...', 30, rawCases.length + ' cases fetched');
+
+    // Map API case fields to bloom_cases schema
+    // API fields may vary — try common names
+    var mappedCases = rawCases.map(function(c) {
+      return {
+        case_id:                    String(c.case_id || c.id || c.caseId || ''),
+        patient_name:               c.patient_name || c.patientName || c.patient || null,
+        doctor:                     c.doctor || c.doctor_name || c.doctorName || null,
+        clinic:                     c.clinic || null,
+        distributor:                c.distributor || null,
+        current_status:             c.current_status || c.status || c.currentStatus || null,
+        action_required_for:        c.action_required_for || c.actionRequiredFor || c.action_required || null,
+        overdue_for:                c.overdue_for || c.overdueFor || null,
+        status_change_date:         c.status_change_date || c.statusChangeDate || null,
+        number_of_extra_refinements:c.number_of_extra_refinements || c.extraRefinements || null,
+        notes:                      c.notes || null,
+        last_synced_at:             new Date().toISOString()
+      };
+    }).filter(function(c){ return c.case_id && c.case_id.trim() !== ''; });
+
+    // Upsert cases in batches of 100
+    var newCount = 0, updCount = 0;
+    for(var i = 0; i < mappedCases.length; i += 100) {
+      var batch = mappedCases.slice(i, i + 100);
+      var ids = batch.map(function(c){ return c.case_id; });
+      var ex = await sb.from('bloom_cases').select('case_id,current_status').in('case_id', ids);
+      var existMap = {};
+      (ex.data||[]).forEach(function(e){ existMap[String(e.case_id)] = e.current_status; });
+      var ur = await sb.from('bloom_cases').upsert(batch, { onConflict: 'case_id' });
+      if(ur.error) throw new Error('Cases save error: ' + ur.error.message);
+      batch.forEach(function(c){
+        if(existMap[c.case_id] === undefined) newCount++;
+        else if(existMap[c.case_id] !== c.current_status) updCount++;
+      });
+      apiSyncMsg('Saving cases...', 30 + Math.round(i/mappedCases.length*20), 
+        (i+batch.length) + ' / ' + mappedCases.length + ' saved');
+    }
+
+    // ── STEP 2: Fetch aligners for each case ─────────────
+    apiSyncMsg('Fetching aligner data for ' + mappedCases.length + ' cases...', 50);
+    var allAlignerRows = [];
+    var total = mappedCases.length;
+    
+    for(var j = 0; j < total; j++) {
+      var caseId = mappedCases[j].case_id;
+      try {
+        var aligners = await bloomFetchAllPages(
+          '/api/integration/data_sync/cases/' + caseId + '/aligners'
+        );
+        // Map aligner fields to bloom_aligner_details schema
+        aligners.forEach(function(a) {
+          allAlignerRows.push({
+            case_number:       String(caseId),
+            // API returns ARRAY — each element is a separate order for this case
+            order_id:          a.order_no || a.order_id || a.orderId || a.id || null,
+            order_index:       aligners.indexOf(a),
+            aligner_upper:     a.aligner_upper !== undefined ? Number(a.aligner_upper)
+                             : (a.upper !== undefined ? Number(a.upper) : null),
+            aligner_lower:     a.aligner_lower !== undefined ? Number(a.aligner_lower)
+                             : (a.lower !== undefined ? Number(a.lower) : null),
+            number_of_aligners:a.number_of_aligners !== undefined ? String(a.number_of_aligners)
+                             : (a.total !== undefined ? String(a.total) : null),
+            package_type:      a.package_type || a.packageType || null,
+            order_type:        a.order_type || a.orderType || 'TreatmentPlan',
+            updated_at:        a.updated_at || a.update_date || a.updateDate || null,
+            status:            a.status || a.current_status || null
+          });
+        });
+      } catch(e) {
+        // Some cases may have no aligners — skip
+        dbg('No aligners for case ' + caseId + ': ' + e.message);
+      }
+      if(j % 10 === 0) {
+        apiSyncMsg(
+          'Fetching aligners... ' + j + ' / ' + total + ' cases',
+          50 + Math.round(j/total*40),
+          j + ' of ' + total + ' cases processed'
+        );
+      }
+    }
+
+    // ── STEP 3: Upsert aligner data ──────────────────────
+    apiSyncMsg('Saving ' + allAlignerRows.length + ' aligner records...', 90);
+    if(allAlignerRows.length > 0) {
+      // API returns ARRAY per case — multiple orders per case
+      // Strategy: delete existing rows for each case, then insert all fresh rows
+      var caseIds = [...new Set(allAlignerRows.map(function(r){ return r.case_number; }))];
+      // Delete old rows for these cases in batches
+      for(var d = 0; d < caseIds.length; d += 50) {
+        var delBatch = caseIds.slice(d, d + 50);
+        await sb.from('bloom_aligner_details').delete().in('case_number', delBatch);
+      }
+      // Insert all rows (all orders for all cases)
+      for(var k = 0; k < allAlignerRows.length; k += 100) {
+        var abatch = allAlignerRows.slice(k, k + 100);
+        var ar = await sb.from('bloom_aligner_details').insert(abatch);
+        if(ar.error) dbg('Aligner save warning: ' + ar.error.message);
+      }
+    }
+
+    // ── STEP 4: Log the import ────────────────────────────
+    await sb.from('bloom_imports').insert([{
+      filename: 'API Sync — ' + new Date().toLocaleString(),
+      import_type: 'api',
+      new_cases: newCount,
+      updated_cases: updCount,
+      imported_at: new Date().toISOString()
+    }]);
+
+    apiSyncMsg(
+      '✅ Sync complete!', 
+      100,
+      newCount + ' new cases · ' + updCount + ' updated · ' + allAlignerRows.length + ' aligner records'
+    );
+    document.getElementById('apiSyncMsg').style.color = '#16a34a';
+    ntf('✅ Bloom API sync complete — ' + newCount + ' new, ' + updCount + ' updated', 'ok');
+    await loadAll();
+
+  } catch(err) {
+    apiSyncMsg('❌ Sync failed: ' + err.message, 0);
+    document.getElementById('apiSyncMsg').style.color = '#dc2626';
+    ntf('❌ API sync failed: ' + err.message, 'err');
+    dbg('API SYNC ERROR: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔄 Sync Now';
+  }
+});
+
 </script>
 
 
+<input type="file" id="csvInput" accept=".csv,.txt" style="display:none"/>
+<input type="file" id="xlsxInput" accept=".xlsx,.xls" style="display:none"/>
 </body>
 </html>
