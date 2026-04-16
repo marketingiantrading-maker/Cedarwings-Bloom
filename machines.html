@@ -273,18 +273,19 @@ const fD=v=>v?new Date(v).toLocaleDateString('en-GB',{day:'2-digit',month:'short
 const mins=(a,b)=>Math.max(0,Math.round((b-a)/60000))
 const hms=ms=>{const t=Math.max(0,Math.floor(ms/1000));return String(Math.floor(t/3600)).padStart(2,'0')+':'+String(Math.floor(t%3600/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0')}
 const du=d=>{if(!d)return null;const a=new Date();a.setHours(0,0,0,0);return Math.round((new Date(d)-a)/86400000)}
-let machines=[],items=[],fefoLot=null
+let machines=[],items=[],suppliers=[],fefoLot=null
 function ntf(m,t='ok'){const e=document.getElementById('notif');e.textContent=(t==='ok'?'✅ ':'❌ ')+m;e.className='notif on '+t;setTimeout(()=>e.classList.remove('on'),3500)}
 async function load(){
   const now=new Date(),td=new Date();td.setHours(0,0,0,0)
-  const[mr,sr,mlr,clr,ir]=await Promise.all([
+  const[mr,sr,mlr,clr,ir,suppR]=await Promise.all([
     sb.from('machines').select('*').order('machine_name'),
     sb.from('time_sessions').select('*').gte('started_at',td.toISOString()).order('started_at',{ascending:false}).limit(200),
     sb.from('machine_maintenance_log').select('*,machines(machine_name)').order('performed_at',{ascending:false}).limit(20),
     sb.from('machine_consumable_loads').select('*').eq('is_active',true),
-    sb.from('inventory_items').select('id,name,unit_of_measure').order('name')
+    sb.from('inventory_items').select('id,name,unit_of_measure,preferred_supplier_id').order('name'),
+    sb.from('suppliers').select('id,name,contact_name,email').eq('is_active',true).order('name')
   ])
-  machines=mr.data||[];items=ir.data||[]
+  machines=mr.data||[];items=ir.data||[];suppliers=suppR.data||[]
   const sess=sr.data||[],ml=mlr.data||[],cons=clr.data||[]
   const act=sess.filter(s=>!s.ended_at)
   const byM={};act.forEach(s=>{if(s.machine)byM[s.machine]=s})
@@ -334,7 +335,7 @@ ${a?`<div class="sec"><div class="sec-t">&#128994; Active Session</div><div styl
 <div id="ord-${x.id}" style="font-size:11px;color:var(--dim)">Loading...</div>
 </div>
 <div class="sec"><div class="sec-t">🟠 Matière / Lot actif<button class="btn bs" style="background:var(--a50);border:1px solid var(--a100);color:#92400e;padding:3px 8px" onclick="openInst('${x.id}','${mn}')">📦 Load Lot</button></div>
-${cl.length?cl.map(c=>{const p=c.qty_installed>0?Math.round(c.qty_remaining/c.qty_installed*100):0;return`<div class="cr-row"><div><div style="font-weight:600;font-size:11px">${c.item_name}</div><div style="font-size:10px;color:var(--dim)">Lot: ${c.lot_no||'—'} · ${new Date(c.installed_at).toLocaleDateString()} · By: ${c.installed_by||'—'}</div></div><div style="text-align:right"><div style="font-weight:700;font-family:var(--mono);font-size:12px;color:${p<20?'var(--red)':p<40?'var(--amber)':'var(--green)'}">${c.qty_remaining}/${c.qty_installed} ${c.unit||''}</div><div style="font-size:10px;margin-top:2px"><span style="color:#d97706;font-weight:700">${c.aligners_produced_since_install||0}</span> aligners · <span style="color:#7c3aed;font-weight:700">${c.cases_completed_since_install||0}</span> cases since install</div><div class="crb"><div class="crf" style="width:${p}%;background:${p<20?'#dc2626':p<40?'#d97706':'#16a34a'}"></div></div></div></div>`}).join(''):`<div style="color:var(--dim);font-size:11px;text-align:center;padding:4px">No materials installed.</div>`}
+${cl.length?cl.map(c=>{const p=c.qty_installed>0?Math.round(c.qty_remaining/c.qty_installed*100):0;return`<div class="cr-row"><div><div style="font-weight:600;font-size:11px">${c.item_name}${c.supplier_name?` <span style="color:var(--blue);font-size:10px">[${c.supplier_name}]</span>`:''}</div><div style="font-size:10px;color:var(--dim)">Lot: ${c.lot_no||'—'} · ${new Date(c.installed_at).toLocaleDateString()} · By: ${c.installed_by||'—'}</div></div><div style="text-align:right"><div style="font-weight:700;font-family:var(--mono);font-size:12px;color:${p<20?'var(--red)':p<40?'var(--amber)':'var(--green)'}">${c.qty_remaining}/${c.qty_installed} ${c.unit||''}</div><div style="font-size:10px;margin-top:2px"><span style="color:#d97706;font-weight:700">${c.aligners_produced_since_install||0}</span> aligners · <span style="color:#7c3aed;font-weight:700">${c.cases_completed_since_install||0}</span> cases since install</div><div class="crb"><div class="crf" style="width:${p}%;background:${p<20?'#dc2626':p<40?'#d97706':'#16a34a'}"></div></div></div></div>`}).join(''):`<div style="color:var(--dim);font-size:11px;text-align:center;padding:4px">No materials installed.</div>`}
 </div>
 </div></div>`
   }).join(''):`<div style="grid-column:1/-1;text-align:center;color:var(--dim);padding:40px">No machines found. Run fix_machines_v2.sql first.</div>`
@@ -504,12 +505,30 @@ document.getElementById('svMD').addEventListener('click',async()=>{
 })
 window.openInst=(machineId,name)=>{
   document.getElementById('instMid').value=machineId;fefoLot=null
-  document.getElementById('mInstSub').innerHTML='Installing on: <strong>'+name+'</strong><br>Picks FEFO lot, deducts from stock.'
-  const sel=document.getElementById('instItem');sel.innerHTML='<option value="">-- Select item --</option>'
-  items.forEach(it=>{const o=document.createElement('option');o.value=it.id;o.dataset.name=it.name;o.dataset.unit=it.unit_of_measure||'';o.textContent=it.name+(it.unit_of_measure?' ('+it.unit_of_measure+')':'');sel.appendChild(o)})
+  document.getElementById('mInstSub').innerHTML='Load a lot on: <strong>'+name+'</strong>'
+  // Populate suppliers dropdown
+  const suppSel=document.getElementById('instSupplier')
+  suppSel.innerHTML='<option value="">— Select Supplier —</option>'
+  suppliers.forEach(s=>{
+    const o=document.createElement('option');o.value=s.id;o.dataset.name=s.name
+    o.textContent=s.name+(s.contact_name?' · '+s.contact_name:'');suppSel.appendChild(o)
+  })
+  // Populate all items initially
+  const sel=document.getElementById('instItem');sel.innerHTML='<option value="">— Select material —</option>'
+  items.forEach(it=>{const o=document.createElement('option');o.value=it.id;o.dataset.name=it.name;o.dataset.unit=it.unit_of_measure||'';o.dataset.supplierId=it.preferred_supplier_id||'';const sup=it.preferred_supplier_id?suppliers.find(s=>s.id===it.preferred_supplier_id):null;o.textContent=it.name+(it.unit_of_measure?' ('+it.unit_of_measure+')':'')+(sup?' — '+sup.name:'');sel.appendChild(o)})
   ;['instQty','instBy','instNotes'].forEach(i=>document.getElementById(i).value='');document.getElementById('instUnit').value=''
   document.getElementById('instLotDiv').style.display='none'
   document.getElementById('mInst').classList.add('on')
+}
+
+// Filter items by selected supplier
+window.onSupplierChange=function(){
+  const suppId=document.getElementById('instSupplier').value
+  const sel=document.getElementById('instItem')
+  sel.innerHTML='<option value="">— Select material —</option>'
+  const filtered=suppId?items.filter(it=>it.preferred_supplier_id===suppId||!it.preferred_supplier_id):items
+  filtered.forEach(it=>{const o=document.createElement('option');o.value=it.id;o.dataset.name=it.name;o.dataset.unit=it.unit_of_measure||'';const sup=it.preferred_supplier_id?suppliers.find(s=>s.id===it.preferred_supplier_id):null;o.textContent=it.name+(it.unit_of_measure?' ('+it.unit_of_measure+')':'')+(sup?' — '+sup.name:'');sel.appendChild(o)})
+  fefoLot=null;document.getElementById('instLotDiv').style.display='none'
 }
 document.getElementById('instItem').addEventListener('change',async function(){
   const id=this.value,opt=this.options[this.selectedIndex]
@@ -537,11 +556,15 @@ document.getElementById('svInst').addEventListener('click',async()=>{
     // Sync to machine_lot_assignments so clocking auto-deduction works
     try{
       await sb.from('machine_lot_assignments').update({is_active:false}).eq('machine_id',mid).eq('is_active',true)
+      const suppSel2=document.getElementById('instSupplier')
+      const suppOpt=suppSel2.options[suppSel2.selectedIndex]
       await sb.from('machine_lot_assignments').insert([{
         machine_id:mid,
         machine_name:(machines||[]).find(m=>m.id===mid)?.machine_name||'',
         item_id:isel.value||null,
         item_name:iopt.dataset.name,
+        supplier_id:suppSel2.value||null,
+        supplier_name:suppOpt?.dataset?.name||null,
         lot_number:fefoLot.lot_no||'',
         initial_qty:qty,
         remaining_qty:qty,

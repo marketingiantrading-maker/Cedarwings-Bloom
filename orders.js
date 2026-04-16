@@ -17,7 +17,7 @@ CW.orders = {
     try {
       const [casesRes, alignersRes] = await Promise.all([
         sb.from('bloom_cases')
-          .select('case_id,patient_name,doctor,current_status,creation_date')
+          .select('case_id,patient_name,doctor,current_status,distributor,creation_date')
           .not('current_status', 'in', '(ARCHIVE,DELIVERED,archive,delivered)')
           .order('case_id', { ascending: false })
           .limit(1000),
@@ -38,15 +38,28 @@ CW.orders = {
         if (r.order_type) this._aligners[k].order_type = r.order_type
       })
 
-      // Also add any orders from order_step_tracking not in bloom_cases
+      // Add from order_step_tracking
       try {
         const { data: tracked } = await sb.from('order_step_tracking')
           .select('order_no').order('order_no', { ascending: false }).limit(300)
-        const bloomIds = new Set(this._cases.map(c => String(c.case_id)))
-        ;(tracked || []).filter(t => !bloomIds.has(String(t.order_no))).forEach(t => {
+        const seen = new Set(this._cases.map(c => String(c.case_id)))
+        ;(tracked || []).filter(t => t.order_no && !seen.has(String(t.order_no))).forEach(t => {
+          seen.add(String(t.order_no))
           this._cases.push({ case_id: t.order_no, patient_name: '', doctor: '', current_status: 'In Production' })
         })
       } catch (e) { /* order_step_tracking may not exist */ }
+
+      // Add from time_sessions — catches ALL orders ever clocked (most reliable fallback)
+      try {
+        const { data: sessions } = await sb.from('time_sessions')
+          .select('order_no').not('order_no', 'is', null)
+          .order('started_at', { ascending: false }).limit(500)
+        const seen2 = new Set(this._cases.map(c => String(c.case_id)))
+        ;(sessions || []).filter(s => s.order_no && !seen2.has(String(s.order_no))).forEach(s => {
+          seen2.add(String(s.order_no))
+          this._cases.push({ case_id: s.order_no, patient_name: '', doctor: '', current_status: 'In Production' })
+        })
+      } catch (e) { /* time_sessions may not exist */ }
 
       this._loaded = true
     } catch (e) {
@@ -90,7 +103,7 @@ CW.orders = {
           style="padding:9px 14px;cursor:pointer;border-bottom:1px solid #f1f5f9;font-size:13px">
           <div style="font-weight:700;font-family:monospace;color:#3b5fe2">${o.case_id}${alInfo}</div>
           <div style="font-size:11px;color:#64748b;margin-top:1px">
-            ${o.patient_name || ''}${o.doctor ? ' · ' + o.doctor : ''}
+            ${o.patient_name || ''}${o.doctor ? ' · ' + o.doctor : ''}${o.distributor ? ' · <span style="color:#d97706">' + o.distributor + '</span>' : ''}
             ${o.current_status ? `<span style="color:${statusColor};font-weight:600"> · ${o.current_status}</span>` : ''}
           </div>
         </div>`

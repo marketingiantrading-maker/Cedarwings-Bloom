@@ -148,6 +148,7 @@ lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:
 <script>const PAGE_KEY='clocking'</script>
 <script src="access.js"></script>
 <script src="lang.js"></script>
+<script src="orders.js"></script>
 </head>
 <body>
 
@@ -1149,27 +1150,46 @@ let pT=null
 let allOrders=[],ordDropTimeout=null
 
 async function loadAvailableOrders(){
-  // Load orders from bloom_cases (active/in-progress cases)
-  const{data}=await sb.from("bloom_cases")
-    .select("case_id,patient_name,doctor,current_status,overdue_for")
-    .not("current_status","in","(ARCHIVE,DELIVERED)")
-    .order("case_id",{ascending:false})
-    .limit(500)
-  allOrders=data||[]
-  
-  // Also load from order_step_tracking for production orders
-  const{data:trackOrders}=await sb.from("order_step_tracking")
-    .select("order_no")
-    .order("order_no",{ascending:false})
-    .limit(200)
-  
-  // Merge: add tracking orders not already in bloom_cases
-  const bloomIds=new Set(allOrders.map(o=>String(o.case_id)))
-  const extraOrders=(trackOrders||[])
-    .filter(t=>!bloomIds.has(String(t.order_no)))
-    .map(t=>({case_id:t.order_no,patient_name:"",doctor:"",current_status:"In Production",overdue_for:0}))
-  
-  allOrders=[...allOrders,...extraOrders]
+  // PRIMARY: Load from bloom_cases (from Bloom API - most complete data)
+  const[bloomRes,trackRes,sessRes]=await Promise.allSettled([
+    sb.from("bloom_cases")
+      .select("case_id,patient_name,doctor,current_status,overdue_for")
+      .not("current_status","in","(ARCHIVE,DELIVERED)")
+      .order("case_id",{ascending:false})
+      .limit(500),
+    sb.from("order_step_tracking")
+      .select("order_no").order("order_no",{ascending:false}).limit(300),
+    sb.from("time_sessions")
+      .select("order_no").not("order_no","is",null)
+      .order("started_at",{ascending:false}).limit(500)
+  ])
+
+  const bloomOrders=bloomRes.status==="fulfilled"?bloomRes.value.data||[]:[]
+  const trackOrders=trackRes.status==="fulfilled"?trackRes.value.data||[]:[]
+  const sessOrders=sessRes.status==="fulfilled"?sessRes.value.data||[]:[]
+
+  // Start with bloom cases (richest data)
+  allOrders=[...bloomOrders]
+  const seen=new Set(allOrders.map(o=>String(o.case_id)))
+
+  // Add from order_step_tracking
+  trackOrders.filter(t=>t.order_no&&!seen.has(String(t.order_no))).forEach(t=>{
+    seen.add(String(t.order_no))
+    allOrders.push({case_id:t.order_no,patient_name:"",doctor:"",current_status:"In Production",overdue_for:0})
+  })
+
+  // Add from time_sessions (catches ALL orders that were ever clocked)
+  sessOrders.filter(s=>s.order_no&&!seen.has(String(s.order_no))).forEach(s=>{
+    seen.add(String(s.order_no))
+    allOrders.push({case_id:s.order_no,patient_name:"",doctor:"",current_status:"In Production",overdue_for:0})
+  })
+
+  // Sort: bloom cases first (have patient data), then by case_id descending
+  allOrders.sort((a,b)=>{
+    if(a.patient_name&&!b.patient_name)return -1
+    if(!a.patient_name&&b.patient_name)return 1
+    return String(b.case_id).localeCompare(String(a.case_id),undefined,{numeric:true})
+  })
 }
 
 window.showOrderList=window._showOrderList=()=>{

@@ -527,7 +527,7 @@ $('svItem').addEventListener('click',async()=>{
   const nm=$('iN').value.trim();if(!nm){$('eItem').textContent='Item name required';return}
   const id=$('eiId').value
   const p={name:nm,category_name:$('iC').value.trim()||null,unit_of_measure:$('iU').value.trim()||'pcs',sku:$('iSK').value.trim()||null,min_qty:Number($('iMn').value||0),max_qty:Number($('iMx').value||0),monthly_consumption:Number($('iMC').value||0),lead_time_days:Number($('iLT').value||0),auto_requisition_enabled:$('iAR').value==='true',notes:$('iNt').value.trim()||null}
-  const supNm=$('iSup').value.trim();if(supNm){const{data:es}=await sb.from('inventory_suppliers').select('id').eq('name',supNm).limit(1);if(es?.length)p.preferred_supplier_id=es[0].id;else{const{data:ns}=await sb.from('inventory_suppliers').insert([{name:supNm}]).select().single();if(ns)p.preferred_supplier_id=ns.id}}
+  const supNm=$('iSup').value.trim();if(supNm){const{data:es}=await sb.from('suppliers').select('id').eq('name',supNm).limit(1);if(es?.length)p.preferred_supplier_id=es[0].id;else{const{data:ns}=await sb.from('suppliers').insert([{name:supNm}]).select().single();if(ns)p.preferred_supplier_id=ns.id}}
   try{if(id){const{error}=await sb.from('inventory_items').update(p).eq('id',id);if(error)throw error}else{const{error}=await sb.from('inventory_items').insert([p]);if(error)throw error}
     $('mItem').classList.remove('on');notify(id?'Item updated':'Item created');loadAll()
   }catch(err){$('eItem').textContent=err.message}
@@ -540,7 +540,7 @@ $('svLot').addEventListener('click',async()=>{
   const iid=$('lIt').value,qty=Number($('lQT').value||0);if(!iid||qty<=0){$('eLot').textContent='Select item and enter quantity';return}
   try{
     let sid=null,lid=null
-    const sn=$('lSup').value.trim();if(sn){const{data:es}=await sb.from('inventory_suppliers').select('id').eq('name',sn).limit(1);if(es?.length)sid=es[0].id;else{const{data:ns}=await sb.from('inventory_suppliers').insert([{name:sn}]).select().single();sid=ns?.id}}
+    const sn=$('lSup').value.trim();if(sn){const{data:es}=await sb.from('suppliers').select('id').eq('name',sn).limit(1);if(es?.length)sid=es[0].id;else{const{data:ns}=await sb.from('suppliers').insert([{name:sn}]).select().single();sid=ns?.id}}
     const ln=$('lLoc').value.trim();if(ln){const{data:el}=await sb.from('inventory_locations').select('id').eq('name',ln).limit(1);if(el?.length)lid=el[0].id;else{const{data:nl}=await sb.from('inventory_locations').insert([{name:ln}]).select().single();lid=nl?.id}}
     const p={item_id:iid,lot_no:$('lLN').value.trim()||null,serial_no:$('lSN').value.trim()||null,initial_qty:qty,available_qty:qty,unit_cost:Number($('lUC').value||0),purchase_date:$('lPD').value||null,expiry_date:$('lED').value||null,min_stock:Number($('lMS').value||0),reorder_point:Number($('lRP').value||0),reorder_qty:0,notes:$('lNt').value.trim()||null,supplier_id:sid,location_id:lid}
     const{data:nl,error}=await sb.from('inventory_lots').insert([p]).select().single();if(error)throw error
