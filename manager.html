@@ -125,6 +125,19 @@ tbody tr:hover{background:#f8fafc}
 @media(max-width:1400px){.kpi-grid{grid-template-columns:repeat(4,1fr)}}@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:768px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.g2,.g3{grid-template-columns:1fr}.sidebar{display:none}.content{margin-left:0}}
 @media(max-width:640px){.kpi-grid{grid-template-columns:1fr 1fr}.g2e{grid-template-columns:1fr}}
+
+/* Order searchable dropdown */
+.order-wrap{position:relative}
+.order-dd{display:none;position:absolute;z-index:300;top:100%;left:0;right:0;
+  background:#fff;border:1.5px solid var(--bdr);border-radius:10px;
+  box-shadow:0 8px 28px rgba(0,0,0,.12);max-height:260px;overflow-y:auto;margin-top:3px}
+.order-dd-item{padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--bdr);font-size:13px}
+.order-dd-item:last-child{border-bottom:none}
+.order-dd-item:hover{background:var(--b50)}
+.order-dd-item .oi-id{font-weight:700;font-family:var(--mono);color:var(--blue)}
+.order-dd-item .oi-name{font-size:11px;color:var(--mu);margin-top:1px}
+.order-dd-empty{padding:12px 14px;font-size:12px;color:var(--mu);text-align:center}
+
 </style>
 <script>const PAGE_KEY='manager'</script>
 <script src="access.js"></script>
@@ -580,12 +593,93 @@ async function loadWhatsNewStats(){
     }
   }catch(e){console.warn('whatsNew stats:',e);}
 }
+
+// ── Quick Entry Order Dropdown ──────────────────────────────────
+let qeAllOrders = []
+
+async function loadQeOrders() {
+  const {data} = await sb.from('bloom_cases')
+    .select('case_id,patient_name,doctor,current_status')
+    .not('current_status','in','(ARCHIVE,DELIVERED)')
+    .order('case_id',{ascending:false})
+    .limit(500)
+  qeAllOrders = data || []
+  // Also add from order_step_tracking
+  const {data:tracked} = await sb.from('order_step_tracking')
+    .select('order_no').order('order_no',{ascending:false}).limit(200)
+  const bloomIds = new Set(qeAllOrders.map(o=>String(o.case_id)))
+  ;(tracked||[]).filter(t=>!bloomIds.has(String(t.order_no))).forEach(t=>{
+    qeAllOrders.push({case_id:t.order_no,patient_name:'',doctor:'',current_status:'In Production'})
+  })
+}
+
+window.showQeOrderDD = () => {
+  document.getElementById('qeOrderDD').style.display = 'block'
+  filterQeOrders(document.getElementById('qeOrder').value)
+  setTimeout(()=>{
+    document.addEventListener('click', function closeDD(e){
+      if(!e.target.closest('.order-wrap')){
+        document.getElementById('qeOrderDD').style.display='none'
+        document.removeEventListener('click',closeDD)
+      }
+    })
+  },100)
+}
+
+window.filterQeOrders = (term) => {
+  const list = document.getElementById('qeOrderList')
+  const filtered = term
+    ? qeAllOrders.filter(o=>
+        String(o.case_id).toLowerCase().includes(term.toLowerCase()) ||
+        (o.patient_name||'').toLowerCase().includes(term.toLowerCase()))
+    : qeAllOrders.slice(0,50)
+  if(!filtered.length){
+    list.innerHTML='<div class="order-dd-empty">No orders found</div>'
+    return
+  }
+  list.innerHTML = filtered.map(o=>`
+    <div class="order-dd-item" onclick="selectQeOrder('${o.case_id}')">
+      <div class="oi-id">${o.case_id}</div>
+      <div class="oi-name">${o.patient_name||''}${o.doctor?' · '+o.doctor:''} <span style="color:var(--amber)">${o.current_status||''}</span></div>
+    </div>`).join('')
+}
+
+window.selectQeOrder = async (caseId) => {
+  document.getElementById('qeOrder').value = caseId
+  document.getElementById('qeOrderDD').style.display = 'none'
+  // Auto-fill aligner counts from bloom_aligner_details
+  const {data} = await sb.from('bloom_aligner_details')
+    .select('aligner_upper,aligner_lower,number_of_aligners,order_type')
+    .eq('case_number', String(caseId))
+    .limit(10)
+  if(data && data.length > 0){
+    // Sum all orders for this case
+    const totalUpper = data.reduce((s,r)=>s+(Number(r.aligner_upper)||0),0)
+    const totalLower = data.reduce((s,r)=>s+(Number(r.aligner_lower)||0),0)
+    const total = data.reduce((s,r)=>s+(Number(r.number_of_aligners)||0),0) || totalUpper+totalLower
+    document.getElementById('qeTotal').value = total || ''
+    document.getElementById('qeUpper').value = totalUpper || ''
+    document.getElementById('qeLower').value = totalLower || ''
+    // Set case type if available
+    const orderType = data[0].order_type
+    if(orderType){
+      const sel = document.getElementById('qeCase')
+      for(let i=0;i<sel.options.length;i++){
+        if(sel.options[i].value.toLowerCase().includes(orderType.toLowerCase())){
+          sel.selectedIndex=i; break
+        }
+      }
+    }
+  }
+}
+
+
 async function load(){
   try {
   const{s,e}=getRange()
   // Safe individual fetches — one failure won't break everything
   const safe = async (p) => { try { const r = await p; return r; } catch(e) { return {data:[],error:e}; } }
-  const [sR,pR,lR,rR,bCR,bAR,cSR] = await Promise.all([
+  const [sR,pR,lR,rR,bCR,bAR,cSR,peR] = await Promise.all([
     safe(sb.from('time_sessions').select('*').gte('started_at',s.toISOString()).lte('started_at',e.toISOString()).order('started_at',{ascending:false}).limit(500)),
     safe(sb.from('production_records').select('*').gte('created_at',s.toISOString()).lte('created_at',e.toISOString()).order('created_at',{ascending:false}).limit(200)),
     safe(sb.from('inventory_lots_enriched_view').select('item_name,available_qty,min_qty,min_stock,expiry_date,lot_no').limit(200)),
@@ -597,6 +691,7 @@ async function load(){
   allSess=sR.data||[];allProd=pR.data||[]
   const bloomCases=bCR.data||[]
   const bloomAligners=bAR.data||[]
+  const prodEntries=peR?.data||[]
   if(cSR.error) console.warn('[Dashboard] order_step_tracking error:',cSR.error.message||JSON.stringify(cSR.error))
   if(sR.error) console.warn('[Dashboard] time_sessions error:',sR.error.message||JSON.stringify(sR.error))
   if(pR.error) console.warn('[Dashboard] production_records error:',pR.error.message||JSON.stringify(pR.error))
@@ -685,17 +780,33 @@ async function load(){
     alignerMap[k].total += Number(r.number_of_aligners) || (Number(r.aligner_upper)||0) + (Number(r.aligner_lower)||0)
   })
 
-  // Aligners produced in period = sum of (upper + lower) for cases created in period
+  // Aligners PRODUCED = actual from production_entries; fallback to Bloom plan
   let periodUpperAl = 0, periodLowerAl = 0, periodTotalAl = 0
+  let bloomPlannedTotal = 0
+  // Always compute bloom planned
   periodCaseIds.forEach(id => {
     const a = alignerMap[id]
-    if (a) { periodUpperAl += a.upper; periodLowerAl += a.lower; periodTotalAl += a.total || (a.upper + a.lower) }
+    if (a) bloomPlannedTotal += a.total || (a.upper + a.lower)
   })
-
+  if (prodEntries && prodEntries.length > 0) {
+    // Actual data from clocking
+    prodEntries.forEach(e => {
+      periodTotalAl += Number(e.aligners_done) || 0
+      periodUpperAl += Number(e.upper_count) || 0
+      periodLowerAl += Number(e.lower_count) || 0
+    })
+  } else {
+    // No production entries yet — show Bloom plan as estimate
+    periodTotalAl = bloomPlannedTotal
+    periodCaseIds.forEach(id => {
+      const a = alignerMap[id]
+      if (a) { periodUpperAl += a.upper; periodLowerAl += a.lower }
+    })
+  }
   // All-time totals
   totAl = periodTotalAl
   document.getElementById('kAl').textContent=totAl.toLocaleString()
-  document.getElementById('kAlSub').textContent=`↑${periodUpperAl} upper · ↓${periodLowerAl} lower · ${periodCaseIds.size} cases`
+  document.getElementById('kAlSub').textContent=prodEntries&&prodEntries.length?`↑${periodUpperAl} upper · ↓${periodLowerAl} lower (actual) · ${bloomPlannedTotal} planned`:`↑${periodUpperAl} upper · ↓${periodLowerAl} lower · ${periodCaseIds.size} cases (Bloom plan)`
   document.getElementById('kCs').textContent=totCs.toLocaleString()
   document.getElementById('kCsSub').textContent=`${uniqueCompletedInPeriod.length} cases · ${fullyCompletedOrders.length} all-time completed`
   document.getElementById('kLow').textContent=lowItems.length
@@ -874,6 +985,7 @@ document.getElementById('refreshBtn').addEventListener('click',load)
 document.getElementById('sessSearch').addEventListener('input',renderSessions)
 document.getElementById('sessFilter').addEventListener('change',renderSessions)
 document.getElementById('pageDate').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})
+loadQeOrders()
 load()
 loadWhatsNewStats()
 setInterval(load,30000)

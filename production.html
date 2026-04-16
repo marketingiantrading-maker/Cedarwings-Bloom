@@ -102,10 +102,18 @@ lbl{display:block;font-size:11px;font-weight:700;color:var(--mu);text-transform:
   .print-footer{display:block!important}
   body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .sb,.topbar,.search-bar,.no-print{display:none!important}.content{margin-left:0!important}.body{padding:0!important}}
+
+/* Order searchable dropdown */
+.cw-order-dd{display:none;position:absolute;z-index:300;top:100%;left:0;right:0;
+  background:#fff;border:1.5px solid var(--bdr);border-radius:10px;
+  box-shadow:0 8px 28px rgba(0,0,0,.14);max-height:280px;overflow-y:auto;margin-top:3px}
+.cw-order-item:hover{background:#eef2ff}
+
 </style>
 <script>const PAGE_KEY='production'</script>
 <script src="access.js"></script>
 <script src="lang.js"></script>
+<script src="orders.js"></script>
 </head>
 <body>
 <aside class="sb">
@@ -259,7 +267,13 @@ lbl{display:block;font-size:11px;font-weight:700;color:var(--mu);text-transform:
     <div class="mo-s">Créez un lot, enregistrez les matières utilisées — le stock est déduit automatiquement selon les règles de rendement.</div>
 
     <div class="fg2">
-      <div><lbl>N° Commande *</lbl><input class="fi" id="nlOrder" placeholder="ex: ORD-1052"/></div>
+      <div style="position:relative">
+        <lbl>Order *</lbl>
+        <input class="fi" id="nlOrder" placeholder="Type to search order…" autocomplete="off"
+          data-cw-for="nlOrderDD" style="padding-right:36px"/>
+        <span style="position:absolute;right:12px;bottom:10px;pointer-events:none">🔍</span>
+        <div id="nlOrderDD" class="cw-order-dd" data-cw-dd></div>
+      </div>
       <div><lbl>Type *</lbl>
         <select class="fi" id="nlType">
           <option value="aligner">🦷 Aligneurs</option>
@@ -645,7 +659,25 @@ document.getElementById("btnNewLot").addEventListener("click",()=>{
 })
 document.getElementById("mNewLot").addEventListener("click",e=>{if(e.target===document.getElementById("mNewLot"))document.getElementById("mNewLot").classList.remove("on")})
 
+
+// ── Order dropdown for New Lot modal ──────────────────────────────
+async function initOrderDropdown(){
+  await CW.orders.init(sb)
+  const inp = document.getElementById('nlOrder')
+  const dd  = document.getElementById('nlOrderDD')
+  const lst = dd
+  if(!inp||!dd) return
+  CW.orders.build(inp, dd, dd, (caseId, alData) => {
+    // Auto-fill quantity from bloom aligner data
+    if(alData && alData.total > 0){
+      const qtyEl = document.getElementById('nlQty')
+      if(qtyEl && !qtyEl.value) qtyEl.value = alData.total
+    }
+  })
+}
+
 load()
+initOrderDropdown()
 </script>
 
 <!-- COPYRIGHT FOOTER -->

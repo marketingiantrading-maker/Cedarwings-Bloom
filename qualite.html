@@ -542,16 +542,27 @@ function ntf(msg,type){
 
 // ── LOAD ──────────────────────────────────────────────────
 async function load(){
-  const[lr,er,qr,stRes,ssRes]=await Promise.all([
+  const[lr,er,qr,stRes,ssRes,bcRes,baRes]=await Promise.all([
     sb.from("production_lots").select("*").order("produced_at",{ascending:false}).limit(200),
     sb.from("employees").select("name,username").eq("is_active",true).order("name"),
     sb.from("quality_controls").select("*").order("performed_at",{ascending:false}).limit(200),
     sb.from("order_step_tracking").select("order_no").not("order_no","is",null),
-    sb.from("system_settings").select("key,value")
+    sb.from("system_settings").select("key,value"),
+    sb.from("bloom_cases").select("case_id,patient_name,doctor,current_status").limit(1000),
+    sb.from("bloom_aligner_details").select("case_number,aligner_upper,aligner_lower,number_of_aligners").limit(3000)
   ])
   const lots=lr.data||[]
   const allQC=qr.data||[]
   const packagingDone=[...new Set((stRes.data||[]).map(r=>r.order_no).filter(Boolean))]
+  // Build bloom lookup maps for enriching dropdown
+  const bloomCaseMap={};(bcRes.data||[]).forEach(b=>{bloomCaseMap[String(b.case_id)]=b})
+  const bloomAlMap={};(baRes.data||[]).forEach(a=>{
+    const k=String(a.case_number)
+    if(!bloomAlMap[k])bloomAlMap[k]={upper:0,lower:0,total:0}
+    bloomAlMap[k].upper+=Number(a.aligner_upper)||0
+    bloomAlMap[k].lower+=Number(a.aligner_lower)||0
+    bloomAlMap[k].total+=Number(a.number_of_aligners)||0
+  })
   const smap={};(ssRes.data||[]).forEach(s=>smap[s.key]=s.value)
   const allowManualLot=smap.allow_manual_lot==='true'
 
@@ -567,7 +578,10 @@ async function load(){
         const lot=lots.find(l=>l.order_no===o)
         const val=lot?lot.id:o
         const num=lot?lot.lot_number:o
-        return '<option value="'+val+'" data-order="'+o+'" data-num="'+num+'" data-pending="true">⏳ '+o+(lot?' — '+lot.lot_number:'')+'</option>'
+        const bc=bloomCaseMap[String(o)]
+        const al=bloomAlMap[String(o)]
+        const label='⏳ '+o+(bc&&bc.patient_name?' — '+bc.patient_name:'')+(al&&al.total?' ('+al.total+' al.)':'')+(lot?' · '+lot.lot_number:'')
+        return '<option value="'+val+'" data-order="'+o+'" data-num="'+num+'" data-pending="true">'+label+'</option>
       }).join("")+
       (lots.length?'<optgroup label="— Tous les lots —">'+lots.map(l=>'<option value="'+l.id+'" data-order="'+l.order_no+'" data-num="'+l.lot_number+'">'+l.lot_number+' — '+l.order_no+' ('+( l.quality_status||'pending')+')</option>').join("")+'</optgroup>':'')
   } else if(lots.length>0){

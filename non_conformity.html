@@ -146,10 +146,14 @@ tbody tr:hover{background:#f8fafc}
 .ec{color:var(--dim)!important;text-align:center!important;padding:28px!important}
 .lbl{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px}
 @media print{{.sidebar,.topbar,#pHide,.notif,footer{{display:none!important}}}}}
+
+.cw-order-item:hover{background:#eef2ff}
+
 </style>
 <script>const PAGE_KEY='non_conformity'</script>
 <script src="access.js"></script>
 <script src="lang.js"></script>
+<script src="orders.js"></script>
 </head>
 <body>
 <aside class="sidebar">
@@ -402,39 +406,11 @@ const stCls={open:'b-r',in_progress:'b-a',closed:'b-g'};
 const catCls={material:'b-gray',process:'b-b',product:'b-g',equipment:'b-a',documentation:'b-b',other:'b-gray'};
 
 async function loadOrderOptions(){
-  const sel=$('nOrder');
-  if(!sel)return;
-  try{
-    const[stRes,lotRes]=await Promise.all([
-      sb.from('order_step_tracking').select('order_no').eq('step','Packaging').eq('status','complete').order('completed_at',{ascending:false}),
-      sb.from('production_lots').select('lot_number,order_no').order('produced_at',{ascending:false}).limit(200)
-    ]);
-    const orders=[...new Set((stRes.data||[]).map(r=>r.order_no).filter(Boolean))];
-    const lots=(lotRes.data||[]);
-    // Build combined options: completed orders first, then lots
-    const seen=new Set();
-    let html='<option value="">— Select Order / Lot —</option>';
-    // Completed orders
-    if(orders.length){
-      html+='<optgroup label="✅ Completed Orders">';
-      orders.forEach(o=>{
-        if(!seen.has(o)){seen.add(o);html+=`<option value="${o}">${o}</option>`;}
-      });
-      html+='</optgroup>';
-    }
-    // Production lots
-    if(lots.length){
-      html+='<optgroup label="📦 Production Lots">';
-      lots.forEach(l=>{
-        const v=l.lot_number||l.order_no;
-        if(v&&!seen.has(v)){seen.add(v);html+=`<option value="${v}">${l.lot_number}${l.order_no?' — '+l.order_no:''}</option>`;}
-      });
-      html+='</optgroup>';
-    }
-    sel.innerHTML=html;
-  }catch(e){
-    sel.innerHTML='<option value="">— Orders unavailable —</option>';
-  }
+  await CW.orders.init(sb)
+  CW.orders.buildSelect(
+    document.getElementById('nOrder'),
+    '— Select Order / Lot —'
+  )
 }
 
 async function load(){

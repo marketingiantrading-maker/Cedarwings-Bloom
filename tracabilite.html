@@ -276,6 +276,34 @@ async function load(){
     else console.log('[machineLots] loaded:',machineLots.length,'lots')
   }catch(e){machineLots=[];console.warn('machine_lot_assignments error:',e)}
 
+  // Load bloom enrichment data (patient names, aligner counts)
+  let bloomCaseMap={}, bloomAlMap={}
+  try{
+    const[bcRes,baRes]=await Promise.all([
+      sb.from('bloom_cases').select('case_id,patient_name,doctor,current_status').in('case_id',orderNos.slice(0,500)),
+      sb.from('bloom_aligner_details').select('case_number,aligner_upper,aligner_lower,number_of_aligners').in('case_number',orderNos.slice(0,500))
+    ])
+    ;(bcRes.data||[]).forEach(b=>{bloomCaseMap[String(b.case_id)]=b})
+    ;(baRes.data||[]).forEach(a=>{
+      const k=String(a.case_number)
+      if(!bloomAlMap[k])bloomAlMap[k]={upper:0,lower:0,total:0}
+      bloomAlMap[k].upper+=Number(a.aligner_upper)||0
+      bloomAlMap[k].lower+=Number(a.aligner_lower)||0
+      bloomAlMap[k].total+=Number(a.number_of_aligners)||0
+    })
+    // Attach bloom data to each order object
+    orders.forEach(o=>{
+      const bc=bloomCaseMap[String(o.order_no)]
+      const al=bloomAlMap[String(o.order_no)]
+      o.patient_name=bc?.patient_name||null
+      o.doctor=bc?.doctor||null
+      o.bloom_status=bc?.current_status||null
+      o.aligner_upper=al?.upper||0
+      o.aligner_lower=al?.lower||0
+      o.aligner_total=al?.total||0
+    })
+  }catch(e){console.warn('bloom enrichment:',e)}
+
   if(orderNos.length){
     const[cRes,eRes,qcRes]=await Promise.all([
       sb.from('material_consumption_log').select('*').in('order_no',orderNos).order('recorded_at'),
@@ -402,7 +430,7 @@ function renderList(){
   const flt=document.getElementById('fltStatus').value
   const fltQC=document.getElementById('fltQC').value
   const filtered=orders.filter(o=>{
-    const mT=!term||o.order_no.toLowerCase().includes(term)
+    const mT=!term||o.order_no.toLowerCase().includes(term)||(o.patient_name||'').toLowerCase().includes(term)||(o.doctor||'').toLowerCase().includes(term)
     const complete=isComplete(o)
     const mS=flt==='all'||(flt==='complete'&&complete)||(flt==='in_progress'&&!complete)
     const qcDone=hasQC(o.order_no)
@@ -421,7 +449,8 @@ function renderList(){
       <div class="or-icon" style="background:${done?'var(--g50)':'var(--b50)'}">${done?'✅':'🔄'}</div>
       <div style="flex:1;min-width:0">
         <div class="or-num">${o.order_no}</div>
-        <div class="or-sub">${cnt}/${STEPS.length} étapes · ${fd(o.first_started)}</div>
+        ${o.patient_name?`<div style="font-size:11px;font-weight:600;color:var(--blue);margin-top:1px">${o.patient_name}${o.doctor?' · '+o.doctor:''}</div>`:''}
+        <div class="or-sub">${cnt}/${STEPS.length} steps · ${o.aligner_total?o.aligner_total+' aligners · ':''}${fd(o.first_started)}</div>
       </div>
       <span class="or-badge ${done?'b-ok':'b-prog'}">${done?'Terminé':'En cours'}</span>
     </div>`

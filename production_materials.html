@@ -95,10 +95,17 @@ tbody tr:hover{background:#f8fafc}
 .counter-card{background:var(--card);border-radius:14px;box-shadow:var(--sh);padding:18px}
 .cc-num{font-family:var(--mono);font-size:36px;font-weight:700;letter-spacing:-2px}
 .cc-lbl{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-top:4px}
+
+.cw-order-dd{display:none;position:absolute;z-index:300;top:100%;left:0;right:0;
+  background:#fff;border:1.5px solid var(--bdr);border-radius:10px;
+  box-shadow:0 8px 28px rgba(0,0,0,.14);max-height:260px;overflow-y:auto;margin-top:3px}
+.cw-order-item:hover{background:#eef2ff}
+
 </style>
 <script>const PAGE_KEY='production_materials'</script>
 <script src="access.js"></script>
 <script src="lang.js"></script>
+<script src="orders.js"></script>
 </head>
 <body>
 <aside class="sb">
@@ -239,7 +246,13 @@ tbody tr:hover{background:#f8fafc}
     <div class="mo-t">🦷 Log Aligner Production</div>
     <div class="mo-s">Record how many aligners were produced for an order today.</div>
     <div class="fg2">
-      <div><lbl>Order Number *</lbl><input class="fi" id="enOrder" placeholder="e.g. ORD-1052"/></div>
+      <div style="position:relative">
+        <lbl>Order *</lbl>
+        <input class="fi" id="enOrder" placeholder="Type to search order…" autocomplete="off"
+          data-cw-for="enOrderDD" style="padding-right:36px"/>
+        <span style="position:absolute;right:12px;bottom:10px;pointer-events:none">🔍</span>
+        <div id="enOrderDD" class="cw-order-dd" data-cw-dd></div>
+      </div>
       <div><lbl>Case Type</lbl>
         <select class="fi" id="enCase">
           <option value="">Select…</option>
@@ -446,25 +459,30 @@ function renderEntriesTable(){
   const rows=[]
 
   // First: all bloom cases
+  // Each bloomCase row = one ORDER for a case (API returns array → multiple orders)
   bloomCases.forEach(b=>{
     const prods=prodByOrder[b.case_number]||[]
     const totalProduced=prods.reduce((s,p)=>s+(p.aligners_done||0),0)
     const planned=parseInt(b.number_of_aligners||0)
     const isPartial=totalProduced>0&&totalProduced<planned
-    const isDone=totalProduced>=planned
+    const isDone=totalProduced>=planned&&planned>0
     const hasProduction=totalProduced>0
 
     rows.push({
-      date:b.imported_at,
+      // Use order's own updated_at if available, else imported_at
+      date:b.updated_at||b.imported_at,
       order_no:b.case_number,
+      order_id:b.order_id||null,
+      order_index:b.order_index||0,
       case_type:b.order_type||'—',
+      status_api:b.status||null,
       planned,
-      produced:totalProduced,
+      produced:hasProduction?totalProduced:0,
       upper:hasProduction?prods.reduce((s,p)=>s+(p.upper_count||0),0):(b.aligner_upper||0),
       lower:hasProduction?prods.reduce((s,p)=>s+(p.lower_count||0),0):(b.aligner_lower||0),
       entered_by:prods.length?prods.map(p=>p.entered_by||'').filter(Boolean).join(', '):'—',
       notes:prods.length?prods.map(p=>p.notes||'').filter(Boolean).join(' | '):'Imported from Bloom',
-      status:isDone?'done':isPartial?'partial':hasProduction?'done':'pending',
+      status:isDone?'done':isPartial?'partial':'pending',
       source:'bloom'
     })
   })
@@ -501,15 +519,18 @@ function renderEntriesTable(){
   document.getElementById('entriesTable').innerHTML=rows.length?rows.map(r=>`
     <tr>
       <td style="font-size:11px;color:var(--mu)">${fd(r.date)}</td>
-      <td style="font-weight:700;font-family:var(--mono);color:var(--blue)">${r.order_no}</td>
+      <td>
+        <div style="font-weight:700;font-family:var(--mono);color:var(--blue)">${r.order_no}</div>
+        ${r.order_id?`<div style="font-size:10px;color:var(--mu)">Order: ${r.order_id}</div>`:''}
+      </td>
       <td style="font-size:11px">${r.case_type}</td>
       <td style="text-align:center">${statusBadge[r.status]||''}</td>
       <td>
         <span style="font-family:var(--mono);font-weight:700;color:${r.produced>0?'var(--green)':'var(--dim)'}">${r.produced}</span>
-        ${r.planned&&r.planned!==r.produced?`<span style="font-size:10px;color:var(--mu)"> / ${r.planned}</span>`:''}
+        ${r.planned?`<span style="font-size:10px;color:var(--mu)"> / ${r.planned}</span>`:''}
       </td>
-      <td style="font-family:var(--mono)">${r.upper}</td>
-      <td style="font-family:var(--mono)">${r.lower}</td>
+      <td style="font-family:var(--mono)">${r.upper||'—'}</td>
+      <td style="font-family:var(--mono)">${r.lower||'—'}</td>
       <td style="font-size:11px;color:var(--mu)">${r.entered_by}</td>
       <td style="font-size:10px;color:var(--dim);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.notes}</td>
     </tr>`).join(''):'<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--dim)">No entries yet. Data appears after Bloom Import and Packaging clocking.</td></tr>'
@@ -660,7 +681,23 @@ window.deleteYieldRule=async(id)=>{
 // Close modals on backdrop click
 document.querySelectorAll('.mov').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('on')}))
 
+// ── Order dropdown for Log Production modal ───────────────────────
+async function initEnOrderDD(){
+  await CW.orders.init(sb)
+  const inp = document.getElementById('enOrder')
+  const dd  = document.getElementById('enOrderDD')
+  if(!inp||!dd) return
+  CW.orders.build(inp, dd, dd, (caseId, alData) => {
+    if(alData){
+      if(!document.getElementById('enTotal').value) document.getElementById('enTotal').value = alData.total || ''
+      if(!document.getElementById('enUpper').value) document.getElementById('enUpper').value = alData.upper || ''
+      if(!document.getElementById('enLower').value) document.getElementById('enLower').value = alData.lower || ''
+    }
+  })
+}
+
 load()
+initEnOrderDD()
 </script>
 
 <!-- COPYRIGHT FOOTER -->
