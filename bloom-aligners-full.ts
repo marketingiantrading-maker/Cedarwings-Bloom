@@ -407,8 +407,8 @@ function bars(data,total,color='var(--blue)',limit=15){
 async function loadAll(){
   try{
     const[{data:cases,count:total},{data:aligData,count:alTotal},{data:logs},{count:snapCount}]=await Promise.all([
-      sb.from('bloom_cases').select('*',{count:'exact'}).order('case_id',{ascending:false}).limit(10000),
-      sb.from('bloom_aligner_details').select('*',{count:'exact'}).limit(20000),
+      sb.from('bloom_cases').select('*',{count:'exact'}).order('case_id',{ascending:false}).limit(20000),
+      sb.from('bloom_aligner_details').select('*',{count:'exact'}).order('case_number',{ascending:false}).limit(50000),
       sb.from('bloom_sync_log').select('*').order('started_at',{ascending:false}).limit(50),
       sb.from('bloom_case_snapshots').select('*',{count:'exact',head:true})
     ])
