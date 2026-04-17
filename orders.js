@@ -18,12 +18,11 @@ CW.orders = {
       const [casesRes, alignersRes] = await Promise.all([
         sb.from('bloom_cases')
           .select('case_id,patient_name,doctor,current_status,distributor,creation_date')
-          .not('current_status', 'in', '(ARCHIVE,DELIVERED,archive,delivered)')
           .order('case_id', { ascending: false })
-          .limit(1000),
+          .limit(10000),
         sb.from('bloom_aligner_details')
           .select('case_number,aligner_upper,aligner_lower,number_of_aligners,order_type')
-          .limit(5000)
+          .limit(20000)
       ])
 
       this._cases = casesRes.data || []
