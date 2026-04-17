@@ -233,11 +233,13 @@ tr:hover td{background:#fafbfc}
               <th class="sortable" onclick="sortAligners('case_number')">Case #</th>
               <th class="sortable" onclick="sortAligners('patient_name')">Patient</th>
               <th>Doctor</th>
-              <th class="sortable" onclick="sortAligners('order_type')">Order Type</th>
-              <th>Package</th>
-              <th class="sortable" onclick="sortAligners('aligner_upper')">Upper</th>
-              <th class="sortable" onclick="sortAligners('aligner_lower')">Lower</th>
-              <th class="sortable" onclick="sortAligners('total')">Total</th>
+              <th>Order Types</th>
+              <th>Packages</th>
+              <th class="sortable" onclick="sortAligners('aligner_upper')">Upper (TP)</th>
+              <th class="sortable" onclick="sortAligners('aligner_lower')">Lower (TP)</th>
+              <th class="sortable" onclick="sortAligners('total')">Total (TP)</th>
+              <th>Refinements</th>
+              <th>All Orders</th>
             </tr></thead>
             <tbody id="alignersTbl"></tbody>
           </table>
@@ -548,11 +550,7 @@ window.sortCases=col=>{
   applyFilters()
 }
 
-window.sortAligners=col=>{
-  if(alSort.col===col)alSort.dir=alSort.dir==='asc'?'desc':'asc';else{alSort={col,dir:'desc'}}
-  filteredAligners.sort((a,b)=>sortCompare(a,b,col,alSort.dir,'aligners'))
-  alPage=0;renderAlignersPage()
-}
+
 
 function renderCasesPage(){
   const total=filteredCases.length
@@ -587,33 +585,104 @@ function renderCasesPage(){
   }).join('')||'<tr><td colspan="15" style="text-align:center;padding:30px;color:var(--dim)">No cases match filters</td></tr>'
 }
 
+function buildGroupedAligners(){
+  // Group all aligner records by case — ONE row per case
+  const grouped={}
+  allAligners.forEach(a=>{
+    const k=String(a.case_number)
+    if(!grouped[k])grouped[k]=[]
+    grouped[k].push(a)
+  })
+  // Build one summary object per case
+  return Object.entries(grouped).map(([caseNum,rows])=>{
+    const c=allCases.find(x=>String(x.case_id)===caseNum)
+    // TreatmentPlan = primary aligners
+    const tp=rows.find(r=>r.order_type==='TreatmentPlan')
+    // Refinement plans — sum all
+    const refRows=rows.filter(r=>r.order_type==='RefinementPlan'||r.order_type==='RefinementOrder')
+    const refTotal=refRows.reduce((a,r)=>a+(Number(r.number_of_aligners)||0)||(Number(r.aligner_upper||0)+Number(r.aligner_lower||0)),0)
+    // All order types (unique, sorted)
+    const orderTypes=[...new Set(rows.map(r=>r.order_type).filter(Boolean))].sort()
+    // All packages (unique, non-null)
+    const packages=[...new Set(rows.map(r=>r.package_type).filter(Boolean))]
+    // Primary numbers from TreatmentPlan
+    const upper=tp?Number(tp.aligner_upper)||0:null
+    const lower=tp?Number(tp.aligner_lower)||0:null
+    const total=tp?(Number(tp.number_of_aligners)||((upper||0)+(lower||0))):null
+    return{
+      case_number:caseNum,
+      patient_name:c?.patient_name||'',
+      doctor:c?.doctor||'',
+      orderTypes,packages,
+      aligner_upper:upper,
+      aligner_lower:lower,
+      total:total,
+      refTotal:refTotal||null,
+      orderCount:rows.length,
+      _rows:rows // keep raw rows for CSV
+    }
+  })
+}
+
 function renderAligners(){
-  filteredAligners=[...allAligners]
-  filteredAligners.sort((a,b)=>sortCompare(a,b,alSort.col,alSort.dir,'aligners'))
-  $('alignersCount').textContent=filteredAligners.length.toLocaleString()+' records'
+  filteredAligners=buildGroupedAligners()
+  filteredAligners.sort((a,b)=>{
+    const col=alSort.col,dir=alSort.dir
+    let va,vb
+    if(col==='case_number'){va=+a.case_number||0;vb=+b.case_number||0}
+    else if(col==='patient_name'){va=a.patient_name;vb=b.patient_name}
+    else if(col==='aligner_upper'){va=a.aligner_upper||0;vb=b.aligner_upper||0}
+    else if(col==='aligner_lower'){va=a.aligner_lower||0;vb=b.aligner_lower||0}
+    else if(col==='total'){va=a.total||0;vb=b.total||0}
+    else{va=a[col]||'';vb=b[col]||''}
+    const cmp=typeof va==='number'?va-vb:String(va).localeCompare(String(vb))
+    return dir==='asc'?cmp:-cmp
+  })
+  $('alignersCount').textContent=filteredAligners.length.toLocaleString()+' cases · '+allAligners.length.toLocaleString()+' total order records'
   renderAlignersPage()
+}
+
+window.sortAligners=col=>{
+  if(alSort.col===col)alSort.dir=alSort.dir==='asc'?'desc':'asc';else{alSort={col,dir:'desc'}}
+  filteredAligners.sort((a,b)=>{
+    const dir=alSort.dir
+    let va,vb
+    if(col==='case_number'){va=+a.case_number||0;vb=+b.case_number||0}
+    else if(col==='patient_name'){va=a.patient_name;vb=b.patient_name}
+    else if(col==='aligner_upper'){va=a.aligner_upper||0;vb=b.aligner_upper||0}
+    else if(col==='aligner_lower'){va=a.aligner_lower||0;vb=b.aligner_lower||0}
+    else if(col==='total'){va=a.total||0;vb=b.total||0}
+    else{va=a[col]||'';vb=b[col]||''}
+    const cmp=typeof va==='number'?va-vb:String(va).localeCompare(String(vb))
+    return dir==='asc'?cmp:-cmp
+  })
+  alPage=0;renderAlignersPage()
 }
 
 function renderAlignersPage(){
   const total=filteredAligners.length
   const slice=filteredAligners.slice(alPage*PAGE,(alPage+1)*PAGE)
-  $('alInfo').textContent=`Page ${alPage+1}/${Math.max(1,Math.ceil(total/PAGE))} · ${total.toLocaleString()} total`
+  $('alInfo').textContent=`Page ${alPage+1}/${Math.max(1,Math.ceil(total/PAGE))} · ${total.toLocaleString()} cases`
   $('alPrev').disabled=alPage===0;$('alNext').disabled=(alPage+1)*PAGE>=total
   $('alignersTbl').innerHTML=slice.map(a=>{
-    const c=allCases.find(x=>String(x.case_id)===String(a.case_number))
-    const tot=Number(a.number_of_aligners)||(Number(a.aligner_upper||0)+Number(a.aligner_lower||0))
-    const tColor=a.order_type==='TreatmentPlan'?'b-b':a.order_type==='AlignersOrder'?'b-g':'b-gray'
-    return`<tr>
+    const orderBadges=a.orderTypes.map(t=>{
+      const cls=t==='TreatmentPlan'?'b-b':t==='AlignersOrder'?'b-g':t==='RefinementPlan'?'b-p':t==='RefinementOrder'?'b-a':'b-gray'
+      return`<span class="bdg ${cls}" style="margin-right:3px;font-size:9px">${t.replace('Plan','Pl.').replace('Order','Ord.').replace('Treatment','Tx').replace('Refinement','Ref')}</span>`
+    }).join('')
+    const pkgStr=a.packages.join(', ')||'—'
+    return`<tr style="cursor:pointer" onclick="openCase('${a.case_number}')">
       <td class="mono" style="font-weight:700;color:var(--blue)">#${a.case_number}</td>
-      <td style="font-weight:600">${c?.patient_name||'—'}</td>
-      <td style="color:var(--mu);font-size:11px">${c?.doctor||'—'}</td>
-      <td><span class="bdg ${tColor}">${a.order_type||'—'}</span></td>
-      <td style="font-size:11px;color:var(--mu)">${a.package_type||'—'}</td>
+      <td style="font-weight:600;white-space:nowrap">${a.patient_name||'—'}</td>
+      <td style="color:var(--mu);font-size:11px;white-space:nowrap">${a.doctor||'—'}</td>
+      <td style="white-space:nowrap">${orderBadges}</td>
+      <td style="font-size:11px;color:var(--mu)">${pkgStr}</td>
       <td class="mono" style="font-weight:700;color:var(--blue);text-align:center">${a.aligner_upper!=null?a.aligner_upper:'—'}</td>
       <td class="mono" style="font-weight:700;color:var(--purple);text-align:center">${a.aligner_lower!=null?a.aligner_lower:'—'}</td>
-      <td class="mono" style="font-weight:800;color:var(--teal);text-align:center">${tot||'—'}</td>
+      <td class="mono" style="font-weight:800;color:var(--teal);text-align:center">${a.total||'—'}</td>
+      <td class="mono" style="color:var(--amber);text-align:center">${a.refTotal?'+'+a.refTotal:'—'}</td>
+      <td class="mono" style="color:var(--dim);text-align:center;font-size:11px">${a.orderCount} record${a.orderCount>1?'s':''}</td>
     </tr>`
-  }).join('')||'<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--dim)">No data</td></tr>'
+  }).join('')||'<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--dim)">No data</td></tr>'
 }
 
 // ── HISTORY / SNAPSHOTS ───────────────────────────────────────────────
@@ -808,14 +877,18 @@ window.exportCasesCSV=()=>{
 }
 
 window.exportAlignersCSV=()=>{
-  const headers=['Case #','Patient','Doctor','Order Type','Package','Upper','Lower','Total']
-  const rows=filteredAligners.map(a=>{
-    const c=allCases.find(x=>String(x.case_id)===String(a.case_number))
-    const tot=Number(a.number_of_aligners)||(Number(a.aligner_upper||0)+Number(a.aligner_lower||0))
-    return[a.case_number,c?.patient_name||'',c?.doctor||'',a.order_type||'',a.package_type||'',a.aligner_upper||'',a.aligner_lower||'',tot||'']
+  // Export ALL individual order records (not grouped) for full detail
+  const headers=['Case #','Patient','Doctor','Order Type','Package','Upper','Lower','Total Aligners']
+  const rows=[]
+  filteredAligners.forEach(g=>{
+    // Export each raw order record for this case
+    g._rows.forEach(a=>{
+      const tot=Number(a.number_of_aligners)||(Number(a.aligner_upper||0)+Number(a.aligner_lower||0))
+      rows.push([g.case_number,g.patient_name,g.doctor,a.order_type||'',a.package_type||'',a.aligner_upper!=null?a.aligner_upper:'',a.aligner_lower!=null?a.aligner_lower:'',tot||''])
+    })
   })
   const al=csv(rows,headers);al.download=`bloom_aligners_${new Date().toISOString().slice(0,10)}.csv`;al.click()
-  ntf(`✅ Exported ${filteredAligners.length} aligner records`)
+  ntf(`✅ Exported ${rows.length} aligner order records for ${filteredAligners.length} cases`)
 }
 
 window.exportHistoryCSV=()=>{
