@@ -407,8 +407,8 @@ function bars(data,total,color='var(--blue)',limit=15){
 async function loadAll(){
   try{
     const[{data:cases,count:total},{data:aligData,count:alTotal},{data:logs},{count:snapCount}]=await Promise.all([
-      sb.from('bloom_cases').select('*',{count:'exact'}).order('case_id',{ascending:false}).limit(10000),
-      sb.from('bloom_aligner_details').select('*',{count:'exact'}).limit(20000),
+      sb.from('bloom_cases').select('*',{count:'exact'}).order('case_id',{ascending:false}).limit(20000),
+      sb.from('bloom_aligner_details').select('*',{count:'exact'}).order('case_number',{ascending:false}).limit(50000),
       sb.from('bloom_sync_log').select('*').order('started_at',{ascending:false}).limit(50),
       sb.from('bloom_case_snapshots').select('*',{count:'exact',head:true})
     ])
@@ -596,10 +596,22 @@ function applyAlignerFilters(){
   const q=($('aSearch').value||'').toLowerCase().trim()
   const ot=$('aOrderType').value
   const pkg=$('aPackage').value
-  filteredAligners=allAligners.filter(a=>{
+
+  // Build flat list: one row per aligner record OR one row per case with no aligners
+  const rows=[]
+  allCases.forEach(c=>{
+    const als=alignerMap[String(c.case_id)]||[]
+    if(als.length===0){
+      // Case with no aligner records — show as empty row
+      rows.push({_case:c,_noAligners:true,case_number:String(c.case_id),order_type:'',package_type:''})
+    } else {
+      als.forEach(a=>rows.push({...a,_case:c,case_number:String(c.case_id)}))
+    }
+  })
+
+  filteredAligners=rows.filter(a=>{
     if(q){
-      const c=allCases.find(x=>String(x.case_id)===String(a.case_number))
-      const hay=[a.case_number,c?.patient_name||'',c?.doctor||'',a.order_type||'',a.package_type||''].join(' ').toLowerCase()
+      const hay=[a.case_number,a._case?.patient_name||'',a._case?.doctor||'',a.order_type||'',a.package_type||''].join(' ').toLowerCase()
       if(!hay.includes(q))return false
     }
     if(ot&&a.order_type!==ot)return false
@@ -655,20 +667,21 @@ function renderAlignersPage(){
   $('alInfo').textContent=`Page ${alPage+1}/${Math.max(1,Math.ceil(total/PAGE))} · ${total.toLocaleString()} records`
   $('alPrev').disabled=alPage===0;$('alNext').disabled=(alPage+1)*PAGE>=total
   $('alignersTbl').innerHTML=slice.map(a=>{
-    const c=allCases.find(x=>String(x.case_id)===String(a.case_number))
+    const c=a._case||allCases.find(x=>String(x.case_id)===String(a.case_number))
     const tot=Number(a.number_of_aligners)||(Number(a.aligner_upper||0)+Number(a.aligner_lower||0))
     const tColor=a.order_type==='TreatmentPlan'?'b-b':a.order_type==='AlignersOrder'?'b-g':a.order_type==='RefinementPlan'?'b-p':a.order_type==='RefinementOrder'?'b-a':'b-gray'
-    return`<tr style="cursor:pointer" onclick="openCase('${a.case_number}')">
+    const noData=a._noAligners
+    return`<tr style="cursor:pointer;${noData?'opacity:0.6':''}" onclick="openCase('${a.case_number}')">
       <td class="mono" style="font-weight:700;color:var(--blue)">#${a.case_number}</td>
       <td style="font-weight:600;white-space:nowrap">${c?.patient_name||'—'}</td>
       <td style="color:var(--mu);font-size:11px;white-space:nowrap">${c?.doctor||'—'}</td>
-      <td><span class="bdg ${tColor}">${a.order_type||'—'}</span></td>
+      <td>${noData?'<span class="bdg b-gray">No orders yet</span>':`<span class="bdg ${tColor}">${a.order_type}</span>`}</td>
       <td style="font-size:11px;color:var(--mu)">${a.package_type||'—'}</td>
       <td class="mono" style="font-weight:700;color:var(--blue);text-align:center">${a.aligner_upper!=null?a.aligner_upper:'—'}</td>
       <td class="mono" style="font-weight:700;color:var(--purple);text-align:center">${a.aligner_lower!=null?a.aligner_lower:'—'}</td>
       <td class="mono" style="font-weight:800;color:var(--teal);text-align:center">${tot||'—'}</td>
     </tr>`
-  }).join('')||'<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--dim)">No aligner data</td></tr>'
+  }).join('')||'<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--dim)">No data</td></tr>'
 }
 
 // ── HISTORY / SNAPSHOTS ───────────────────────────────────────────────
