@@ -223,6 +223,12 @@ tr:hover td{background:#fafbfc}
 
     <!-- ===== TAB: ALIGNERS ===== -->
     <div id="tab-aligners" style="display:none">
+      <div class="filters-bar">
+        <div class="fi-group"><div class="fi-label">🔍 Search</div><input class="fi" style="min-width:200px" type="text" id="aSearch" placeholder="Case #, patient, doctor..." oninput="applyAlignerFilters()"/></div>
+        <div class="fi-group"><div class="fi-label">Order Type</div><select class="fi" id="aOrderType" onchange="applyAlignerFilters()"><option value="">All</option><option value="TreatmentPlan">Treatment Plan</option><option value="AlignersOrder">Aligners Order</option><option value="RefinementPlan">Refinement Plan</option><option value="RefinementOrder">Refinement Order</option></select></div>
+        <div class="fi-group"><div class="fi-label">Package</div><select class="fi" id="aPackage" onchange="applyAlignerFilters()"><option value="">All</option></select></div>
+        <button class="btn btn-ghost" style="padding:7px 12px;font-size:12px;align-self:flex-end" onclick="clearFilters('aligners')">✕ Clear</button>
+      </div>
       <div class="card">
         <div class="card-title">🦷 Aligner Details <span style="font-size:11px;font-weight:500;color:var(--mu)" id="alignersCount"></span>
           <button class="btn btn-green" style="padding:7px 14px;font-size:12px" onclick="exportAlignersCSV()">⬇ Export CSV</button>
@@ -585,7 +591,34 @@ function renderCasesPage(){
   }).join('')||'<tr><td colspan="15" style="text-align:center;padding:30px;color:var(--dim)">No cases match filters</td></tr>'
 }
 
+function applyAlignerFilters(){
+  alPage=0
+  const q=($('aSearch').value||'').toLowerCase().trim()
+  const ot=$('aOrderType').value
+  const pkg=$('aPackage').value
+  filteredAligners=allAligners.filter(a=>{
+    if(q){
+      const c=allCases.find(x=>String(x.case_id)===String(a.case_number))
+      const hay=[a.case_number,c?.patient_name||'',c?.doctor||'',a.order_type||'',a.package_type||''].join(' ').toLowerCase()
+      if(!hay.includes(q))return false
+    }
+    if(ot&&a.order_type!==ot)return false
+    if(pkg&&a.package_type!==pkg)return false
+    return true
+  })
+  filteredAligners.sort((a,b)=>{
+    let va=+a.case_number||0,vb=+b.case_number||0
+    return alSort.dir==='asc'?va-vb:vb-va
+  })
+  const cases=[...new Set(filteredAligners.map(a=>a.case_number))].length
+  $('alignersCount').textContent=filteredAligners.length.toLocaleString()+' records · '+cases.toLocaleString()+' cases'
+  renderAlignersPage()
+}
+
 function renderAligners(){
+  // Populate package dropdown
+  const pkgs=[...new Set(allAligners.map(a=>a.package_type).filter(Boolean))].sort()
+  $('aPackage').innerHTML='<option value="">All</option>'+pkgs.map(p=>`<option value="${p}">${p}</option>`).join('')
   filteredAligners=[...allAligners]
   filteredAligners.sort((a,b)=>{
     let va,vb
@@ -607,15 +640,13 @@ function renderAligners(){
     const cmp=typeof va==='number'?va-vb:String(va).localeCompare(String(vb))
     return dir==='asc'?cmp:-cmp
   })
-  const cases=[...new Set(filteredAligners.map(a=>a.case_number))].length
-  $('alignersCount').textContent=filteredAligners.length.toLocaleString()+' records · '+cases.toLocaleString()+' cases'
-  renderAlignersPage()
+  applyAlignerFilters()
 }
 
 window.sortAligners=col=>{
   if(alSort.col===col)alSort.dir=alSort.dir==='asc'?'desc':'asc'
   else alSort={col,dir:'desc'}
-  renderAligners()
+  applyAlignerFilters()
 }
 
 function renderAlignersPage(){
@@ -860,11 +891,13 @@ window.changePage=(tab,d)=>{
 }
 window.clearFilters=tab=>{
   if(tab==='cases'){['fSearch','fStatus','fStatusFrom','fStatusTo','fSyncFrom','fSyncTo','fDist','fAction'].forEach(id=>$(`${id}`).value='');applyFilters()}
+  else if(tab==='aligners'){['aSearch','aOrderType','aPackage'].forEach(id=>$(id).value='');applyAlignerFilters()}
   else{['hSearch','hStatus','hFrom','hTo','hSCFrom','hSCTo','hAction'].forEach(id=>$(id).value='');applyHistoryFilters()}
 }
 window.showTab=(name,btn)=>{document.querySelectorAll('[id^="tab-"]').forEach(el=>el.style.display='none');document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));$('tab-'+name).style.display='block';btn.classList.add('active');if(name==='history'&&snapshots.length===0)loadHistory()}
 window.loadHistory=loadHistory
 window.applyFilters=applyFilters
+window.applyAlignerFilters=applyAlignerFilters
 window.applyHistoryFilters=applyHistoryFilters
 
 window.triggerSync=async()=>{
